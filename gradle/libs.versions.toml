@@ -1,0 +1,44 @@
+[versions]
+springBoot = "4.0.2"
+springDependencyManagement = "1.1.7"
+asciidoctor = "4.0.5"
+jjwt = "0.12.6"
+lombok = "1.18.42"
+
+[libraries]
+spring-boot-h2console = { group = "org.springframework.boot", name = "spring-boot-h2console" }
+spring-boot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" }
+spring-boot-starter-flyway = { group = "org.springframework.boot", name = "spring-boot-starter-flyway" }
+spring-boot-starter-hateoas = { group = "org.springframework.boot", name = "spring-boot-starter-hateoas" }
+spring-boot-starter-restclient = { group = "org.springframework.boot", name = "spring-boot-starter-restclient" }
+spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
+spring-boot-starter-security-oauth2-resource-server = { group = "org.springframework.boot", name = "spring-boot-starter-security-oauth2-resource-server" }
+spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
+spring-boot-starter-webmvc = { group = "org.springframework.boot", name = "spring-boot-starter-webmvc" }
+flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql" }
+jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
+jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }
+jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+spring-boot-devtools = { group = "org.springframework.boot", name = "spring-boot-devtools" }
+h2 = { group = "com.h2database", name = "h2" }
+postgresql = { group = "org.postgresql", name = "postgresql" }
+spring-boot-restdocs = { group = "org.springframework.boot", name = "spring-boot-restdocs" }
+spring-boot-starter-data-jpa-test = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa-test" }
+spring-boot-starter-flyway-test = { group = "org.springframework.boot", name = "spring-boot-starter-flyway-test" }
+spring-boot-starter-hateoas-test = { group = "org.springframework.boot", name = "spring-boot-starter-hateoas-test" }
+spring-boot-starter-restclient-test = { group = "org.springframework.boot", name = "spring-boot-starter-restclient-test" }
+spring-boot-starter-security-oauth2-resource-server-test = { group = "org.springframework.boot", name = "spring-boot-starter-security-oauth2-resource-server-test" }
+spring-boot-starter-security-test = { group = "org.springframework.boot", name = "spring-boot-starter-security-test" }
+spring-boot-starter-validation-test = { group = "org.springframework.boot", name = "spring-boot-starter-validation-test" }
+spring-boot-starter-webmvc-test = { group = "org.springframework.boot", name = "spring-boot-starter-webmvc-test" }
+spring-boot-testcontainers = { group = "org.springframework.boot", name = "spring-boot-testcontainers" }
+spring-restdocs-mockmvc = { group = "org.springframework.restdocs", name = "spring-restdocs-mockmvc" }
+testcontainers-junit-jupiter = { group = "org.testcontainers", name = "testcontainers-junit-jupiter" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "testcontainers-postgresql" }
+junit-platform-launcher = { group = "org.junit.platform", name = "junit-platform-launcher" }
+
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+asciidoctor = { id = "org.asciidoctor.jvm.convert", version.ref = "asciidoctor" }
