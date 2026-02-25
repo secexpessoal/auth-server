@@ -8,9 +8,8 @@
 package com.auth.domain.http.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import lombok.Builder;
 
 @Builder
-public record AuthenticationResponseDto(@JsonProperty("token") String token, @JsonProperty("metadata") MetadataUserResponseDto metadata) {
+public record MetadataUserResponseDto(@JsonProperty("username") String username, @JsonProperty("role") String role) {
 }

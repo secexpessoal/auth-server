@@ -7,8 +7,10 @@
  */
 package com.auth.domain.http.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Builder;
 
 @Builder
-public record AuthenticationRequestDto(String userName, String password) {
+public record AuthenticationRequestDto(@JsonProperty("username") String userName, String password) {
 }

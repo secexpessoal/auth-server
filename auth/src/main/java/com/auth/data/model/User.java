@@ -9,10 +9,13 @@ package com.auth.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.auth.infra.config.ServerSecurityConfig;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -25,7 +28,7 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_user")
+@Table(name = "tb_user", schema = "auth")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -43,6 +46,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private ServerSecurityConfig.Role role;
 
+    @NonNull
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRole()));
@@ -53,6 +57,7 @@ public class User implements UserDetails {
         return this.password;
     }
 
+    @NonNull
     @Override
     public String getUsername() {
         return this.userName;

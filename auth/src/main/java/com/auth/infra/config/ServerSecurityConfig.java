@@ -40,15 +40,15 @@ public class ServerSecurityConfig {
     private final JwtGeneratorService jwtGeneratorService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
         JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(jwtGeneratorService, userDetailsService);
 
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
-                            .requestMatchers("/login").permitAll()
-                            .requestMatchers("/register").hasRole(Role.ADMIN.getRole())
+                            .requestMatchers("/v1/user/login").permitAll()
+                            .requestMatchers("/v1/user/register").hasRole(Role.ADMIN.getRole())
                             .anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -58,7 +58,7 @@ public class ServerSecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) {
         return authConfig.getAuthenticationManager();
     }
 }

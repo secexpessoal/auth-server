@@ -8,40 +8,28 @@
 package com.auth.domain.http.controller;
 
 import com.auth.domain.http.dto.AuthenticationRequestDto;
-import com.auth.domain.service.token.JwtGeneratorService;
+import com.auth.domain.http.dto.AuthenticationResponseDto;
+import com.auth.domain.usecase.LoginUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
-@RestController
+@RestController()
 @RequiredArgsConstructor
+@RequestMapping("/v1/user")
 public class AuthController {
-    private final AuthenticationManager authManager;
-    private final JwtGeneratorService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final LoginUseCase loginUseCase;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody AuthenticationRequestDto loginRequest) {
+    public ResponseEntity<AuthenticationResponseDto> login(@RequestBody AuthenticationRequestDto loginRequest) {
         try {
-            Authentication auth = authManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.userName(), loginRequest.password())
-            );
-
-            UserDetails userDetails = (UserDetails) auth.getPrincipal();
-            String jwt = jwtService.generateToken(userDetails);
-
-            return ResponseEntity.ok(Map.of("token", jwt));
+            AuthenticationResponseDto response = loginUseCase.execute(loginRequest);
+            return ResponseEntity.ok(response);
         } catch (AuthenticationException exception) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
