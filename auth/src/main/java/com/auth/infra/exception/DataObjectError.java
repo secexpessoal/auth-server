@@ -17,8 +17,8 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DataObjectError(
         String message,
-        Integer code,
         Date timestamp,
-        Map<String, String> details // Novo campo para erros de validação (ex: "email": "formato inválido")
+        Integer code,
+        Map<String, String> details
 ) {
 }

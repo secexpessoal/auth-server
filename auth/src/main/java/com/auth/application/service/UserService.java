@@ -13,9 +13,12 @@ import com.auth.api.dto.RegisterRequestDto;
 import com.auth.domain.model.User;
 import com.auth.domain.repository.UserRepository;
 import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import com.auth.infra.security.service.JwtGeneratorService;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,16 +32,20 @@ public class UserService {
     private final JwtGeneratorService jwtGeneratorService;
     private final AuthenticationManager authenticationManager;
 
-    public void userRegister(RegisterRequestDto request) {
+    public AuthenticationResponseDto userRegister(RegisterRequestDto request) {
+        if (userRepository.findByUserName(request.userName()).isPresent()) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
+        }
+
         User user = new User();
         user.setUserName(request.userName());
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(request.role());
+        user.setRole(request.roles());
 
         userRepository.save(user);
         var jwtToken = jwtGeneratorService.generateToken(user);
 
-        AuthenticationResponseDto.builder().token(jwtToken).build();
+        return AuthenticationResponseDto.builder().token(jwtToken).build();
     }
 
     public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) {
@@ -57,6 +64,7 @@ public class UserService {
 
     public User userIsPresent(String userName) {
         return userRepository.findByUserName(userName).orElseThrow(
-                () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário inserido não foi encontrado!"));
+                () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!")
+        );
     }
 }
