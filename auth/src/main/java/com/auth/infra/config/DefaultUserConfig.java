@@ -8,11 +8,9 @@
 package com.auth.infra.config;
 
 import com.auth.api.dto.RegisterRequestDto;
-import com.auth.application.service.UserService;
+import com.auth.application.usecase.RegisterUseCase;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
 import com.auth.domain.repository.UserRepository;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -27,20 +25,13 @@ public class DefaultUserConfig {
     private String adminPassword;
 
     @Bean
-    public CommandLineRunner commandLineRunner(UserRepository userRepository, UserService userService) {
+    public CommandLineRunner commandLineRunner(UserRepository userRepository, RegisterUseCase registerUseCase) {
         return args -> {
             if (userRepository.findByUserName(adminUsername).isEmpty()) {
-                User admin = new User();
-
-                admin.setUserName(adminUsername);
-                admin.setPassword(adminPassword);
-                admin.setRole(Role.ADMIN);
-
                 RegisterRequestDto registerRequestDTO = new RegisterRequestDto(
-                        admin.getUsername(), admin.getPassword(), admin.getRole()
-                );
+                        adminUsername, adminPassword);
 
-                userService.userRegister(registerRequestDTO);
+                registerUseCase.execute(registerRequestDTO, Role.ADMIN);
             }
         };
     }

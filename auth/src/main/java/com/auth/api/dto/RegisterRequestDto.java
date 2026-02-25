@@ -7,23 +7,18 @@
  */
 package com.auth.api.dto;
 
-import com.auth.domain.model.Role;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
 @Builder
 public record RegisterRequestDto(
-        @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
         @NotBlank(message = "O nome de usuário não pode estar em branco")
+        @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
         String userName,
 
-        @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
         @NotBlank(message = "A senha não pode estar em branco")
-        String password,
-
-        @NotNull(message = "O cargo (role) deve ser informado")
-        Role roles
+        @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
+        String password
 ) {
 }

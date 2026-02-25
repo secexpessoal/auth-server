@@ -7,20 +7,16 @@
  */
 package com.auth.application.service;
 
-import com.auth.api.dto.AuthenticationRequestDto;
-import com.auth.api.dto.AuthenticationResponseDto;
 import com.auth.api.dto.RegisterRequestDto;
+import com.auth.domain.model.Role;
 import com.auth.domain.model.User;
 import com.auth.domain.repository.UserRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
-import com.auth.infra.security.service.JwtGeneratorService;
 
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,10 +25,11 @@ import org.springframework.stereotype.Service;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtGeneratorService jwtGeneratorService;
-    private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponseDto userRegister(RegisterRequestDto request) {
+    /**
+     * Registra um novo usuário no banco de dados.
+     */
+    public User userRegister(RegisterRequestDto request, Role role) {
         if (userRepository.findByUserName(request.userName()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
         }
@@ -40,31 +37,8 @@ public class UserService {
         User user = new User();
         user.setUserName(request.userName());
         user.setPassword(passwordEncoder.encode(request.password()));
-        user.setRole(request.roles());
+        user.setRole(role);
 
-        userRepository.save(user);
-        var jwtToken = jwtGeneratorService.generateToken(user);
-
-        return AuthenticationResponseDto.builder().token(jwtToken).build();
-    }
-
-    public AuthenticationResponseDto authenticate(AuthenticationRequestDto request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.userName(),
-                        request.password()
-                )
-        );
-
-        var user = this.userIsPresent(request.userName());
-        var jwtToken = jwtGeneratorService.generateToken(user);
-
-        return AuthenticationResponseDto.builder().token(jwtToken).build();
-    }
-
-    public User userIsPresent(String userName) {
-        return userRepository.findByUserName(userName).orElseThrow(
-                () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!")
-        );
+        return userRepository.save(user);
     }
 }

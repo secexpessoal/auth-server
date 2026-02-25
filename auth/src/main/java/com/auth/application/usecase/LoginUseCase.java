@@ -35,8 +35,8 @@ public class LoginUseCase {
 
         User user = (User) auth.getPrincipal();
 
-        String username = Optional.ofNullable(user).map(User::getUsername).orElse("");
         String role = Optional.ofNullable(user).map(it -> it.getRole().name()).orElse("");
+        String username = Optional.ofNullable(user).map(User::getUsername).orElse("");
         String jwt = jwtService.generateToken(user);
 
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder().username(username).role(role).build();

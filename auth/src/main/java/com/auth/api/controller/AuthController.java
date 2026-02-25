@@ -9,26 +9,24 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.AuthenticationRequestDto;
 import com.auth.api.dto.AuthenticationResponseDto;
-import com.auth.api.dto.RegisterRequestDto;
-import com.auth.application.service.UserService;
+import com.auth.api.dto.MetadataUserResponseDto;
 import com.auth.application.usecase.LoginUseCase;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.auth.application.usecase.ValidationUseCase;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@RestController()
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/user")
 public class AuthController {
+
     private final LoginUseCase loginUseCase;
-    private final UserService userService;
+    private final ValidationUseCase validationUseCase;
 
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDto> login(@Valid @RequestBody AuthenticationRequestDto loginRequest) {
@@ -36,9 +34,9 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
-        AuthenticationResponseDto response = userService.userRegister(registerRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    @GetMapping("/validate")
+    public ResponseEntity<MetadataUserResponseDto> validateToken(Authentication authentication) {
+        MetadataUserResponseDto response = validationUseCase.execute(authentication);
+        return ResponseEntity.ok(response);
     }
 }
