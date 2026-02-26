@@ -54,7 +54,7 @@ class RegisterControllerTest {
     @DisplayName("POST /v1/user/register - Deve registrar novo usuário")
     void shouldRegisterUser() throws Exception {
         // Arrange
-        RegisterRequestDto request = new RegisterRequestDto("newuser", "password123");
+        RegisterRequestDto request = new RegisterRequestDto("newuser", "new@example.com", "password123");
         when(registerUseCase.execute(any(), eq(Role.USER))).thenReturn(AuthenticationResponseDto.builder().build());
 
         // Act & Assert

@@ -26,7 +26,8 @@ public class ValidationUseCase {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário não autenticado ou sessão inválida"));
 
         return MetadataUserResponseDto.builder()
-                .username(user.getUsername())
+                .username(user.getUserName())
+                .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .active(user.getActive() != null && user.getActive())
                 .createdAt(user.getCreatedAt())

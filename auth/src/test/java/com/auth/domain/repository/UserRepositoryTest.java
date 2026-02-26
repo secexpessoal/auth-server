@@ -29,25 +29,30 @@ class UserRepositoryTest {
     private UserRepository userRepository;
 
     @Test
-    @DisplayName("Deve salvar e buscar usuário por username")
-    void shouldSaveAndFindByUsername() {
+    @DisplayName("Deve salvar e buscar usuário por username e e-mail")
+    void shouldSaveAndFindByUsernameAndEmail() {
         User user = new User();
         user.setUserName("db-user");
+        user.setEmail("db@example.com");
         user.setPassword("pass");
         user.setRole(Role.USER);
         userRepository.saveAndFlush(user);
 
-        Optional<User> found = userRepository.findByUserName("db-user");
+        Optional<User> foundByName = userRepository.findByUserName("db-user");
+        Optional<User> foundByEmail = userRepository.findByEmail("db@example.com");
 
-        assertTrue(found.isPresent());
-        assertEquals("db-user", found.get().getUsername());
-        assertNotNull(found.get().getUserId());
+        assertTrue(foundByName.isPresent());
+        assertTrue(foundByEmail.isPresent());
+        assertEquals("db-user", foundByName.get().getUserName());
+        assertEquals("db@example.com", foundByEmail.get().getEmail());
+        assertEquals("db@example.com", foundByEmail.get().getUsername());
+        assertNotNull(foundByName.get().getUserId());
     }
 
     @Test
-    @DisplayName("Deve retornar vazio para username inexistente")
+    @DisplayName("Deve retornar vazio para e-mail inexistente")
     void shouldReturnEmptyForNonExistentUser() {
-        Optional<User> found = userRepository.findByUserName("ghost");
+        Optional<User> found = userRepository.findByEmail("ghost@example.com");
         assertTrue(found.isEmpty());
     }
 }

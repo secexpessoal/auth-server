@@ -62,7 +62,7 @@ public class PasswordUseCase {
      * Reset de senha efetuado por ADMIN.
      */
     public String resetByAdmin(ResetPasswordRequestDto request) {
-        User user = userService.userIsPresent(request.username());
+        User user = userService.userIsPresent(request.email());
 
         String tempPassword = "Temp@" + (1000 + (int) (Math.random() * 8999));
 

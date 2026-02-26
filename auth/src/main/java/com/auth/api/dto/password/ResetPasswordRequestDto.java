@@ -13,8 +13,8 @@ import lombok.Builder;
 
 @Builder
 public record ResetPasswordRequestDto(
-        @NotBlank(message = "O nome de usuário é obrigatório para recuperação")
-        @JsonProperty("username")
-        String username
+        @NotBlank(message = "O e-mail é obrigatório para recuperação")
+        @JsonProperty("email")
+        String email
 ) {
 }

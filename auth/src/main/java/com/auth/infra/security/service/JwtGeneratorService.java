@@ -40,7 +40,7 @@ public class JwtGeneratorService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String extractUsername(String token) {
+    public String extractEmail(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
@@ -79,14 +79,14 @@ public class JwtGeneratorService {
     }
 
     public boolean isTokenValid(String token, User user) {
-        final String username = extractUsername(token);
+        final String email = extractEmail(token);
         final Integer version = extractTokenVersion(token);
 
         // O token só é válido se:
-        // 1. O username bater
+        // 1. O e-mail bater
         // 2. A versão no token for IGUAL à versão no banco
         // 3. Não estiver expirado
-        return (username.equals(user.getUsername())) && (version != null && version.equals(user.getTokenVersion())) && !isTokenExpired(token);
+        return (email.equals(user.getUsername())) && (version != null && version.equals(user.getTokenVersion())) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {

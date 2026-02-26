@@ -44,7 +44,8 @@ public class RegisterUseCase {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
-                .username(user.getUsername())
+                .username(user.getUserName())
+                .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .active(user.getActive() != null && user.getActive())
                 .createdAt(user.getCreatedAt())

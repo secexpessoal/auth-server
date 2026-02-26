@@ -1,17 +1,16 @@
+group = "gov.tcm"
+version = "0.0.1-SNAPSHOT"
+description = "App de aposentadoria SIAAP feito pela SAP."
+
 plugins {
     java
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
 }
 
-group = "gov.tcm"
-version = "0.0.1-SNAPSHOT"
-description = "App de aposentadoria SIAAP feito pela SAP."
-
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(25)
-    }
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 configurations {

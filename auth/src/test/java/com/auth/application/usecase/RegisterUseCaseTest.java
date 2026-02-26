@@ -49,10 +49,11 @@ class RegisterUseCaseTest {
         testUser = new User();
         testUser.setUserId(UUID.randomUUID());
         testUser.setUserName("newuser");
+        testUser.setEmail("new@example.com");
         testUser.setRole(Role.USER);
         testUser.setActive(true);
 
-        registerRequest = new RegisterRequestDto("newuser", "password123");
+        registerRequest = new RegisterRequestDto("newuser", "new@example.com", "password123");
     }
 
     @Test
@@ -74,6 +75,7 @@ class RegisterUseCaseTest {
         assertEquals("fake-jwt-token", response.token());
         assertEquals("fake-refresh-token", response.refreshToken());
         assertEquals("newuser", response.metadata().username());
+        assertEquals("new@example.com", response.metadata().email());
         verify(userService).userRegister(registerRequest, Role.USER);
     }
 }

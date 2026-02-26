@@ -39,14 +39,14 @@ public class LoginUseCase {
     private final UserService userService;
 
     public AuthenticationResponseDto execute(AuthenticationRequestDto loginRequest) {
-        log.info("Tentativa de login para o usuário: {}", loginRequest.userName());
+        log.info("Tentativa de login para o usuário: {}", loginRequest.email());
 
         Authentication auth = authManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.userName(), loginRequest.password())
+                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
 
         if (!(auth.getPrincipal() instanceof User user)) {
-            log.error("Falha crítica: Principal não é do tipo User para o usuário {}", loginRequest.userName());
+            log.error("Falha crítica: Principal não é do tipo User para o usuário {}", loginRequest.email());
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao recuperar dados do usuário autenticado");
         }
 
@@ -58,7 +58,8 @@ public class LoginUseCase {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
-                .username(user.getUsername())
+                .username(user.getUserName())
+                .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .active(user.getActive() != null && user.getActive())
                 .createdAt(user.getCreatedAt())

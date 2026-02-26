@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
-        final String username;
+        final String email;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -46,15 +46,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwtToken = authHeader.substring(7);
 
         try {
-            username = jwtGeneratorService.extractUsername(jwtToken);
+            email = jwtGeneratorService.extractEmail(jwtToken);
         } catch (Exception exception) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // Converte UserDetails para nossa entidade User para acessar a versão do token
-            User userDetails = (User) this.userDetailsService.loadUserByUsername(username);
+            User userDetails = (User) this.userDetailsService.loadUserByUsername(email);
             
             if (jwtGeneratorService.isTokenValid(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

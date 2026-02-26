@@ -17,6 +17,7 @@ import java.time.Instant;
 @Builder
 public record MetadataUserResponseDto(
         @JsonProperty("username") String username,
+        @JsonProperty("email") String email,
         @JsonProperty("role") String role,
         @JsonProperty("active")
         boolean active,

@@ -44,8 +44,13 @@ public class UserService {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
         }
 
+        if (userRepository.findByEmail(request.email()).isPresent()) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este e-mail já está em uso!");
+        }
+
         User user = new User();
         user.setUserName(request.userName());
+        user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(request.password()));
         user.setRole(role);
 
@@ -64,14 +69,14 @@ public class UserService {
     }
 
     /**
-     * Busca um usuário pelo nome no repositório.
+     * Busca um usuário pelo e-mail no repositório.
      *
-     * @param userName Nome de usuário alvo
+     * @param email E-mail alvo
      * @return Entidade User encontrada
      * @throws NotFoundException Caso o usuário não exista
      */
-    public User userIsPresent(String userName) {
-        return userRepository.findByUserName(userName).orElseThrow(
+    public User userIsPresent(String email) {
+        return userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!"));
     }
 }

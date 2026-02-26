@@ -56,10 +56,11 @@ class LoginUseCaseTest {
         testUser = new User();
         testUser.setUserId(UUID.randomUUID());
         testUser.setUserName("testuser");
+        testUser.setEmail("test@example.com");
         testUser.setRole(Role.USER);
         testUser.setActive(true);
 
-        loginRequest = new AuthenticationRequestDto("testuser", "password");
+        loginRequest = new AuthenticationRequestDto("test@example.com", "password");
     }
 
     @Test
@@ -84,6 +85,7 @@ class LoginUseCaseTest {
         assertEquals("fake-jwt-token", response.token());
         assertEquals("fake-refresh-token", response.refreshToken());
         assertEquals("testuser", response.metadata().username());
+        assertEquals("test@example.com", response.metadata().email());
         assertEquals("USER", response.metadata().role());
         
         verify(userService).incrementTokenVersion(testUser);

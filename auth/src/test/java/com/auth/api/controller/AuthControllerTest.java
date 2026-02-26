@@ -62,12 +62,12 @@ class AuthControllerTest {
     @DisplayName("POST /v1/user/login - Deve retornar 200 e tokens")
     void shouldReturnOkOnLogin() throws Exception {
         // Arrange
-        AuthenticationRequestDto request = new AuthenticationRequestDto("admin", "admin123");
+        AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
         
         AuthenticationResponseDto response = AuthenticationResponseDto.builder()
                 .token("fake-jwt")
                 .refreshToken("fake-refresh")
-                .metadata(MetadataUserResponseDto.builder().username("admin").build())
+                .metadata(MetadataUserResponseDto.builder().username("admin").email("admin@auth.com").build())
                 .build();
 
         when(loginUseCase.execute(any())).thenReturn(response);
@@ -84,8 +84,8 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /v1/user/login - Deve retornar 400 se campos estiverem inválidos")
     void shouldReturnBadRequestOnInvalidLogin() throws Exception {
-        // Arrange (Username muito curto)
-        AuthenticationRequestDto request = new AuthenticationRequestDto("a", "");
+        // Arrange (E-mail inválido)
+        AuthenticationRequestDto request = new AuthenticationRequestDto("invalid-email", "");
 
         // Act & Assert
         mockMvc.perform(post("/v1/user/login")

@@ -38,6 +38,7 @@ class RefreshTokenRepositoryTest {
     void shouldSaveAndFindByToken() {
         User user = new User();
         user.setUserName("token-owner");
+        user.setEmail("owner@example.com");
         user.setPassword("pass");
         user.setRole(Role.USER);
         userRepository.saveAndFlush(user);
@@ -52,7 +53,7 @@ class RefreshTokenRepositoryTest {
         Optional<RefreshToken> found = refreshTokenRepository.findByToken("my-unique-token");
 
         assertTrue(found.isPresent());
-        assertEquals("token-owner", found.get().getUser().getUsername());
+        assertEquals("owner@example.com", found.get().getUser().getUsername());
     }
 
     @Test
@@ -60,6 +61,7 @@ class RefreshTokenRepositoryTest {
     void shouldDeleteByUser() {
         User user = new User();
         user.setUserName("deleted-owner");
+        user.setEmail("deleted@example.com");
         user.setPassword("pass");
         user.setRole(Role.USER);
         userRepository.saveAndFlush(user);

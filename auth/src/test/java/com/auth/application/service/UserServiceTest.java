@@ -42,15 +42,17 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve registrar usuário com sucesso")
     void shouldRegisterUser() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "pass123");
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", "pass123");
         when(userRepository.findByUserName("john")).thenReturn(Optional.empty());
+        when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass123")).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         User saved = userService.userRegister(request, Role.USER);
 
         assertNotNull(saved);
-        assertEquals("john", saved.getUsername());
+        assertEquals("john", saved.getUserName());
+        assertEquals("john@example.com", saved.getEmail());
         assertEquals("hashed", saved.getPassword());
         verify(userRepository).save(any());
     }
@@ -58,7 +60,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve lançar exceção se usuário já existir")
     void shouldThrowIfUserExists() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "pass123");
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", "pass123");
         when(userRepository.findByUserName("john")).thenReturn(Optional.of(new User()));
 
         assertThrows(BadRequestException.class, () -> userService.userRegister(request, Role.USER));
@@ -67,7 +69,7 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve lançar NotFoundException se usuário não existir")
     void shouldThrowIfUserNotFound() {
-        when(userRepository.findByUserName("ghost")).thenReturn(Optional.empty());
-        assertThrows(NotFoundException.class, () -> userService.userIsPresent("ghost"));
+        when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
+        assertThrows(NotFoundException.class, () -> userService.userIsPresent("ghost@example.com"));
     }
 }

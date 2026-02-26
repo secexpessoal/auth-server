@@ -10,12 +10,7 @@ package com.auth.domain.model;
 import com.auth.infra.config.jpa.GeneratedUuidV7;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,6 +21,12 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
@@ -43,6 +44,10 @@ public class User implements UserDetails {
     @Column(name = "ds_user_name", unique = true, nullable = false, length = 30)
     private String userName;
 
+    @Email
+    @Column(name = "ds_user_email", unique = true, nullable = false, length = 100)
+    private String email;
+
     @JsonIgnore
     @Column(name = "ds_user_password", nullable = false)
     private String password;
@@ -52,7 +57,7 @@ public class User implements UserDetails {
     private Role role;
 
     @Column(name = "bl_active")
-    private Boolean active = true;
+    private final Boolean active = true;
 
     @Column(name = "bl_password_reset_required")
     private Boolean passwordResetRequired = false;
@@ -78,6 +83,10 @@ public class User implements UserDetails {
     @NonNull
     @Override
     public String getUsername() {
+        return this.email;
+    }
+
+    public String getUserName() {
         return this.userName;
     }
 

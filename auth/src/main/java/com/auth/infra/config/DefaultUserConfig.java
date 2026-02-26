@@ -21,6 +21,9 @@ public class DefaultUserConfig {
     @Value("${admin.name}")
     private String adminUsername;
 
+    @Value("${admin.email}")
+    private String adminEmail;
+
     @Value("${admin.password}")
     private String adminPassword;
 
@@ -28,9 +31,9 @@ public class DefaultUserConfig {
     public CommandLineRunner commandLineRunner(UserRepository userRepository, UserService userService) {
         return args -> {
             // Verifica se o admin já existe para evitar duplicidade
-            if (userRepository.findByUserName(adminUsername).isEmpty()) {
+            if (userRepository.findByEmail(adminEmail).isEmpty()) {
                 RegisterRequestDto registerRequestDTO = new RegisterRequestDto(
-                        adminUsername, adminPassword);
+                        adminUsername, adminEmail, adminPassword);
 
                 // Usa o UserService diretamente para persistir o usuário sem gerar tokens JWT/Refresh
                 userService.userRegister(registerRequestDTO, Role.ADMIN);

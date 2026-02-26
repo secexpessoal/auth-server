@@ -46,6 +46,7 @@ class PasswordUseCaseTest {
     void setUp() {
         testUser = new User();
         testUser.setUserName("testuser");
+        testUser.setEmail("test@example.com");
         testUser.setPassword("encoded-old-password");
     }
 
@@ -56,7 +57,7 @@ class PasswordUseCaseTest {
         ChangePasswordRequestDto request = new ChangePasswordRequestDto("old-pass", "new-pass");
         Authentication auth = mock(Authentication.class);
         when(auth.getPrincipal()).thenReturn(testUser);
-        when(userService.userIsPresent("testuser")).thenReturn(testUser);
+        when(userService.userIsPresent("test@example.com")).thenReturn(testUser);
         when(passwordEncoder.matches("old-pass", "encoded-old-password")).thenReturn(true);
         when(passwordEncoder.encode("new-pass")).thenReturn("encoded-new-password");
 
@@ -76,7 +77,7 @@ class PasswordUseCaseTest {
         ChangePasswordRequestDto request = new ChangePasswordRequestDto("wrong-pass", "new-pass");
         Authentication auth = mock(Authentication.class);
         when(auth.getPrincipal()).thenReturn(testUser);
-        when(userService.userIsPresent("testuser")).thenReturn(testUser);
+        when(userService.userIsPresent("test@example.com")).thenReturn(testUser);
         when(passwordEncoder.matches("wrong-pass", "encoded-old-password")).thenReturn(false);
 
         // Act & Assert
@@ -88,8 +89,8 @@ class PasswordUseCaseTest {
     @DisplayName("Deve realizar reset administrativo e marcar flag obrigatória")
     void shouldPerformAdminReset() {
         // Arrange
-        ResetPasswordRequestDto request = new ResetPasswordRequestDto("testuser");
-        when(userService.userIsPresent("testuser")).thenReturn(testUser);
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("test@example.com");
+        when(userService.userIsPresent("test@example.com")).thenReturn(testUser);
         when(passwordEncoder.encode(anyString())).thenReturn("encoded-temp-password");
 
         // Act

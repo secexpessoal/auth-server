@@ -73,14 +73,14 @@ class AuthE2ETest {
     @DisplayName("Fluxo Completo: Registro -> Login -> Profile -> Refresh -> Profile")
     void fullAuthFlow() throws Exception {
         // 1. Registro
-        RegisterRequestDto regRequest = new RegisterRequestDto("e2euser", "password123");
+        RegisterRequestDto regRequest = new RegisterRequestDto("e2euser", "e2e@example.com", "password123");
         mockMvc.perform(post("/v1/user/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(regRequest)))
                 .andExpect(status().isCreated());
 
         // 2. Login
-        AuthenticationRequestDto loginRequest = new AuthenticationRequestDto("e2euser", "password123");
+        AuthenticationRequestDto loginRequest = new AuthenticationRequestDto("e2e@example.com", "password123");
         MvcResult loginResult = mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
@@ -96,7 +96,8 @@ class AuthE2ETest {
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"));
+                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.email").value("e2e@example.com"));
 
         // 4. Refresh Token
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshToken);
@@ -114,7 +115,8 @@ class AuthE2ETest {
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + newAccessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"));
+                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.email").value("e2e@example.com"));
         
         // 6. Tentar usar o token antigo (Deve falhar devido ao Versioning)
         mockMvc.perform(get("/v1/user/profile")
@@ -128,13 +130,14 @@ class AuthE2ETest {
         // 1. Criar admin diretamente no banco para bootstrap
         User admin = new User();
         admin.setUserName("admin-e2e");
+        admin.setEmail("admin-e2e@auth.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setRole(Role.ADMIN);
         admin.setActive(true);
         userRepository.saveAndFlush(admin);
 
         // Login do admin para pegar token
-        AuthenticationRequestDto adminLogin = new AuthenticationRequestDto("admin-e2e", "admin123");
+        AuthenticationRequestDto adminLogin = new AuthenticationRequestDto("admin-e2e@auth.com", "admin123");
         MvcResult adminLoginResult = mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminLogin)))
@@ -142,14 +145,14 @@ class AuthE2ETest {
         String adminToken = objectMapper.readValue(adminLoginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).token();
 
         // 2. Criar usuário normal
-        RegisterRequestDto regRequest = new RegisterRequestDto("user-to-reset", "original-pass");
+        RegisterRequestDto regRequest = new RegisterRequestDto("user-to-reset", "to-reset@example.com", "original-pass");
         mockMvc.perform(post("/v1/user/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(regRequest)))
                 .andExpect(status().isCreated());
 
         // 3. Admin reseta a senha do usuário
-        ResetPasswordRequestDto resetRequest = new ResetPasswordRequestDto("user-to-reset");
+        ResetPasswordRequestDto resetRequest = new ResetPasswordRequestDto("to-reset@example.com");
         MvcResult resetResult = mockMvc.perform(post("/v1/password/admin-reset")
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -161,7 +164,7 @@ class AuthE2ETest {
         String tempPassword = resetResponse.get("temp_password");
 
         // 4. Usuário tenta logar com a senha temporária
-        AuthenticationRequestDto loginRequest = new AuthenticationRequestDto("user-to-reset", tempPassword);
+        AuthenticationRequestDto loginRequest = new AuthenticationRequestDto("to-reset@example.com", tempPassword);
         MvcResult loginResult = mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
@@ -180,7 +183,7 @@ class AuthE2ETest {
                 .andExpect(status().isOk());
 
         // 6. Login final com nova senha
-        AuthenticationRequestDto finalLogin = new AuthenticationRequestDto("user-to-reset", "new-definitive-password");
+        AuthenticationRequestDto finalLogin = new AuthenticationRequestDto("to-reset@example.com", "new-definitive-password");
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(finalLogin)))

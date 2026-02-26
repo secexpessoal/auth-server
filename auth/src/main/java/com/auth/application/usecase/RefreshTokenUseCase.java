@@ -42,7 +42,8 @@ public class RefreshTokenUseCase {
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
 
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
-                .username(user.getUsername())
+                .username(user.getUserName())
+                .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .active(user.getActive())
                 .createdAt(user.getCreatedAt())

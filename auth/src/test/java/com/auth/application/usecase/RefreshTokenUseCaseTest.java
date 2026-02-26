@@ -48,6 +48,7 @@ class RefreshTokenUseCaseTest {
     void setUp() {
         testUser = new User();
         testUser.setUserName("testuser");
+        testUser.setEmail("test@example.com");
         testUser.setRole(Role.USER);
         testUser.setActive(true);
 
