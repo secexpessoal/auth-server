@@ -46,10 +46,9 @@ public class ServerSecurityConfig {
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
                             .requestMatchers("/v1/user/login").permitAll()
-                            .requestMatchers("/v1/user/register").permitAll()
+                            .requestMatchers("/v1/user/register").authenticated()
                             .requestMatchers("/v1/user/validate").authenticated()
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
-                            .requestMatchers("/v1/user/**").authenticated()
                             .anyRequest().permitAll();
                 })
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
