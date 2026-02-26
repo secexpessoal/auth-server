@@ -46,10 +46,11 @@ public class ServerSecurityConfig {
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
                             .requestMatchers("/v1/user/login").permitAll()
-                            .requestMatchers("/v1/user/register").authenticated()
+                            .requestMatchers("/v1/user/register").permitAll()
                             .requestMatchers("/v1/user/validate").authenticated()
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
-                            .anyRequest().permitAll();
+                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                            .anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

@@ -13,6 +13,8 @@ import com.auth.api.dto.RegisterRequestDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.User;
+import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,16 +29,17 @@ public class RegisterUseCase {
     private final JwtGeneratorService jwtService;
 
     public AuthenticationResponseDto execute(RegisterRequestDto request, Role role) {
-        User user = userService.userRegister(request, role);
+        User user = Optional.ofNullable(userService.userRegister(request, role))
+                .orElseThrow(() -> new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao registrar usuário"));
         
         String jwt = jwtService.generateToken(user);
 
-        String username = Optional.ofNullable(user).map(User::getUsername).orElse("");
-        String userRole = Optional.ofNullable(user).map(u -> u.getRole().name()).orElse("");
-
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
-                .username(username)
-                .role(userRole)
+                .username(user.getUsername())
+                .role(user.getRole() != null ? user.getRole().name() : null)
+                .active(user.isActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt() : user.getCreatedAt())
                 .build();
 
         return AuthenticationResponseDto.builder()

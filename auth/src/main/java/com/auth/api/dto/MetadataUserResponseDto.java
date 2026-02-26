@@ -7,10 +7,26 @@
  */
 package com.auth.api.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Builder;
 
+import java.time.Instant;
+
 @Builder
-public record MetadataUserResponseDto(@JsonProperty("username") String username, String role) {
+public record MetadataUserResponseDto(
+        @JsonProperty("username") String username,
+        @JsonProperty("role") String role,
+        @JsonProperty("active")
+        boolean active,
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "America/Sao_Paulo")
+        @JsonProperty("created_at")
+        Instant createdAt,
+
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "America/Sao_Paulo")
+        @JsonProperty("updated_at")
+        Instant updatedAt
+) {
 }

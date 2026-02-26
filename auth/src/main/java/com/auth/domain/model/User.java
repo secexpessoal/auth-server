@@ -7,16 +7,22 @@
  */
 package com.auth.domain.model;
 
+import com.auth.infra.config.jpa.GeneratedUuidV7;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -25,11 +31,13 @@ import java.util.UUID;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 @Table(name = "tb_user", schema = "auth")
 public class User implements UserDetails {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "col_user_id")
+    @GeneratedUuidV7
+    @Column(name = "col_user_id", updatable = false, nullable = false)
     private UUID userId;
 
     @Column(name = "ds_user_name", unique = true, nullable = false, length = 30)
@@ -42,6 +50,13 @@ public class User implements UserDetails {
     @Column(name = "ds_user_role")
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column(name = "bl_active")
+    private boolean active = true;
+
+    @LastModifiedDate
+    @Column(name = "dt_updated_at")
+    private Instant updatedAt;
 
     @NonNull
     @Override
@@ -62,11 +77,17 @@ public class User implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return UserDetails.super.isAccountNonExpired();
+        return active;
     }
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return active;
+    }
+
+    public Instant getCreatedAt() {
+        if (userId == null) return null;
+        long timestamp = userId.getMostSignificantBits() >>> 16;
+        return Instant.ofEpochMilli(timestamp);
     }
 }

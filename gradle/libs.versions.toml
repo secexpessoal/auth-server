@@ -4,6 +4,7 @@ springDependencyManagement = "1.1.7"
 asciidoctor = "4.0.5"
 jjwt = "0.12.6"
 lombok = "1.18.42"
+springdoc = "2.8.5"
 
 [libraries]
 spring-boot-h2console = { group = "org.springframework.boot", name = "spring-boot-h2console" }
@@ -15,6 +16,7 @@ spring-boot-starter-security = { group = "org.springframework.boot", name = "spr
 spring-boot-starter-security-oauth2-resource-server = { group = "org.springframework.boot", name = "spring-boot-starter-security-oauth2-resource-server" }
 spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
 spring-boot-starter-webmvc = { group = "org.springframework.boot", name = "spring-boot-starter-webmvc" }
+springdoc-openapi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql" }
 jjwt-api = { group = "io.jsonwebtoken", name = "jjwt-api", version.ref = "jjwt" }
 jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt" }

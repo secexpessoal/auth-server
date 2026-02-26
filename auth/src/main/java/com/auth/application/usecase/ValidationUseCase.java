@@ -9,7 +9,8 @@ package com.auth.application.usecase;
 
 import com.auth.api.dto.MetadataUserResponseDto;
 import com.auth.domain.model.User;
-
+import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
@@ -18,21 +19,18 @@ import java.util.Optional;
 @Service
 public class ValidationUseCase {
 
-    /**
-     * Executa a lógica de extração de metadados do usuário autenticado de forma segura.
-     *
-     * @param authentication Objeto de autenticação populado pelo Spring Security
-     * @return DTO com as informações do usuário
-     */
     public MetadataUserResponseDto execute(Authentication authentication) {
         User user = (User) Optional.ofNullable(authentication)
                 .map(Authentication::getPrincipal)
                 .filter(principal -> principal instanceof User)
-                .orElse(null);
+                .orElseThrow(() -> new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário não autenticado ou sessão inválida"));
 
-        String username = Optional.ofNullable(user).map(User::getUsername).orElse("");
-        String role = Optional.ofNullable(user).map(it -> it.getRole().name()).orElse("");
-
-        return MetadataUserResponseDto.builder().username(username).role(role).build();
+        return MetadataUserResponseDto.builder()
+                .username(user.getUsername())
+                .role(user.getRole() != null ? user.getRole().name() : null)
+                .active(user.isActive())
+                .createdAt(user.getCreatedAt())
+                .updatedAt(user.getUpdatedAt())
+                .build();
     }
 }

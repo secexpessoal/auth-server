@@ -34,7 +34,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/validate")
+    @GetMapping("/profile")
     public ResponseEntity<MetadataUserResponseDto> validateToken(Authentication authentication) {
         MetadataUserResponseDto response = validationUseCase.execute(authentication);
         return ResponseEntity.ok(response);

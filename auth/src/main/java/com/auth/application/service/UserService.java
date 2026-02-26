@@ -13,12 +13,11 @@ import com.auth.domain.model.User;
 import com.auth.domain.repository.UserRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
-import com.auth.infra.exception.custom.NotFoundException;
-
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +25,6 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Registra um novo usuário no banco de dados.
-     */
     public User userRegister(RegisterRequestDto request, Role role) {
         if (userRepository.findByUserName(request.userName()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");

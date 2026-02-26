@@ -9,6 +9,8 @@ package com.auth.infra.config;
 
 import com.auth.application.service.CustomUserDetailsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +19,8 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.TimeZone;
+
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
@@ -24,7 +28,14 @@ public class ApplicationConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        return new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
+
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        mapper.configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, true);
+        mapper.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+        
+        return mapper;
     }
 
     @Bean
