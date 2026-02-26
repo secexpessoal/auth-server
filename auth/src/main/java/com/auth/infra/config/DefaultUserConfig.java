@@ -7,11 +7,10 @@
  */
 package com.auth.infra.config;
 
-import com.auth.data.model.User;
-import com.auth.data.repository.UserRepository;
-import com.auth.domain.http.dto.RegisterRequestDto;
-import com.auth.domain.service.user.UserService;
-
+import com.auth.api.dto.auth.RegisterRequestDto;
+import com.auth.application.service.UserService;
+import com.auth.domain.model.Role;
+import com.auth.domain.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -28,15 +27,13 @@ public class DefaultUserConfig {
     @Bean
     public CommandLineRunner commandLineRunner(UserRepository userRepository, UserService userService) {
         return args -> {
+            // Verifica se o admin já existe para evitar duplicidade
             if (userRepository.findByUserName(adminUsername).isEmpty()) {
-                User admin = new User();
+                RegisterRequestDto registerRequestDTO = new RegisterRequestDto(
+                        adminUsername, adminPassword);
 
-                admin.setUserName(adminUsername);
-                admin.setPassword(adminPassword);
-                admin.setRole(ServerSecurityConfig.Role.ADMIN);
-
-                RegisterRequestDto registerRequestDTO = new RegisterRequestDto(admin.getUsername(), admin.getPassword(), admin.getRole());
-                userService.userRegister(registerRequestDTO);
+                // Usa o UserService diretamente para persistir o usuário sem gerar tokens JWT/Refresh
+                userService.userRegister(registerRequestDTO, Role.ADMIN);
             }
         };
     }

@@ -2,7 +2,6 @@ plugins {
     java
     alias(libs.plugins.spring.boot)
     alias(libs.plugins.spring.dependency.management)
-    alias(libs.plugins.asciidoctor)
 }
 
 group = "gov.tcm"
@@ -25,52 +24,44 @@ repositories {
     mavenCentral()
 }
 
-extra["snippetsDir"] = file("build/generated-snippets")
-
 dependencies {
-    implementation(libs.spring.boot.h2console)
-    implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.boot.starter.flyway)
-    implementation(libs.spring.boot.starter.hateoas)
-    implementation(libs.spring.boot.starter.restclient)
-    implementation(libs.spring.boot.starter.security)
-    implementation(libs.spring.boot.starter.security.oauth2.resource.server)
-    implementation(libs.spring.boot.starter.validation)
+    // Web & Core
     implementation(libs.spring.boot.starter.webmvc)
-    implementation(libs.flyway.database.postgresql)
+    implementation(libs.spring.boot.starter.validation)
+    implementation(libs.spring.boot.starter.restclient)
+    developmentOnly(libs.spring.boot.devtools)
+    
+    // Security
+    implementation(libs.spring.boot.starter.security)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
-    compileOnly(libs.lombok)
-    developmentOnly(libs.spring.boot.devtools)
-    runtimeOnly(libs.h2)
+    implementation(libs.bucket4j.core)
+    
+    // Database & Persistence
+    implementation(libs.spring.boot.starter.data.jpa)
+    implementation(libs.spring.boot.starter.flyway)
+    implementation(libs.flyway.database.postgresql)
     runtimeOnly(libs.postgresql)
+    runtimeOnly(libs.h2)
+    implementation(libs.spring.boot.h2console)
+    
+    // Documentation
+    implementation(libs.springdoc.openapi)
+    
+    // Utils
+    compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-    testImplementation(libs.spring.boot.restdocs)
-    testImplementation(libs.spring.boot.starter.data.jpa.test)
-    testImplementation(libs.spring.boot.starter.flyway.test)
-    testImplementation(libs.spring.boot.starter.hateoas.test)
-    testImplementation(libs.spring.boot.starter.restclient.test)
-    testImplementation(libs.spring.boot.starter.security.oauth2.resource.server.test)
+    
+    // Testing
+    testImplementation(libs.spring.boot.starter.test)
+    testImplementation(libs.spring.boot.test.autoconfigure)
+    testImplementation(libs.spring.boot.starter.data.jpa) // Adicionado para DataJpaTest
     testImplementation(libs.spring.boot.starter.security.test)
-    testImplementation(libs.spring.boot.starter.validation.test)
-    testImplementation(libs.spring.boot.starter.webmvc.test)
-    testImplementation(libs.spring.boot.testcontainers)
-    testImplementation(libs.spring.restdocs.mockmvc)
-    testImplementation(libs.testcontainers.junit.jupiter)
     testImplementation(libs.testcontainers.postgresql)
-    testRuntimeOnly(libs.junit.platform.launcher)
+    testImplementation(libs.testcontainers.junit.jupiter)
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-tasks.test {
-    outputs.dir(project.extra["snippetsDir"]!!)
-}
-
-tasks.asciidoctor {
-    inputs.dir(project.extra["snippetsDir"]!!)
-    dependsOn(tasks.test)
 }
