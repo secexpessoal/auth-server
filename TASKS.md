@@ -16,9 +16,11 @@ Este documento rastreia a implementação das melhorias profissionais no servido
     - [x] Fluxo de redefinição de senha (esqueci a senha - simulação).
 - [x] **Rate Limiting**: Proteção contra ataques de força bruta usando Bucket4j.
 
-## 🔵 Fase 3: Refinamentos (Prioridade Baixa)
-- [ ] **Logs de Auditoria**: Registrar tentativas de login falhas.
-- [ ] **Melhoria no JWT**: Adicionar Claims extras (como o ID do usuário) no payload do token.
+## 🔵 Fase 3: Qualidade e Observabilidade (Refinamentos)
+- [x] **Logging Estratégico**: Adicionado logs com SLF4J nos UseCases e Filtros.
+- [x] **Melhoria no Exception Handler**: Adicionado logging de stacktrace para erros 500.
+- [x] **Documentação Profissional**: Swagger UI rica em detalhes e Javadoc completo.
+- [ ] **Infraestrutura de Testes**: Criar base para testes unitários dos UseCases.
 
 ---
-*Status Atual: Planejamento concluído. Pronto para iniciar a Fase 1.*
+*Status Atual: Fase 2 concluída. Iniciando Fase 3 (Qualidade).*

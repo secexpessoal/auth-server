@@ -9,7 +9,6 @@ package com.auth.infra.security.filter;
 
 import com.auth.infra.exception.DataObjectError;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
@@ -17,7 +16,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,11 +29,11 @@ import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    // Armazena buckets na memória por endereço IP
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
 
@@ -42,12 +41,12 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        // NOTE: Aplica o rate limit apenas nas rotas de autenticação e reset de senha
         if (path.startsWith("/v1/user/login") || path.startsWith("/v1/user/register") || path.startsWith("/v1/password/reset")) {
             String ip = getClientIP(request);
             Bucket bucket = resolveBucket(ip);
 
             if (!bucket.tryConsume(1)) {
+                log.warn("Rate limit excedido para o IP: {} na rota: {}", ip, path);
                 sendRateLimitErrorResponse(response);
                 return;
             }
@@ -61,8 +60,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private Bucket createNewBucket(String ip) {
-        Bandwidth limit = Bandwidth.builder().capacity(10).refillGreedy(10, Duration.ofMinutes(1)).build();
-        return Bucket.builder().addLimit(limit).build();
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(10)
+                .refillGreedy(10, Duration.ofMinutes(1))
+                .build();
+        
+        return Bucket.builder()
+                .addLimit(limit)
+                .build();
     }
 
     private void sendRateLimitErrorResponse(HttpServletResponse response) throws IOException {
@@ -80,11 +85,9 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private String getClientIP(HttpServletRequest request) {
         String xfHeader = request.getHeader("X-Forwarded-For");
-
         if (xfHeader == null || xfHeader.isEmpty()) {
             return request.getRemoteAddr();
         }
-
         return xfHeader.split(",")[0];
     }
 }

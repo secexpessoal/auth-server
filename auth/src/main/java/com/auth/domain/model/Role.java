@@ -9,9 +9,17 @@ package com.auth.domain.model;
 
 import lombok.Getter;
 
+/**
+ * Define os papéis (roles) de autoridade dentro do sistema.
+ * Utilizado para controle de acesso (RBAC - Role Based Access Control).
+ */
 @Getter
 public enum Role {
-    ADMIN("ADMIN"), USER("USER");
+    /** Cargo com permissões totais, incluindo reset de senhas e criação de outros admins. */
+    ADMIN("ADMIN"),
+    
+    /** Cargo de usuário padrão, com acesso limitado às suas próprias informações. */
+    USER("USER");
 
     private final String role;
 

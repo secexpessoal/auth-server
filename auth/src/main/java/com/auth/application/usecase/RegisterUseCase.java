@@ -25,6 +25,9 @@ import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Caso de Uso responsável pelo registro de novos usuários.
+ */
 @Service
 @RequiredArgsConstructor
 public class RegisterUseCase {

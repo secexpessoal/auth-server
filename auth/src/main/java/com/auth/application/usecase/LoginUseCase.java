@@ -17,12 +17,19 @@ import com.auth.domain.model.User;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+/**
+ * Caso de Uso responsável pela orquestração do processo de login.
+ */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class LoginUseCase {
@@ -32,15 +39,19 @@ public class LoginUseCase {
     private final UserService userService;
 
     public AuthenticationResponseDto execute(AuthenticationRequestDto loginRequest) {
+        log.info("Tentativa de login para o usuário: {}", loginRequest.userName());
+
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.userName(), loginRequest.password())
         );
 
         if (!(auth.getPrincipal() instanceof User user)) {
+            log.error("Falha crítica: Principal não é do tipo User para o usuário {}", loginRequest.userName());
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao recuperar dados do usuário autenticado");
         }
 
-        // Invalida tokens antigos
+        log.info("Usuário {} autenticado com sucesso. Role: {}", user.getUsername(), user.getRole());
+
         userService.incrementTokenVersion(user);
 
         String jwt = jwtService.generateToken(user);

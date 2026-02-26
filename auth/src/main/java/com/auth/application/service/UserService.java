@@ -14,10 +14,16 @@ import com.auth.domain.repository.UserRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
+
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Serviço de baixo nível para gestão da entidade de Usuário.
+ * Lida exclusivamente com persistência, busca e manipulação de estado do modelo User.
+ */
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -25,8 +31,13 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     /**
-     * Registra um novo usuário no banco de dados. 
-     * O ID (UUIDv7) é gerado automaticamente pelo Hibernate através da anotação @GeneratedUuidV7.
+     * Registra um novo usuário no banco de dados.
+     * O ID (UUIDv7) é gerado automaticamente pelo Hibernate.
+     *
+     * @param request Dados do novo usuário
+     * @param role    Cargo a ser atribuído
+     * @return A entidade User persistida
+     * @throws BadRequestException Caso o nome de usuário já exista
      */
     public User userRegister(RegisterRequestDto request, Role role) {
         if (userRepository.findByUserName(request.userName()).isPresent()) {
@@ -42,17 +53,22 @@ public class UserService {
     }
 
     /**
-     * Incrementa a versão do token para invalidar JWTs antigos.
-     * Trata o valor nulo para compatibilidade com registros antigos.
+     * Incrementa a versão do token para invalidar Access Tokens (JWT) antigos.
+     *
+     * @param user Usuário que terá a sessão rotacionada
      */
     public void incrementTokenVersion(User user) {
-        Integer currentVersion = user.getTokenVersion(); // O getter agora garante não nulo
+        Integer currentVersion = user.getTokenVersion();
         user.setTokenVersion(currentVersion + 1);
         userRepository.save(user);
     }
 
     /**
-     * Busca um usuário pelo nome e lança exceção se não encontrar.
+     * Busca um usuário pelo nome no repositório.
+     *
+     * @param userName Nome de usuário alvo
+     * @return Entidade User encontrada
+     * @throws NotFoundException Caso o usuário não exista
      */
     public User userIsPresent(String userName) {
         return userRepository.findByUserName(userName).orElseThrow(
