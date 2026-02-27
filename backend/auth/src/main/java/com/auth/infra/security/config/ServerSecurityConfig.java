@@ -56,6 +56,7 @@ public class ServerSecurityConfig {
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/deactivate").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
                             
                             // Swagger Docs

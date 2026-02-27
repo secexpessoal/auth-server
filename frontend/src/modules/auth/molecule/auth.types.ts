@@ -6,6 +6,7 @@ export type MetadataUserResponseDto = {
   username: string;
   created_at?: string;
   updated_at?: string;
+  updated_by?: string;
 };
 
 export type AuthenticationResponseDto = {

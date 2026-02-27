@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table.component";
 import { getErrorMessage } from "../../../lib/api-error.util";
 import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
-import { deactivateUserAttempt, getUsersList, resetPasswordAttempt } from "../services/user.service";
+import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt } from "../services/user.service";
 
 export function UsersTableComponent() {
   const [page, setPage] = useState(0);
@@ -16,6 +16,7 @@ export function UsersTableComponent() {
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
+  const [confirmActivateOpen, setConfirmActivateOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<MetadataUserResponseDto | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -54,6 +55,17 @@ export function UsersTableComponent() {
     },
   });
 
+  const activateMutation = useMutation({
+    mutationFn: (userId: string) => activateUserAttempt(userId),
+    onSuccess: () => {
+      toast.success("Usuário ativado com sucesso!");
+      refetch();
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Erro ao ativar usuário."));
+    },
+  });
+
   const handleResetPassword = (user: MetadataUserResponseDto) => {
     setSelectedUser(user);
     setConfirmResetOpen(true);
@@ -75,6 +87,18 @@ export function UsersTableComponent() {
     if (selectedUser) {
       deactivateMutation.mutate(selectedUser.id);
       setConfirmDeactivateOpen(false);
+    }
+  };
+
+  const handleActivate = (user: MetadataUserResponseDto) => {
+    setSelectedUser(user);
+    setConfirmActivateOpen(true);
+  };
+
+  const confirmActivate = () => {
+    if (selectedUser) {
+      activateMutation.mutate(selectedUser.id);
+      setConfirmActivateOpen(false);
     }
   };
 
@@ -155,7 +179,12 @@ export function UsersTableComponent() {
           ) : (
             users.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className="font-medium text-gray-900">{user.username}</TableCell>
+                <TableCell className="font-medium text-gray-900">
+                  <div className="flex flex-col">
+                    <span>{user.username}</span>
+                    {user.updated_by && <span className="text-[10px] text-gray-400 font-normal">Atualizado por: {user.updated_by}</span>}
+                  </div>
+                </TableCell>
 
                 <TableCell className="text-gray-500">{user.email}</TableCell>
 
@@ -185,7 +214,7 @@ export function UsersTableComponent() {
                     size="sm"
                     className="h-8 text-gray-500 hover:text-primary-600 hover:bg-primary-50"
                     onClick={() => handleResetPassword(user)}
-                    disabled={resetMutation.isPending || deactivateMutation.isPending}
+                    disabled={resetMutation.isPending || deactivateMutation.isPending || activateMutation.isPending}
                     title="Resetar Senha"
                   >
                     {resetMutation.isPending && resetMutation.variables === user.email ? (
@@ -196,13 +225,13 @@ export function UsersTableComponent() {
                     Resetar
                   </Button>
 
-                  {user.active && (
+                  {user.active ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       className="h-8 text-gray-500 hover:text-red-600 hover:bg-red-50"
                       onClick={() => handleDeactivate(user)}
-                      disabled={deactivateMutation.isPending || resetMutation.isPending}
+                      disabled={deactivateMutation.isPending || resetMutation.isPending || activateMutation.isPending}
                       title="Desativar Usuário"
                     >
                       {deactivateMutation.isPending && deactivateMutation.variables === user.id ? (
@@ -211,6 +240,22 @@ export function UsersTableComponent() {
                         <UserX className="w-4 h-4 mr-1.5" />
                       )}
                       Desativar
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50"
+                      onClick={() => handleActivate(user)}
+                      disabled={activateMutation.isPending || resetMutation.isPending || deactivateMutation.isPending}
+                      title="Ativar Usuário"
+                    >
+                      {activateMutation.isPending && activateMutation.variables === user.id ? (
+                        <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                      ) : (
+                        <Check className="w-4 h-4 mr-1.5" />
+                      )}
+                      Ativar
                     </Button>
                   )}
                 </TableCell>
@@ -337,6 +382,33 @@ export function UsersTableComponent() {
 
             <Button variant="destructive" onClick={confirmDeactivate} className="w-full sm:w-auto bg-red-600 hover:bg-red-700">
               Desativar Agora
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      {/* Confirmation Activate Dialog */}
+      <Dialog open={confirmActivateOpen} onOpenChange={setConfirmActivateOpen}>
+        <DialogContent showCloseButton>
+          <DialogHeader>
+            <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+              <Check className="w-6 h-6 text-emerald-600" />
+            </div>
+
+            <DialogTitle className="text-center text-emerald-600">Ativar Conta de Usuário</DialogTitle>
+
+            <DialogDescription className="text-center pt-2">
+              Você deseja reativar a conta de <span className="font-bold text-gray-900">{selectedUser?.username}</span>. O usuário recuperará acesso
+              total ao sistema.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button variant="outline" onClick={() => setConfirmActivateOpen(false)} className="w-full sm:w-auto">
+              Voltar
+            </Button>
+
+            <Button onClick={confirmActivate} className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white">
+              Confirmar Ativação
             </Button>
           </div>
         </DialogContent>

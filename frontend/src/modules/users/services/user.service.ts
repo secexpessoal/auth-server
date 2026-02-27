@@ -44,3 +44,12 @@ export async function deactivateUserAttempt(userId: string): Promise<void> {
     params: { id: userId },
   });
 }
+
+/**
+ * Ativa um usuário através de um administrador.
+ */
+export async function activateUserAttempt(userId: string): Promise<void> {
+  await axiosClient.patch("/v1/user/activate", null, {
+    params: { id: userId },
+  });
+}

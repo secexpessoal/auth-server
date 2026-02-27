@@ -56,12 +56,13 @@ public class LoginUseCase {
 
         MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
                 .id(user.getUserId())
-                .username(user.getUserName())
+                .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole() != null ? user.getRole().name() : null)
                 .active(user.getActive() != null && user.getActive())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .updatedBy(user.getUpdatedBy())
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()

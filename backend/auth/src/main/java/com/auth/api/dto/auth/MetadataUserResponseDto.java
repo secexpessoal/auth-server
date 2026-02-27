@@ -29,6 +29,9 @@ public record MetadataUserResponseDto(
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "America/Sao_Paulo")
         @JsonProperty("updated_at")
-        Instant updatedAt
+        Instant updatedAt,
+
+        @JsonProperty("updated_by")
+        String updatedBy
 ) {
 }

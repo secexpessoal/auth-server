@@ -67,6 +67,10 @@ public class User implements UserDetails {
     @Column(name = "dt_updated_at")
     private Instant updatedAt;
 
+    @org.springframework.data.annotation.LastModifiedBy
+    @Column(name = "ds_updated_by")
+    private String updatedBy;
+
     @NonNull
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -81,7 +85,7 @@ public class User implements UserDetails {
     @NonNull
     @Override
     public String getUsername() {
-        return this.email;
+        return this.userName;
     }
 
     @Override
