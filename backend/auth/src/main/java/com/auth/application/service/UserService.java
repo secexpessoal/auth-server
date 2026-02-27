@@ -40,10 +40,6 @@ public class UserService {
      * @throws BadRequestException Caso o nome de usuário já exista
      */
     public User userRegister(RegisterRequestDto request, Role role) {
-        if (userRepository.findByUserName(request.userName()).isPresent()) {
-            throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
-        }
-
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este e-mail já está em uso!");
         }

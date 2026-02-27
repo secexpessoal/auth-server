@@ -39,7 +39,7 @@ public class User implements UserDetails {
     @Column(name = "col_user_id", updatable = false, nullable = false)
     private UUID userId;
 
-    @Column(name = "ds_user_name", unique = true, nullable = false, length = 30)
+    @Column(name = "ds_user_name", nullable = false, length = 30)
     private String userName;
 
     @Email
@@ -81,7 +81,7 @@ public class User implements UserDetails {
     @NonNull
     @Override
     public String getUsername() {
-        return this.userName;
+        return this.email;
     }
 
     @Override

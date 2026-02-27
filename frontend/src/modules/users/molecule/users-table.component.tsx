@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation } from '@tanstack/react-query'
 import {
     Table,
     TableBody,
@@ -18,9 +18,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from '../../../components/ui/dialog.component'
-import { getUsersList } from '../services/user.service'
+import { getUsersList, resetPasswordAttempt } from '../services/user.service'
 import type { MetadataUserResponseDto } from '../../auth/molecule/auth.types'
 import { getErrorMessage } from '../../../lib/api-error.util'
+import toast from 'react-hot-toast'
 
 export function UsersTableComponent() {
     const [page, setPage] = useState(0)
@@ -32,11 +33,20 @@ export function UsersTableComponent() {
         queryFn: () => getUsersList(page, 50),
     })
 
-    const handleResetPassword = (_user: MetadataUserResponseDto) => {
-        // In reality we would call the reset password endpoint: POST /v1/password/admin-reset with { email }
-        const fakeTempPassword = Math.random().toString(36).slice(-8)
-        setTemporaryPassword(fakeTempPassword)
-        setResetDialogOpen(true)
+    const resetMutation = useMutation({
+        mutationFn: (email: string) => resetPasswordAttempt(email),
+        onSuccess: (data) => {
+            setTemporaryPassword(data.temp_password)
+            setResetDialogOpen(true)
+            toast.success('Senha resetada com sucesso!')
+        },
+        onError: (error) => {
+            toast.error(getErrorMessage(error, 'Erro ao resetar senha do usuário.'))
+        }
+    })
+
+    const handleResetPassword = (user: MetadataUserResponseDto) => {
+        resetMutation.mutate(user.email)
     }
 
     if (isLoading) {
@@ -131,9 +141,14 @@ export function UsersTableComponent() {
                                         size="sm"
                                         className="h-8 text-gray-500 hover:text-primary-600 hover:bg-primary-50"
                                         onClick={() => handleResetPassword(user)}
+                                        disabled={resetMutation.isPending}
                                         title="Resetar Senha"
                                     >
-                                        <KeyRound className="w-4 h-4 mr-1.5" />
+                                        {resetMutation.isPending && resetMutation.variables === user.email ? (
+                                            <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                                        ) : (
+                                            <KeyRound className="w-4 h-4 mr-1.5" />
+                                        )}
                                         Resetar
                                     </Button>
                                 </TableCell>
