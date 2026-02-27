@@ -1,7 +1,7 @@
 import { LogOut, Users, Shield } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { logoutAttempt } from "../auth/services/auth.service";
-import { Button } from "../../components/button.component";
+import { Button } from "../../components/sh-button/button.component";
 import { CreateUserDialog } from "./user-form.component";
 import { UsersTableComponent } from "./molecule/users-table.component";
 

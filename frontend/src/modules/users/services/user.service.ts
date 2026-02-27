@@ -1,4 +1,4 @@
-import { axiosClient } from "../../../lib/axios-client.util";
+import { axiosClient } from "../../../lib/axios/axios.util";
 import type { RegisterRequestDto, RegisterResponseDto, PaginatedResponseDto } from "../molecule/user.types";
 import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
 

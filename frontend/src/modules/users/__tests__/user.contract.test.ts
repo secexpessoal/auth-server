@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
-import { registerAdminSchema } from "./molecule/user.schema";
-import { loginSchema } from "../auth/molecule/auth.schema";
-import { mockLoginResponseAdmin } from "../../__fixtures__/auth.fixture";
+import { registerAdminSchema } from "@modules/users/molecule/user.schema";
+import { loginSchema } from "@modules/auth/molecule/auth.schema";
+import { mockLoginResponseAdmin } from "@fixtures/auth.fixture";
 
 describe("API Contract Validation", () => {
   describe("auth.types.ts Contract", () => {
@@ -44,8 +44,8 @@ describe("API Contract Validation", () => {
   describe("Zod Schemas vs RegisterRequestDto Contract", () => {
     it("registerAdminSchema deve exigir username(3-30), email valido e password(>6)", () => {
       const validPayload = {
-          email: "admin@ok.com",
-          username: "admin_test",
+        email: "admin@ok.com",
+        username: "admin_test",
         password: "securePassword123",
       };
 

@@ -13,9 +13,11 @@ export default defineConfig({
       "@store": path.resolve(__dirname, "./src/store"),
       "@assets": path.resolve(__dirname, "./src/assets"),
       "@modules": path.resolve(__dirname, "./src/modules"),
-      "@__tests__": path.resolve(__dirname, "./src/__tests__"),
       "@components": path.resolve(__dirname, "./src/components"),
-      "@__fixtures__": path.resolve(__dirname, "./src/__fixtures__"),
+
+       // NOTE: Testes
+      "@tests": path.resolve(__dirname, "./src/__tests__"),
+      "@fixtures": path.resolve(__dirname, "./src/__fixtures__"),
     },
   },
   server: {

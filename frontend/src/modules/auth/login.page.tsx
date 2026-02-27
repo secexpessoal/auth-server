@@ -4,12 +4,12 @@ import { useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { Input } from "../../components/input.component";
-import { Button } from "../../components/button.component";
-import { Label } from "../../components/label.component";
+import { Input } from "../../components/sh-input/input.component";
+import { Button } from "../../components/sh-button/button.component";
+import { Label } from "../../components/sh-label/label.component";
 import { loginSchema } from "./molecule/auth.schema";
 import { loginAttempt } from "./services/auth.service";
-import { getErrorMessage } from "../../lib/api-error.util";
+import { getErrorMessage } from "../../lib/api-error/api-error.util";
 
 export function LoginPage() {
   const navigate = useNavigate();

@@ -30,9 +30,9 @@
       "@lib/*": ["./src/lib/*"],
       "@store/*": ["./src/store/*"],
       "@modules/*": ["./src/modules/*"],
-      "@__tests__/*": ["./src/__tests__/*"],
       "@components/*": ["./src/components/*"],
-      "@__fixtures__/*": ["./src/__fixtures__/*"]
+      "@tests/*": ["./src/__tests__/*"],
+      "@fixtures/*": ["./src/__fixtures__/*"]
     }
   },
   "include": ["src"]

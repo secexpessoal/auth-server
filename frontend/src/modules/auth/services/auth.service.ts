@@ -1,4 +1,4 @@
-import { axiosClient } from "../../../lib/axios-client.util";
+import { axiosClient } from "../../../lib/axios/axios.util";
 import type { AuthenticationRequestDto, AuthenticationResponseDto, MetadataUserResponseDto } from "../molecule/auth.types";
 import { useAuthStore } from "../../../store/auth.store";
 

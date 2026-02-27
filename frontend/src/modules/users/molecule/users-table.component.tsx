@@ -3,10 +3,10 @@ import { format } from "date-fns";
 import { Check, Copy, Info, KeyRound, Loader2, RefreshCw, ShieldAlert, UserX } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Button } from "../../../components/button.component";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/dialog.component";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/table.component";
-import { getErrorMessage } from "../../../lib/api-error.util";
+import { Button } from "../../../components/sh-button/button.component";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/sh-dialog/dialog.component";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/sh-table/table.component";
+import { getErrorMessage } from "../../../lib/api-error/api-error.util";
 import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
 import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt } from "../services/user.service";
 
