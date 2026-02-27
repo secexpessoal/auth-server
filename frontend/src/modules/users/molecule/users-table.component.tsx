@@ -7,7 +7,7 @@ import { Button } from "../../../components/sh-button/button.component";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../../../components/sh-dialog/dialog.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/sh-table/table.component";
 import { getErrorMessage } from "../../../lib/api-error/api-error.util";
-import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
+import type { UserResponseDto } from "../../auth/molecule/auth.types";
 import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt } from "../services/user.service";
 
 export function UsersTableComponent() {
@@ -17,7 +17,7 @@ export function UsersTableComponent() {
   const [confirmResetOpen, setConfirmResetOpen] = useState(false);
   const [confirmDeactivateOpen, setConfirmDeactivateOpen] = useState(false);
   const [confirmActivateOpen, setConfirmActivateOpen] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<MetadataUserResponseDto | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
   const [copied, setCopied] = useState(false);
 
   const {
@@ -66,7 +66,7 @@ export function UsersTableComponent() {
     },
   });
 
-  const handleResetPassword = (user: MetadataUserResponseDto) => {
+  const handleResetPassword = (user: UserResponseDto) => {
     setSelectedUser(user);
     setConfirmResetOpen(true);
   };
@@ -78,7 +78,7 @@ export function UsersTableComponent() {
     }
   };
 
-  const handleDeactivate = (user: MetadataUserResponseDto) => {
+  const handleDeactivate = (user: UserResponseDto) => {
     setSelectedUser(user);
     setConfirmDeactivateOpen(true);
   };
@@ -90,7 +90,7 @@ export function UsersTableComponent() {
     }
   };
 
-  const handleActivate = (user: MetadataUserResponseDto) => {
+  const handleActivate = (user: UserResponseDto) => {
     setSelectedUser(user);
     setConfirmActivateOpen(true);
   };
@@ -181,19 +181,24 @@ export function UsersTableComponent() {
               <TableRow key={user.id}>
                 <TableCell className="font-medium text-gray-900">
                   <div className="flex flex-col">
-                    <span>{user.username}</span>
-                    {user.updated_by && <span className="text-[10px] text-gray-400 font-normal">Atualizado por: {user.updated_by}</span>}
+                    <span>{user.profile.username}</span>
+                    {user.audit.updated_by && <span className="text-[10px] text-gray-400 font-normal">Atualizado por: {user.audit.updated_by}</span>}
                   </div>
                 </TableCell>
 
                 <TableCell className="text-gray-500">{user.email}</TableCell>
 
                 <TableCell>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${user.role === "ADMIN" ? "bg-indigo-100 text-indigo-800" : "bg-gray-100 text-gray-800"}`}
-                  >
-                    {user.role}
-                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {user.roles.map((role) => (
+                      <span
+                        key={role}
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${role === "ROLE_ADMIN" ? "bg-indigo-100 text-indigo-800" : role === "ROLE_MANAGER" ? "bg-amber-100 text-amber-800" : "bg-gray-100 text-gray-800"}`}
+                      >
+                        {role.replace("ROLE_", "")}
+                      </span>
+                    ))}
+                  </div>
                 </TableCell>
 
                 <TableCell>
@@ -206,7 +211,7 @@ export function UsersTableComponent() {
                   )}
                 </TableCell>
 
-                <TableCell className="text-gray-500">{user.created_at ? format(new Date(user.created_at), "dd/MM/yyyy") : "-"}</TableCell>
+                <TableCell className="text-gray-500">{user.audit.created_at ? format(new Date(user.audit.created_at), "dd/MM/yyyy") : "-"}</TableCell>
 
                 <TableCell className="text-right flex items-center justify-end gap-1">
                   <Button
@@ -295,8 +300,8 @@ export function UsersTableComponent() {
             <DialogTitle className="text-center">Confirmar Reset de Senha</DialogTitle>
 
             <DialogDescription className="text-center pt-2">
-              Você tem certeza que deseja resetar a senha de <span className="font-bold text-gray-900">{selectedUser?.username}</span>? Esta ação
-              forçará o usuário a definir uma nova senha no próximo acesso.
+              Você tem certeza que deseja resetar a senha de <span className="font-bold text-gray-900">{selectedUser?.profile.username}</span>? Esta
+              ação forçará o usuário a definir uma nova senha no próximo acesso.
             </DialogDescription>
           </DialogHeader>
 
@@ -322,8 +327,8 @@ export function UsersTableComponent() {
             <DialogTitle className="text-center">Senha Resetada com Sucesso</DialogTitle>
 
             <DialogDescription className="text-center pt-2">
-              A nova senha temporária de <span className="font-bold text-gray-900">{selectedUser?.username}</span> gerada pelo sistema está abaixo.
-              Clique no campo para copiar.
+              A nova senha temporária de <span className="font-bold text-gray-900">{selectedUser?.profile.username}</span> gerada pelo sistema está
+              abaixo. Clique no campo para copiar.
             </DialogDescription>
           </DialogHeader>
 
@@ -370,8 +375,8 @@ export function UsersTableComponent() {
             <DialogTitle className="text-center text-red-600">Desativar Conta de Usuário</DialogTitle>
 
             <DialogDescription className="text-center pt-2">
-              Você está prestes a desativar a conta de <span className="font-bold text-gray-900">{selectedUser?.username}</span>. O usuário perderá
-              acesso imediato ao sistema. Esta é uma ação crítica.
+              Você está prestes a desativar a conta de <span className="font-bold text-gray-900">{selectedUser?.profile.username}</span>. O usuário
+              perderá acesso imediato ao sistema. Esta é uma ação crítica.
             </DialogDescription>
           </DialogHeader>
 
@@ -397,8 +402,8 @@ export function UsersTableComponent() {
             <DialogTitle className="text-center text-emerald-600">Ativar Conta de Usuário</DialogTitle>
 
             <DialogDescription className="text-center pt-2">
-              Você deseja reativar a conta de <span className="font-bold text-gray-900">{selectedUser?.username}</span>. O usuário recuperará acesso
-              total ao sistema.
+              Você deseja reativar a conta de <span className="font-bold text-gray-900">{selectedUser?.profile.username}</span>. O usuário recuperará
+              acesso total ao sistema.
             </DialogDescription>
           </DialogHeader>
 

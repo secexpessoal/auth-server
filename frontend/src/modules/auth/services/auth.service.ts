@@ -1,10 +1,10 @@
 import { axiosClient } from "../../../lib/axios/axios.util";
-import type { AuthenticationRequestDto, AuthenticationResponseDto, MetadataUserResponseDto } from "../molecule/auth.types";
+import type { AuthenticationRequestDto, AuthenticationResponseDto, UserResponseDto } from "../molecule/auth.types";
 import { useAuthStore } from "../../../store/auth.store";
 
 export async function loginAttempt(payload: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
   const { data } = await axiosClient.post<AuthenticationResponseDto>("/v1/user/login", payload);
-  useAuthStore.getState().setAuth(data.token, data.metadata, data.password_reset_required);
+  useAuthStore.getState().setAuth(data.session, data.user);
   return data;
 }
 
@@ -23,7 +23,7 @@ export async function firstChangePasswordAttempt(password: string): Promise<void
   useAuthStore.getState().clearAuth();
 }
 
-export async function getProfile(): Promise<MetadataUserResponseDto> {
-  const { data } = await axiosClient.get<MetadataUserResponseDto>("/v1/user/profile");
+export async function getProfile(): Promise<UserResponseDto> {
+  const { data } = await axiosClient.get<UserResponseDto>("/v1/user/profile");
   return data;
 }

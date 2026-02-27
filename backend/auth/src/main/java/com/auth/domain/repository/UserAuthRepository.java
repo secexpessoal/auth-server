@@ -7,7 +7,7 @@
  */
 package com.auth.domain.repository;
 
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,7 +15,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<User> findByUserName(String userName);
-    Optional<User> findByEmail(String email);
+public interface UserAuthRepository extends JpaRepository<UserAuth, UUID> {
+    Optional<UserAuth> findByEmail(String email);
 }

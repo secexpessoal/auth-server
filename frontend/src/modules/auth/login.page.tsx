@@ -17,12 +17,12 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      if (data.password_reset_required) {
+      if (data.session.password_reset_required) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
         navigate({ to: "/reset-password" });
       } else {
-        if (data.metadata.role === "ADMIN") {
-          toast.success(`Bem-vindo, ${data.metadata.username}!`);
+        if (data.user.roles.includes("ROLE_ADMIN")) {
+          toast.success(`Bem-vindo, ${data.user.profile.username}!`);
         }
 
         navigate({ to: "/" });

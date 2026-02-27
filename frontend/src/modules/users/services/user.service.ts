@@ -1,6 +1,6 @@
 import { axiosClient } from "../../../lib/axios/axios.util";
 import type { RegisterRequestDto, RegisterResponseDto, PaginatedResponseDto } from "../molecule/user.types";
-import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
+import type { UserResponseDto } from "../../auth/molecule/auth.types";
 
 /**
  * Registra um novo administrador. Somente usuários com Role.ADMIN podem fazer isso.
@@ -21,8 +21,8 @@ export async function registerUserAttempt(payload: RegisterRequestDto): Promise<
 /**
  * Busca a lista paginada de usuários.
  */
-export async function getUsersList(page = 0, limit = 50): Promise<PaginatedResponseDto<MetadataUserResponseDto>> {
-  const { data } = await axiosClient.get(`/v1/user`, {
+export async function getUsersList(page = 0, limit = 50): Promise<PaginatedResponseDto<UserResponseDto>> {
+  const { data } = await axiosClient.get<PaginatedResponseDto<UserResponseDto>>(`/v1/user`, {
     params: { page, limit },
   });
   return data;

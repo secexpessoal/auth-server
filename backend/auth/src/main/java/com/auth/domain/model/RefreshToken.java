@@ -32,7 +32,7 @@ public class RefreshToken {
 
     @OneToOne
     @JoinColumn(name = "col_user_id", referencedColumnName = "col_user_id")
-    private User user;
+    private UserAuth user;
 
     @Column(name = "ds_token", nullable = false, unique = true)
     private String token;

@@ -7,7 +7,7 @@
  */
 package com.auth.infra.security.filter;
 
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.infra.security.service.JwtGeneratorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,8 +53,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // Converte UserDetails para nossa entidade User para acessar a versão do token
-            User userDetails = (User) this.userDetailsService.loadUserByUsername(email);
+            // NOTE: Converte UserDetails para nossa entidade UserAuth para acessar a versão do token
+            UserAuth userDetails = (UserAuth) this.userDetailsService.loadUserByUsername(email);
 
             if (jwtGeneratorService.isTokenValid(jwtToken, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,

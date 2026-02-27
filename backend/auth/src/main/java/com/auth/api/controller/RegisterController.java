@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
 import com.auth.application.usecase.RegisterUseCase;
 import com.auth.domain.model.Role;
@@ -36,15 +36,15 @@ public class RegisterController {
 
     @PostMapping
     @Operation(summary = "Registra um novo usuário comum", description = "Cria uma conta com o cargo USER. Aberto ao público.")
-    public ResponseEntity<@NonNull MetadataUserResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
-        MetadataUserResponseDto result = registerUseCase.execute(registerRequest, Role.USER);
+    public ResponseEntity<@NonNull UserResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
+        UserResponseDto result = registerUseCase.execute(registerRequest, Role.USER);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     @PostMapping("/admin")
     @Operation(summary = "Registra um novo administrador", description = "Cria uma conta com o cargo ADMIN. Requer token de administrador.")
-    public ResponseEntity<@NonNull MetadataUserResponseDto> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {
-        MetadataUserResponseDto result = registerUseCase.execute(registerRequest, Role.ADMIN);
+    public ResponseEntity<@NonNull UserResponseDto> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {
+        UserResponseDto result = registerUseCase.execute(registerRequest, Role.ADMIN);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }

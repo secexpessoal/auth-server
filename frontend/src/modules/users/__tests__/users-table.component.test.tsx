@@ -20,11 +20,23 @@ const mockUsers = {
   data: [
     {
       id: "1",
-      username: "User 1",
       email: "user1@test.com",
-      role: "USER",
       active: true,
-      created_at: new Date().toISOString(),
+      roles: ["ROLE_USER"],
+      profile: {
+        username: "User 1",
+        registration: "REG123",
+        position: "Dev",
+        birth_date: null,
+        work_regime: "HYBRID",
+        lives_elsewhere: false,
+        in_person_work_period: null,
+      },
+      audit: {
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        updated_by: "system",
+      },
     },
   ],
   meta: {

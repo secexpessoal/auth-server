@@ -11,8 +11,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 @Builder
-public record AuthenticationResponseDto(
-        @JsonProperty("session") UserSessionResponseDto session,
-        @JsonProperty("user") UserResponseDto user
+public record UserSessionResponseDto(
+        @JsonProperty("access_token") String accessToken,
+        @JsonProperty("token_version") Integer tokenVersion,
+        @JsonProperty("password_reset_required") boolean passwordResetRequired
 ) {
 }

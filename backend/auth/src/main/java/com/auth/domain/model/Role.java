@@ -21,6 +21,11 @@ public enum Role {
     ADMIN("ADMIN"),
 
     /**
+     * Cargo de gerência, com permissões intermediárias.
+     */
+    MANAGER("MANAGER"),
+
+    /**
      * Cargo de usuário padrão, com acesso limitado às suas próprias informações.
      */
     USER("USER");

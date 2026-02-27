@@ -56,16 +56,16 @@ public class ServerSecurityConfig {
                             .requestMatchers("/v1/user/register").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/admin-reset").hasRole(Role.ADMIN.name())
-                            .requestMatchers(HttpMethod.PATCH, "/v1/user/deactivate").hasRole(Role.ADMIN.name())
-                            .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
-                            
+                            .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.PATCH, "/v1/user/deactivate").hasRole(Role.ADMIN.name())
+
                             // Swagger Docs
                             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                             // SPA routing: permit all GET requests that aren't API endpoints (assets, html, SPA routes)
-                            .requestMatchers(HttpMethod.GET, "/**").permitAll()
                             .requestMatchers("/v1/password/first-change").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/**").permitAll()
                             .anyRequest().authenticated();
                 })
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

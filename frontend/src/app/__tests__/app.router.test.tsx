@@ -15,17 +15,27 @@ describe("AppRouter Integration & Guards", () => {
 
   it("Deve rejeitar sessão se usuario logado NÃO é ADMIN no layout protegido", () => {
     useAuthStore.getState().setAuth(
-      "dummy",
+      { access_token: "dummy", token_version: 2, password_reset_required: false },
       {
         id: "dummy-id",
-        username: "common",
         email: "common@ok.com",
-        role: "USER",
         active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        roles: ["ROLE_USER"],
+        profile: {
+          username: "common",
+          registration: "123456",
+          position: "User",
+          birth_date: null,
+          work_regime: "HYBRID",
+          lives_elsewhere: false,
+          in_person_work_period: null,
+        },
+        audit: {
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          updated_by: "system",
+        },
       },
-      false,
     );
 
     const state = useAuthStore.getState();

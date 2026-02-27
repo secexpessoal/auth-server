@@ -8,13 +8,12 @@
 package com.auth.application.usecase;
 
 import com.auth.api.dto.auth.AuthenticationRequestDto;
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.*;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -24,6 +23,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+
+import java.util.stream.Collectors;
 
 /**
  * Caso de Uso responsável pela orquestração do processo de login.
@@ -42,33 +43,55 @@ public class LoginUseCase {
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
 
-        if (!(auth.getPrincipal() instanceof User user)) {
-            log.error("Falha crítica: Principal não é do tipo User para o usuário {}", loginRequest.email());
+        if (!(auth.getPrincipal() instanceof UserAuth user)) {
+            log.error("Falha crítica: Principal não é do tipo UserAuth para o usuário {}", loginRequest.email());
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao recuperar dados do usuário autenticado");
         }
 
-        log.info("Usuário {} autenticado com sucesso. Role: {}", user.getUsername(), user.getRole());
+        log.info("Usuário {} autenticado com sucesso. Roles: {}", user.getEmail(), user.getRoles());
 
         userService.incrementTokenVersion(user);
 
         String jwt = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
 
-        MetadataUserResponseDto metadata = MetadataUserResponseDto.builder()
-                .id(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .active(user.getActive() != null && user.getActive())
+        UserSessionResponseDto session = UserSessionResponseDto.builder()
+                .accessToken(jwt)
+                .tokenVersion(user.getTokenVersion())
+                .passwordResetRequired(user.isPasswordResetRequired())
+                .build();
+
+        UserProfileResponseDto profile = UserProfileResponseDto.builder()
+                .username(user.getUserData().getUserName())
+                .registration(user.getUserData().getRegistration())
+                .position(user.getUserData().getPosition())
+                .birthDate(user.getUserData().getBirthDate())
+                .workRegime(user.getUserData().getWorkRegime())
+                .livesElsewhere(user.getUserData().getLivesElsewhere() != null && user.getUserData().getLivesElsewhere())
+                .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
+                        .start(user.getUserData().getInPersonWorkStart())
+                        .end(user.getUserData().getInPersonWorkEnd())
+                        .build())
+                .build();
+
+        UserAuditResponseDto audit = UserAuditResponseDto.builder()
                 .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .updatedBy(user.getUpdatedBy())
+                .updatedAt(user.getUserData().getUpdatedAt())
+                .updatedBy(user.getUserData().getUpdatedBy())
+                .build();
+
+        UserResponseDto userDto = UserResponseDto.builder()
+                .id(user.getUserId())
+                .email(user.getEmail())
+                .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                .active(user.getActive() != null && user.getActive())
+                .profile(profile)
+                .audit(audit)
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .token(jwt)
-                .passwordResetRequired(user.isPasswordResetRequired())
-                .metadata(metadata)
+                .session(session)
+                .user(userDto)
                 .build();
 
         return new AuthenticationResult(responseDto, refreshToken.getToken());

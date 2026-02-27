@@ -17,14 +17,30 @@ describe("auth.service", () => {
   it("loginAttempt should call axios post with correct params", async () => {
     const mockResponse = {
       data: {
-        token: "token123",
-        password_reset_required: false,
-        metadata: {
+        session: {
+          access_token: "token123",
+          token_version: 2,
+          password_reset_required: false,
+        },
+        user: {
           id: "1",
           email: "test@test.com",
-          username: "testuser",
-          role: "ADMIN",
           active: true,
+          roles: ["ROLE_ADMIN"],
+          profile: {
+            username: "testuser",
+            registration: "123456",
+            position: "Software Engineer",
+            birth_date: null,
+            work_regime: "HYBRID",
+            lives_elsewhere: false,
+            in_person_work_period: null,
+          },
+          audit: {
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            updated_by: "system",
+          },
         },
       },
     };

@@ -7,7 +7,7 @@
  */
 package com.auth.infra.security.filter;
 
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.infra.exception.ErrorCode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
@@ -36,13 +36,13 @@ public class PasswordResetFilter extends OncePerRequestFilter {
         
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof User user) {
+        if (authentication != null && authentication.isAuthenticated() &&
+            authentication.getPrincipal() instanceof UserAuth user) {
             String path = request.getRequestURI();
 
             // Permitir apenas logout, troca de senha e primeira troca
-            boolean isAllowedPath = path.equals("/v1/password/first-change") || 
-                                   path.equals("/v1/user/logout") ||
-                                   path.equals("/v1/user/refresh"); // Refresh é necessário para manter sessão
+            boolean isAllowedPath = path.equals("/v1/password/first-change") || path.equals("/v1/user/logout") ||
+                                    path.equals("/v1/user/refresh");
 
             if (user.isPasswordResetRequired() && !isAllowedPath) {
                 sendErrorResponse(response);

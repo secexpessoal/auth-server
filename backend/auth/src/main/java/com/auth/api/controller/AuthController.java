@@ -9,7 +9,7 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.CookieService;
@@ -72,8 +72,8 @@ public class AuthController {
 
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
-    public ResponseEntity<@NonNull MetadataUserResponseDto> validateToken(Authentication authentication) {
-        MetadataUserResponseDto response = validationUseCase.execute(authentication);
+    public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
+        UserResponseDto response = validationUseCase.execute(authentication);
         return ResponseEntity.ok(response);
     }
 }

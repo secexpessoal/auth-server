@@ -40,7 +40,7 @@ describe("ResetPasswordPage", () => {
     (useAuthStore as unknown as Mock).mockReturnValue({
       isAuthenticated: true,
       passwordResetRequired: true,
-      user: { username: "testuser" },
+      user: { profile: { username: "testuser" } },
     });
   });
 

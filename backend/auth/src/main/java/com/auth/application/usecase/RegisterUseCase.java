@@ -7,18 +7,18 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.MetadataUserResponseDto;
-import com.auth.api.dto.auth.RegisterRequestDto;
+import com.auth.api.dto.auth.*;
 import com.auth.application.service.PasswordGeneratorService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Caso de Uso responsável pelo registro de novos usuários.
@@ -30,21 +30,39 @@ public class RegisterUseCase {
     private final UserService userService;
     private final PasswordGeneratorService passwordGeneratorService;
 
-    public MetadataUserResponseDto execute(RegisterRequestDto request, Role role) {
+    public UserResponseDto execute(RegisterRequestDto request, Role role) {
         String tempPassword = passwordGeneratorService.generateTemporaryPassword();
 
-        User user = Optional.ofNullable(userService.userRegister(request, role, tempPassword))
+        UserAuth user = Optional.ofNullable(userService.userRegister(request, role, tempPassword))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao registrar usuário"));
 
-        return MetadataUserResponseDto.builder()
-                .id(user.getUserId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole() != null ? user.getRole().name() : null)
-                .active(user.getActive() != null && user.getActive())
+        UserProfileResponseDto profile = UserProfileResponseDto.builder()
+                .username(user.getUserData().getUserName())
+                .registration(user.getUserData().getRegistration())
+                .position(user.getUserData().getPosition())
+                .birthDate(user.getUserData().getBirthDate())
+                .workRegime(user.getUserData().getWorkRegime())
+                .livesElsewhere(user.getUserData().getLivesElsewhere() != null && user.getUserData().getLivesElsewhere())
+                .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
+                        .start(user.getUserData().getInPersonWorkStart())
+                        .end(user.getUserData().getInPersonWorkEnd())
+                        .build())
+                .build();
+
+        UserAuditResponseDto audit = UserAuditResponseDto.builder()
                 .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt() : user.getCreatedAt())
+                .updatedAt(user.getUserData().getUpdatedAt())
+                .updatedBy(user.getUserData().getUpdatedBy())
+                .build();
+
+        return UserResponseDto.builder()
+                .id(user.getUserId())
+                .email(user.getEmail())
+                .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                .active(user.getActive() != null && user.getActive())
+                .profile(profile)
+                .audit(audit)
                 .tempPassword(tempPassword)
                 .build();
     }

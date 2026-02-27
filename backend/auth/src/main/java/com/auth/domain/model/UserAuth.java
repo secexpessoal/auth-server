@@ -16,7 +16,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.NonNull;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -24,8 +23,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.Instant;
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Data
 @Entity
@@ -33,16 +34,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "tb_user", schema = "auth")
-public class User implements UserDetails {
+@Table(name = "tb_auth", schema = "auth")
+public class UserAuth implements UserDetails {
 
     @Id
     @GeneratedUuidV7
     @Column(name = "col_user_id", updatable = false, nullable = false)
     private UUID userId;
-
-    @Column(name = "ds_user_name", nullable = false, length = 30)
-    private String userName;
 
     @Email
     @Column(name = "ds_user_email", unique = true, nullable = false, length = 100)
@@ -52,9 +50,11 @@ public class User implements UserDetails {
     @Column(name = "ds_user_password", nullable = false)
     private String password;
 
+    @Column(name = "ds_role")
     @Enumerated(EnumType.STRING)
-    @Column(name = "ds_user_role")
-    private Role role;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "tb_user_roles", schema = "auth", joinColumns = @JoinColumn(name = "col_user_id"))
+    private Set<Role> roles = new HashSet<>();
 
     @Column(name = "bl_active")
     private Boolean active = true;
@@ -65,18 +65,20 @@ public class User implements UserDetails {
     @Column(name = "int_token_version")
     private Integer tokenVersion = 0;
 
-    @LastModifiedDate
-    @Column(name = "dt_updated_at")
-    private Instant updatedAt;
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn
+    private UserData userData;
 
-    @org.springframework.data.annotation.LastModifiedBy
-    @Column(name = "ds_updated_by")
-    private String updatedBy;
-
+    /**
+     * Retorna o identificador do usuário para o Spring Security.
+     * Prioriza o userName definido no perfil (UserData), funcionando como fallback para o e-mail.
+     *
+     * @return O nome de usuário do perfil ou o e-mail se o perfil não estiver carregado.
+     */
     @NonNull
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + role.getRole()));
+    public String getUsername() {
+        return this.userData != null ? this.userData.getUserName() : this.email;
     }
 
     @Override
@@ -86,8 +88,8 @@ public class User implements UserDetails {
 
     @NonNull
     @Override
-    public String getUsername() {
-        return this.userName;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return roles.stream().map(it -> new SimpleGrantedAuthority("ROLE_" + it.getRole())).collect(Collectors.toList());
     }
 
     @Override
@@ -112,5 +114,18 @@ public class User implements UserDetails {
 
     public Integer getTokenVersion() {
         return tokenVersion == null ? 0 : tokenVersion;
+    }
+
+    /**
+     * Sincroniza a governança com a tabela de perfil.
+     * Garante que mudanças em dados de autenticação (senha, roles, status) sejam 
+     * refletidas no log de auditoria centralizado do UserData.
+     */
+    @PreUpdate
+    @PrePersist
+    public void syncGovernance() {
+        if (this.userData != null) {
+            this.userData.touch();
+        }
     }
 }

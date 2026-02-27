@@ -54,7 +54,7 @@ export function ResetPasswordPage() {
               <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Definir Nova Senha</h1>
 
               <p className="text-gray-500">
-                Olá, <span className="font-semibold text-gray-900">{user?.username}</span>.
+                Olá, <span className="font-semibold text-gray-900">{user?.profile.username}</span>.
                 <br />
                 Para sua segurança, você deve definir uma nova senha personalizada.
               </p>

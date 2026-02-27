@@ -8,7 +8,7 @@
 package com.auth.application.service;
 
 import com.auth.domain.model.RefreshToken;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.RefreshTokenRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
@@ -29,7 +29,7 @@ public class RefreshTokenService {
     private long refreshTokenExpiration;
 
     @Transactional
-    public RefreshToken createRefreshToken(User user) {
+    public RefreshToken createRefreshToken(UserAuth user) {
         // Remove token existente para não acumular lixo no banco e evitar erro 409
         refreshTokenRepository.deleteByUser(user);
         refreshTokenRepository.flush(); // Força a deleção antes da nova inserção
@@ -57,7 +57,7 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public void deleteByUser(User user) {
+    public void deleteByUser(UserAuth user) {
         refreshTokenRepository.deleteByUser(user);
     }
 }

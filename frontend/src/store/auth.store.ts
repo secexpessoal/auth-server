@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { persist, createJSONStorage, subscribeWithSelector } from "zustand/middleware";
-import type { MetadataUserResponseDto } from "../modules/auth/molecule/auth.types";
+import type { UserResponseDto, UserSessionResponseDto } from "../modules/auth/molecule/auth.types";
 import axios from "axios";
 
 type AuthState = {
   token: string | null;
-  user: MetadataUserResponseDto | null;
+  user: UserResponseDto | null;
   isAuthenticated: boolean;
   isAdmin: boolean;
   passwordResetRequired: boolean;
-  setAuth: (token: string, user: MetadataUserResponseDto, passwordResetRequired: boolean) => void;
+  setAuth: (session: UserSessionResponseDto, user: UserResponseDto) => void;
   clearAuth: () => void;
 };
 
@@ -18,9 +18,8 @@ let refreshInterval: number | undefined;
 const proactiveRefresh = async () => {
   try {
     const response = await axios.post<{
-      token: string;
-      metadata: MetadataUserResponseDto;
-      password_reset_required: boolean;
+      session: UserSessionResponseDto;
+      user: UserResponseDto;
     }>(
       "/v1/user/refresh",
       {},
@@ -28,8 +27,8 @@ const proactiveRefresh = async () => {
         withCredentials: true,
       },
     );
-    if (response.data.token && response.data.metadata) {
-      useAuthStore.getState().setAuth(response.data.token, response.data.metadata, response.data.password_reset_required);
+    if (response.data.session && response.data.user) {
+      useAuthStore.getState().setAuth(response.data.session, response.data.user);
     }
   } catch (error) {
     console.error("Proactive refresh failed", error);
@@ -47,13 +46,13 @@ export const useAuthStore = create<AuthState>()(
         isAdmin: false,
         passwordResetRequired: false,
 
-        setAuth: (token, user, passwordResetRequired) => {
+        setAuth: (session, user) => {
           set({
-            token,
+            token: session.access_token,
             user,
             isAuthenticated: true,
-            passwordResetRequired,
-            isAdmin: user.role === "ADMIN",
+            passwordResetRequired: session.password_reset_required,
+            isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
 
           if (refreshInterval) {

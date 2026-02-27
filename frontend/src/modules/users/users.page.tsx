@@ -28,7 +28,7 @@ export function UsersPage() {
 
         <div className="flex items-center gap-4">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-gray-900">{user?.username || "Admin"}</p>
+            <p className="text-sm font-medium text-gray-900">{user?.profile.username || "Admin"}</p>
 
             <p className="text-xs text-gray-500 flex items-center justify-end gap-1">
               <Shield className="w-3 h-3 text-emerald-500" /> Administrador
