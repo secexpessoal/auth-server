@@ -4,9 +4,9 @@ import { useNavigate } from "@tanstack/react-router";
 import { Mail, Lock, LogIn, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { Input } from "../../components/ui/input.component";
-import { Button } from "../../components/ui/button.component";
-import { Label } from "../../components/ui/label.component";
+import { Input } from "../../components/input.component";
+import { Button } from "../../components/button.component";
+import { Label } from "../../components/label.component";
 import { loginSchema } from "./molecule/auth.schema";
 import { loginAttempt } from "./services/auth.service";
 import { getErrorMessage } from "../../lib/api-error.util";

@@ -4,13 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus, ShieldPlus } from "lucide-react";
 import toast from "react-hot-toast";
 
-import { Input } from "../../components/ui/input.component";
-import { Button } from "../../components/ui/button.component";
-import { Label } from "../../components/ui/label.component";
+import { Input } from "../../components/input.component";
+import { Button } from "../../components/button.component";
+import { Label } from "../../components/label.component";
 import { registerAdminSchema } from "./molecule/user.schema";
 import { registerAdminAttempt, registerUserAttempt } from "./services/user.service";
 import { getErrorMessage } from "../../lib/api-error.util";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/ui/dialog.component";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/dialog.component";
 
 type Props = {
   role: "ADMIN" | "USER";
