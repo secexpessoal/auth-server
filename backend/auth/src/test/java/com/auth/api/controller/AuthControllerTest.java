@@ -10,6 +10,8 @@ package com.auth.api.controller;
 import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.token.RefreshTokenRequestDto;
+import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.usecase.LoginUseCase;
 import com.auth.application.usecase.RefreshTokenUseCase;
 import com.auth.application.usecase.ValidationUseCase;
@@ -64,21 +66,21 @@ class AuthControllerTest {
         // Arrange
         AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
         
-        AuthenticationResponseDto response = AuthenticationResponseDto.builder()
+        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .token("fake-jwt")
-                .refreshToken("fake-refresh")
                 .metadata(MetadataUserResponseDto.builder().username("admin").email("admin@auth.com").build())
                 .build();
 
-        when(loginUseCase.execute(any())).thenReturn(response);
+        AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
+
+        when(loginUseCase.execute(any())).thenReturn(result);
 
         // Act & Assert
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-jwt"))
-                .andExpect(jsonPath("$.refresh_token").value("fake-refresh"));
+                .andExpect(jsonPath("$.token").value("fake-jwt"));
     }
 
     @Test

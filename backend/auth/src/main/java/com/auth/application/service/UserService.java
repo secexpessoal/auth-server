@@ -36,10 +36,15 @@ public class UserService {
      *
      * @param request Dados do novo usuário
      * @param role    Cargo a ser atribuído
+     * @param tempPassword Senha temporária gerada previamente
      * @return A entidade User persistida
      * @throws BadRequestException Caso o nome de usuário já exista
      */
-    public User userRegister(RegisterRequestDto request, Role role) {
+    public User userRegister(RegisterRequestDto request, Role role, String tempPassword) {
+        if (userRepository.findByUserName(request.userName()).isPresent()) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
+        }
+
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este e-mail já está em uso!");
         }
@@ -47,8 +52,9 @@ public class UserService {
         User user = new User();
         user.setUserName(request.userName());
         user.setEmail(request.email());
-        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setPassword(passwordEncoder.encode(tempPassword));
         user.setRole(role);
+        user.setPasswordResetRequired(true);
 
         return userRepository.save(user);
     }

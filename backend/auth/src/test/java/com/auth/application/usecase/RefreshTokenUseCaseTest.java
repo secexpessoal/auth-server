@@ -9,6 +9,7 @@ package com.auth.application.usecase;
 
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
+import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
@@ -71,12 +72,13 @@ class RefreshTokenUseCaseTest {
         when(refreshTokenService.createRefreshToken(testUser)).thenReturn(newToken);
 
         // Act
-        AuthenticationResponseDto response = refreshTokenUseCase.execute(request);
+        AuthenticationResult result = refreshTokenUseCase.execute(request);
+        AuthenticationResponseDto response = result.responseDto();
 
         // Assert
         assertNotNull(response);
         assertEquals("new-jwt", response.token());
-        assertEquals("new-refresh-token", response.refreshToken());
+        assertEquals("new-refresh-token", result.refreshToken());
         verify(userService).incrementTokenVersion(testUser);
         verify(refreshTokenService).verifyExpiration(oldToken);
     }

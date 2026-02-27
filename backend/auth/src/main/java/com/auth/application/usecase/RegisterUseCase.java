@@ -29,7 +29,9 @@ public class RegisterUseCase {
     private final UserService userService;
 
     public MetadataUserResponseDto execute(RegisterRequestDto request, Role role) {
-        User user = Optional.ofNullable(userService.userRegister(request, role))
+        String tempPassword = "Temp@" + (1000 + (int) (Math.random() * 8999));
+
+        User user = Optional.ofNullable(userService.userRegister(request, role, tempPassword))
                 .orElseThrow(() -> new BadRequestException(
                         ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao registrar usuário"));
 
@@ -41,6 +43,7 @@ public class RegisterUseCase {
                 .active(user.getActive() != null && user.getActive())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt() != null ? user.getUpdatedAt() : user.getCreatedAt())
+                .tempPassword(tempPassword)
                 .build();
     }
 }

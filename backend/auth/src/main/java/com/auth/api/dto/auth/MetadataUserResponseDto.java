@@ -32,6 +32,9 @@ public record MetadataUserResponseDto(
         Instant updatedAt,
 
         @JsonProperty("updated_by")
-        String updatedBy
+        String updatedBy,
+
+        @JsonProperty("temp_password")
+        String tempPassword
 ) {
 }

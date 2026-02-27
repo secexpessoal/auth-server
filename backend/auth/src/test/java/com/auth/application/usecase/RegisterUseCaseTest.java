@@ -7,14 +7,11 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.AuthenticationResponseDto;
+import com.auth.api.dto.auth.MetadataUserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
-import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
-import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.User;
-import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,10 +30,6 @@ class RegisterUseCaseTest {
 
     @Mock
     private UserService userService;
-    @Mock
-    private JwtGeneratorService jwtService;
-    @Mock
-    private RefreshTokenService refreshTokenService;
 
     @InjectMocks
     private RegisterUseCase registerUseCase;
@@ -53,29 +46,24 @@ class RegisterUseCaseTest {
         testUser.setRole(Role.USER);
         testUser.setActive(true);
 
-        registerRequest = new RegisterRequestDto("newuser", "new@example.com", "password123");
+        registerRequest = new RegisterRequestDto("newuser", "new@example.com");
     }
 
     @Test
-    @DisplayName("Deve registrar um usuário com sucesso e retornar tokens")
+    @DisplayName("Deve registrar um usuário com sucesso e retornar metadados com senha temporária")
     void shouldRegisterSuccessfully() {
         // Arrange
-        when(userService.userRegister(registerRequest, Role.USER)).thenReturn(testUser);
-        when(jwtService.generateToken(testUser)).thenReturn("fake-jwt-token");
-        
-        RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setToken("fake-refresh-token");
-        when(refreshTokenService.createRefreshToken(testUser)).thenReturn(refreshToken);
+        when(userService.userRegister(eq(registerRequest), eq(Role.USER), anyString())).thenReturn(testUser);
 
         // Act
-        AuthenticationResponseDto response = registerUseCase.execute(registerRequest, Role.USER);
+        MetadataUserResponseDto response = registerUseCase.execute(registerRequest, Role.USER);
 
         // Assert
         assertNotNull(response);
-        assertEquals("fake-jwt-token", response.token());
-        assertEquals("fake-refresh-token", response.refreshToken());
-        assertEquals("newuser", response.metadata().username());
-        assertEquals("new@example.com", response.metadata().email());
-        verify(userService).userRegister(registerRequest, Role.USER);
+        assertNotNull(response.tempPassword());
+        assertTrue(response.tempPassword().startsWith("Temp@"));
+        assertEquals("newuser", response.username());
+        assertEquals("new@example.com", response.email());
+        verify(userService).userRegister(eq(registerRequest), eq(Role.USER), anyString());
     }
 }

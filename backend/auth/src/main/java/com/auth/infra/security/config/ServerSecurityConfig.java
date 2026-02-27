@@ -50,9 +50,10 @@ public class ServerSecurityConfig {
                             // Public API Matchers
                             .requestMatchers("/v1/user/login").permitAll()
                             .requestMatchers("/v1/user/refresh").permitAll()
-                            .requestMatchers("/v1/user/register").permitAll()
+                            // Registro removido das rotas públicas
 
                             // Admin API Matchers
+                            .requestMatchers("/v1/user/register").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/deactivate").hasRole(Role.ADMIN.name())

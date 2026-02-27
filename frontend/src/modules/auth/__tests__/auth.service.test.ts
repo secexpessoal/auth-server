@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { axiosClient } from "@lib/axios.util";
+import { axiosClient } from "@lib/axios/axios.util";
 import { loginAttempt, logoutAttempt } from "../services/auth.service";
 
 // Mock axios
-vi.mock("@lib/axios.util", () => ({
+vi.mock("@lib/axios/axios.util", () => ({
   axiosClient: {
     post: vi.fn(),
   },
@@ -32,7 +32,7 @@ describe("auth.service", () => {
 
     const result = await loginAttempt({ email: "test@test.com", password: "password" });
 
-    expect(axiosClient.post).toHaveBeenCalledWith("/auth/login", {
+    expect(axiosClient.post).toHaveBeenCalledWith("/v1/user/login", {
       email: "test@test.com",
       password: "password",
     });
@@ -42,6 +42,6 @@ describe("auth.service", () => {
   it("logoutAttempt should call axios post", async () => {
     (axiosClient.post as Mock).mockResolvedValue({});
     await logoutAttempt();
-    expect(axiosClient.post).toHaveBeenCalledWith("/auth/logout");
+    expect(axiosClient.post).toHaveBeenCalledWith("/v1/user/logout");
   });
 });

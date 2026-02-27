@@ -42,11 +42,10 @@ describe("API Contract Validation", () => {
   });
 
   describe("Zod Schemas vs RegisterRequestDto Contract", () => {
-    it("registerAdminSchema deve exigir username(3-30), email valido e password(>6)", () => {
+    it("registerAdminSchema deve exigir username(3-30) e email valido", () => {
       const validPayload = {
         email: "admin@ok.com",
         username: "admin_test",
-        password: "securePassword123",
       };
 
       const result = registerAdminSchema.safeParse(validPayload);
@@ -57,18 +56,6 @@ describe("API Contract Validation", () => {
       const invalidPayload = {
         username: "ab",
         email: "admin@ok.com",
-        password: "securePassword123",
-      };
-
-      const result = registerAdminSchema.safeParse(invalidPayload);
-      expect(result.success).toBe(false);
-    });
-
-    it("registerAdminSchema deve rejeitar senha menor que 6 (conforme size(min=6) no java)", () => {
-      const invalidPayload = {
-        username: "admin",
-        email: "admin@ok.com",
-        password: "12345",
       };
 
       const result = registerAdminSchema.safeParse(invalidPayload);

@@ -24,10 +24,6 @@ public record RegisterRequestDto(
         @Email(message = "O e-mail deve ser válido")
         @NotBlank(message = "O e-mail não pode estar em branco")
         @JsonProperty("email")
-        String email,
-
-        @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
-        @NotBlank(message = "A senha não pode estar em branco")
-        String password
+        String email
 ) {
 }

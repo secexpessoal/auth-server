@@ -7,6 +7,7 @@ export type MetadataUserResponseDto = {
   created_at?: string;
   updated_at?: string;
   updated_by?: string;
+  temp_password?: string;
 };
 
 export type AuthenticationResponseDto = {

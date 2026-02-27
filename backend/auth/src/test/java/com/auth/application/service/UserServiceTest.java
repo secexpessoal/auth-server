@@ -42,13 +42,13 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve registrar usuário com sucesso")
     void shouldRegisterUser() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", "pass123");
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com");
         when(userRepository.findByUserName("john")).thenReturn(Optional.empty());
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass123")).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        User saved = userService.userRegister(request, Role.USER);
+        User saved = userService.userRegister(request, Role.USER, "pass123");
 
         assertNotNull(saved);
         assertEquals("john", saved.getUsername());
@@ -60,10 +60,10 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve lançar exceção se usuário já existir")
     void shouldThrowIfUserExists() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", "pass123");
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com");
         when(userRepository.findByUserName("john")).thenReturn(Optional.of(new User()));
 
-        assertThrows(BadRequestException.class, () -> userService.userRegister(request, Role.USER));
+        assertThrows(BadRequestException.class, () -> userService.userRegister(request, Role.USER, "pass123"));
     }
 
     @Test
