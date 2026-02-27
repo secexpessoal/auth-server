@@ -1,5 +1,5 @@
-import { axiosClient } from "../../../lib/axios/axios.util";
-import type { RegisterRequestDto, RegisterResponseDto, PaginatedResponseDto } from "../molecule/user.types";
+import { axiosClient } from "@lib/axios/axios.util";
+import type { RegisterRequestDto, RegisterResponseDto, PaginatedResponseDto, UpdateUserProfileRequestDto } from "../molecule/user.types";
 import type { UserResponseDto } from "../../auth/molecule/auth.types";
 
 /**
@@ -52,4 +52,11 @@ export async function activateUserAttempt(userId: string): Promise<void> {
   await axiosClient.patch("/v1/user/activate", null, {
     params: { id: userId },
   });
+}
+/**
+ * Atualiza o perfil de um usuário.
+ */
+export async function updateUserProfile(userId: string, payload: UpdateUserProfileRequestDto): Promise<UserResponseDto> {
+  const { data } = await axiosClient.patch<UserResponseDto>(`/v1/user/profile/${userId}`, payload);
+  return data;
 }

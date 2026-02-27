@@ -9,6 +9,7 @@ package com.auth.api.controller;
 
 import com.auth.application.usecase.ActivateUserUseCase;
 import com.auth.application.usecase.DeactivateUserUseCase;
+import com.auth.application.usecase.UpdateUserProfileUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -28,8 +29,9 @@ import java.util.UUID;
 @Tag(name = "Usuários", description = "Endpoints para gestão de status de contas de usuário")
 public class UserStatusController {
 
-    private final DeactivateUserUseCase deactivateUserUseCase;
     private final ActivateUserUseCase activateUserUseCase;
+    private final DeactivateUserUseCase deactivateUserUseCase;
+    private final UpdateUserProfileUseCase updateUserProfileUseCase;
 
     @PatchMapping("/deactivate")
     @Operation(summary = "Desativa um usuário", description = "Altera o status do usuário para inativo. Requer cargo ADMIN e ID via parâmetro.")
@@ -43,5 +45,13 @@ public class UserStatusController {
     public ResponseEntity<@NonNull Void> activateUser(@RequestParam UUID id) {
         activateUserUseCase.execute(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/profile/{id}")
+    @Operation(summary = "Atualiza o perfil do usuário", description = "Permite editar metadados do perfil do usuário. Requer cargo ADMIN.")
+    public ResponseEntity<com.auth.api.dto.auth.UserResponseDto> updateProfile(
+            @PathVariable UUID id,
+            @RequestBody com.auth.api.dto.auth.UpdateUserProfileRequestDto request) {
+        return ResponseEntity.ok(updateUserProfileUseCase.execute(id, request));
     }
 }

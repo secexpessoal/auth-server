@@ -4,9 +4,19 @@ import { UsersTableComponent } from "../molecule/users-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 // Mocks
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: vi.fn(),
-  useMutation: vi.fn(),
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  return {
+    ...actual,
+    useQuery: vi.fn(),
+    useMutation: vi.fn(),
+  };
+});
+
+vi.mock("@lib/query.util", () => ({
+  queryClient: {
+    invalidateQueries: vi.fn(),
+  },
 }));
 
 vi.mock("../services/user.service", () => ({
@@ -14,6 +24,7 @@ vi.mock("../services/user.service", () => ({
   resetPasswordAttempt: vi.fn(),
   deactivateUserAttempt: vi.fn(),
   activateUserAttempt: vi.fn(),
+  updateUserProfile: vi.fn(),
 }));
 
 const mockUsers = {
@@ -73,15 +84,43 @@ describe("UsersTableComponent", () => {
     expect(screen.getByText("user1@test.com")).toBeInTheDocument();
   });
 
-  it("shows confirmation dialog when clicking reset password", async () => {
+  it("offers quick actions directly in the table row", () => {
+    render(<UsersTableComponent />);
+    expect(screen.getByTitle("Resetar Senha")).toBeInTheDocument();
+    expect(screen.getByTitle("Desativar")).toBeInTheDocument();
+  });
+
+  it("opens redesigned details modal when clicking the eye icon button", async () => {
     render(<UsersTableComponent />);
 
-    // Use getAllByRole as there are multiple action buttons
-    const resetButtons = screen.getAllByRole("button", { name: /resetar/i });
-    fireEvent.click(resetButtons[0]);
+    const detailsButton = screen.getByTitle("Ver Detalhes");
+    fireEvent.click(detailsButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/confirmar reset de senha/i)).toBeInTheDocument();
+      expect(screen.getByText("Detalhes do Usuário")).toBeInTheDocument();
+      // Test the redesigned header content or new labels
+      expect(screen.getByText(/Gerencie perfil, regime de trabalho/i)).toBeInTheDocument();
+    });
+  });
+
+  it("shows high-level sections inside the premium details modal", async () => {
+    render(<UsersTableComponent />);
+
+    fireEvent.click(screen.getByTitle("Ver Detalhes"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Informações do Perfil")).toBeInTheDocument();
+      expect(screen.getByText("Regime & Localização")).toBeInTheDocument();
+      expect(screen.getByText("Governança")).toBeInTheDocument();
+    });
+  });
+
+  it("contains persist control inside the modal footer", async () => {
+    render(<UsersTableComponent />);
+    fireEvent.click(screen.getByTitle("Ver Detalhes"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Persistir Alterações/i })).toBeInTheDocument();
     });
   });
 });
