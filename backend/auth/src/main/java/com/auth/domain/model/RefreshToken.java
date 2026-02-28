@@ -22,21 +22,21 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "tb_refresh_token", schema = "auth")
+@Table(name = "refresh_tokens", schema = "auth")
 public class RefreshToken {
 
     @Id
     @GeneratedUuidV7
-    @Column(name = "col_token_id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID tokenId;
 
     @OneToOne
-    @JoinColumn(name = "col_user_id", referencedColumnName = "col_user_id")
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private UserAuth user;
 
-    @Column(name = "ds_token", nullable = false, unique = true)
+    @Column(name = "token", nullable = false, unique = true)
     private String token;
 
-    @Column(name = "dt_expiry_date", nullable = false)
+    @Column(name = "expires_at", nullable = false)
     private Instant expiryDate;
 }

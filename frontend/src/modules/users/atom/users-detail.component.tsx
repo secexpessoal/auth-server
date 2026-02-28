@@ -64,28 +64,28 @@ export function UserDetailsModal({
     defaultValues: {
       username: "",
       position: null,
-      work_regime: undefined,
+      workRegime: undefined,
       registration: "",
-      lives_elsewhere: false,
-      birth_date: null,
-      in_person_work_period: null,
+      livesElsewhere: false,
+      birthDate: null,
+      inPersonWorkPeriod: null,
     },
   });
 
   const onSubmit = (value: UpdateUserProfileRequestDto) => {
     const sanitized: UpdateUserProfileRequestDto = {
       ...value,
-      birth_date: value.birth_date || null,
+      birthDate: value.birthDate || null,
       position: value.position?.trim() || null,
-      work_regime: value.work_regime || undefined,
+      workRegime: value.workRegime || undefined,
       username: value.username?.trim() || undefined,
       registration: value.registration?.trim() || null,
-      in_person_work_period:
-        value.work_regime === "HYBRID" && value.in_person_work_period?.frequency_cycle_weeks
+      inPersonWorkPeriod:
+        value.workRegime === "HYBRID" && value.inPersonWorkPeriod?.frequencyCycleWeeks
           ? {
-              frequency_cycle_weeks: value.in_person_work_period.frequency_cycle_weeks,
-              frequency_week_mask: value.in_person_work_period.frequency_week_mask,
-              frequency_duration_days: value.in_person_work_period.frequency_duration_days,
+              frequencyCycleWeeks: value.inPersonWorkPeriod.frequencyCycleWeeks,
+              frequencyWeekMask: value.inPersonWorkPeriod.frequencyWeekMask,
+              frequencyDurationDays: value.inPersonWorkPeriod.frequencyDurationDays,
             }
           : null,
     };
@@ -96,7 +96,7 @@ export function UserDetailsModal({
   if (currentSignature !== prevSignature) {
     setPrevSignature(currentSignature);
     if (open && user) {
-      setHybridMode(user.profile.in_person_work_period?.frequency_duration_days ? "consecutive" : "specific");
+      setHybridMode(user.profile.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
     }
   }
 
@@ -104,22 +104,22 @@ export function UserDetailsModal({
     if (open && user) {
       reset({
         position: user.profile.position,
-        work_regime: user.profile.work_regime,
+        workRegime: user.profile.workRegime,
         username: user.profile.username || "",
-        birth_date: user.profile.birth_date || null,
+        birthDate: user.profile.birthDate || null,
         registration: user.profile.registration || "",
-        lives_elsewhere: user.profile.lives_elsewhere || false,
-        in_person_work_period: {
-          frequency_cycle_weeks: user.profile.in_person_work_period?.frequency_cycle_weeks || 1,
-          frequency_week_mask: user.profile.in_person_work_period?.frequency_week_mask || 0,
-          frequency_duration_days: user.profile.in_person_work_period?.frequency_duration_days || null,
+        livesElsewhere: user.profile.livesElsewhere || false,
+        inPersonWorkPeriod: {
+          frequencyCycleWeeks: user.profile.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
+          frequencyWeekMask: user.profile.inPersonWorkPeriod?.frequencyWeekMask || 0,
+          frequencyDurationDays: user.profile.inPersonWorkPeriod?.frequencyDurationDays || null,
         },
       });
     }
   }, [open, user, reset]);
 
-  const workRegime = useWatch({ control, name: "work_regime" });
-  const frequencyCycleWeeks = useWatch({ control, name: "in_person_work_period.frequency_cycle_weeks" });
+  const workRegime = useWatch({ control, name: "workRegime" });
+  const frequencyCycleWeeks = useWatch({ control, name: "inPersonWorkPeriod.frequencyCycleWeeks" });
 
   if (!user) return null;
 
@@ -292,7 +292,7 @@ export function UserDetailsModal({
                     <div className="space-y-2">
                       <Label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Data de Nascimento</Label>
                       <Controller
-                        name="birth_date"
+                        name="birthDate"
                         control={control}
                         render={({ field }) => (
                           <Popover>
@@ -337,7 +337,7 @@ export function UserDetailsModal({
                     <div className="space-y-2">
                       <Label className="text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Regime de Trabalho</Label>
                       <Controller
-                        name="work_regime"
+                        name="workRegime"
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} value={field.value || ""}>
@@ -365,17 +365,17 @@ export function UserDetailsModal({
 
                     <div className="flex items-center space-x-4 p-6 bg-gray-50/50 rounded-2xl border border-gray-100 sm:col-span-2 shadow-sm transition-all hover:border-gray-200">
                       <Controller
-                        name="lives_elsewhere"
+                        name="livesElsewhere"
                         control={control}
                         render={({ field }) => (
                           <>
                             <Checkbox
-                              id="lives_elsewhere"
+                              id="livesElsewhere"
                               checked={field.value || false}
                               onCheckedChange={(checked) => field.onChange(checked === true)}
                               className="w-6 h-6 rounded-[10px] border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 data-[state=checked]:border-indigo-600"
                             />
-                            <Label htmlFor="lives_elsewhere" className="text-base font-bold text-gray-800 cursor-pointer ml-2 select-none">
+                            <Label htmlFor="livesElsewhere" className="text-base font-bold text-gray-800 cursor-pointer ml-2 select-none">
                               Reside fora da cidade principal?
                             </Label>
                           </>
@@ -413,10 +413,10 @@ export function UserDetailsModal({
                               type="number"
                               min={1}
                               max={52}
-                              {...register("in_person_work_period.frequency_cycle_weeks", { valueAsNumber: true })}
+                              {...register("inPersonWorkPeriod.frequencyCycleWeeks", { valueAsNumber: true })}
                               className={cn(
                                 "h-12 w-full sm:w-28 rounded-xl bg-indigo-50/50 border-indigo-100 focus:bg-white transition-all text-lg font-bold px-4 text-center text-indigo-900",
-                                errors.in_person_work_period?.frequency_cycle_weeks && "border-red-400 bg-red-50/30 text-red-900",
+                                errors.inPersonWorkPeriod?.frequencyCycleWeeks && "border-red-400 bg-red-50/30 text-red-900",
                               )}
                             />
 
@@ -439,10 +439,10 @@ export function UserDetailsModal({
                             </div>
                           </div>
 
-                          {errors.in_person_work_period?.frequency_cycle_weeks && (
+                          {errors.inPersonWorkPeriod?.frequencyCycleWeeks && (
                             <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                               <ShieldAlert className="w-3 h-3" />
-                              {errors.in_person_work_period.frequency_cycle_weeks.message}
+                              {errors.inPersonWorkPeriod.frequencyCycleWeeks.message}
                             </p>
                           )}
                         </div>
@@ -479,7 +479,7 @@ export function UserDetailsModal({
                       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-indigo-100 shadow-[0_4px_20px_-4px_rgba(79,70,229,0.05)] w-full">
                         <div className={hybridMode === "specific" ? "block animate-in fade-in zoom-in-95 duration-200" : "hidden"}>
                           <Controller
-                            name="in_person_work_period.frequency_week_mask"
+                            name="inPersonWorkPeriod.frequencyWeekMask"
                             control={control}
                             render={({ field }) => {
                               const mask = typeof field.value === "number" ? field.value : 0;
@@ -499,10 +499,10 @@ export function UserDetailsModal({
                                     Dias Selecionados
                                   </Label>
 
-                                  {errors.in_person_work_period?.frequency_week_mask && (
+                                  {errors.inPersonWorkPeriod?.frequencyWeekMask && (
                                     <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
                                       <ShieldAlert className="w-3 h-3" />
-                                      {errors.in_person_work_period.frequency_week_mask.message}
+                                      {errors.inPersonWorkPeriod.frequencyWeekMask.message}
                                     </p>
                                   )}
 
@@ -534,7 +534,7 @@ export function UserDetailsModal({
                         </div>
                         <div className={hybridMode === "consecutive" ? "block animate-in fade-in zoom-in-95 duration-200" : "hidden"}>
                           <Controller
-                            name="in_person_work_period.frequency_duration_days"
+                            name="inPersonWorkPeriod.frequencyDurationDays"
                             control={control}
                             render={({ field }) => (
                               <div className="space-y-3">
@@ -550,7 +550,7 @@ export function UserDetailsModal({
                                     onChange={(event) => field.onChange(event.target.value ? parseInt(event.target.value) : null)}
                                     className={cn(
                                       "h-12 w-full sm:w-28 rounded-xl bg-white border-2 border-gray-200 focus:border-indigo-500 focus:bg-indigo-50/20 transition-all text-lg font-bold px-4 shadow-sm text-center text-indigo-900",
-                                      errors.in_person_work_period?.frequency_duration_days && "border-red-400 bg-red-50/30",
+                                      errors.inPersonWorkPeriod?.frequencyDurationDays && "border-red-400 bg-red-50/30",
                                     )}
                                   />
                                   <div className="text-sm font-bold text-gray-500 bg-gray-50/80 px-4 py-3 rounded-xl border border-gray-100 flex-1 w-full sm:w-auto flex items-center justify-center sm:justify-start">
@@ -558,10 +558,10 @@ export function UserDetailsModal({
                                   </div>
                                 </div>
 
-                                {errors.in_person_work_period?.frequency_duration_days && (
+                                {errors.inPersonWorkPeriod?.frequencyDurationDays && (
                                   <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                                     <ShieldAlert className="w-3 h-3" />
-                                    {errors.in_person_work_period.frequency_duration_days.message}
+                                    {errors.inPersonWorkPeriod.frequencyDurationDays.message}
                                   </p>
                                 )}
                               </div>
@@ -644,21 +644,21 @@ export function UserDetailsModal({
                       <div className="flex flex-col p-5 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
                         <span className="text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Data de Ingresso</span>
                         <span className="text-base font-black text-gray-800">
-                          {user.audit.created_at ? format(new Date(user.audit.created_at), "dd/MM/yyyy HH:mm") : "-"}
+                          {user.audit.createdAt ? format(new Date(user.audit.createdAt), "dd/MM/yyyy HH:mm") : "-"}
                         </span>
                       </div>
 
-                      {user.audit.updated_at && (
+                      {user.audit.updatedAt && (
                         <div className="flex flex-col p-5 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
                           <span className="text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Última Modificação</span>
-                          <span className="text-base font-black text-amber-700">{format(new Date(user.audit.updated_at), "dd/MM/yyyy HH:mm")}</span>
+                          <span className="text-base font-black text-amber-700">{format(new Date(user.audit.updatedAt), "dd/MM/yyyy HH:mm")}</span>
                         </div>
                       )}
 
                       <div className="flex flex-col p-5 rounded-2xl bg-white border border-gray-100 shadow-sm transition-all hover:border-gray-200 hover:shadow-md">
                         <span className="text-[11px] font-black text-gray-400 mb-1.5 uppercase tracking-widest">Responsável Modificação</span>
                         <span className="text-sm font-black text-primary-600 uppercase tracking-tighter truncate">
-                          {user.audit.updated_by || "system"}
+                          {user.audit.updatedBy || "system"}
                         </span>
                       </div>
                     </div>

@@ -1,23 +1,23 @@
 export type InPersonWorkPeriodDto = {
-  frequency_cycle_weeks: number;
-  frequency_week_mask: number;
-  frequency_duration_days: number | null;
+  frequencyCycleWeeks: number;
+  frequencyWeekMask: number;
+  frequencyDurationDays: number | null;
 };
 
 export type UserProfileResponseDto = {
   username: string;
   registration: string;
   position: string;
-  birth_date: string | null;
-  work_regime: "HOME_WORK" | "OFFICE" | "HYBRID";
-  lives_elsewhere: boolean;
-  in_person_work_period: InPersonWorkPeriodDto | null;
+  birthDate: string | null;
+  workRegime: "HOME_WORK" | "OFFICE" | "HYBRID";
+  livesElsewhere: boolean;
+  inPersonWorkPeriod: InPersonWorkPeriodDto | null;
 };
 
 export type UserAuditResponseDto = {
-  created_at: string;
-  updated_at: string;
-  updated_by: string;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: string;
 };
 
 export type UserResponseDto = {
@@ -27,13 +27,13 @@ export type UserResponseDto = {
   roles: string[];
   profile: UserProfileResponseDto;
   audit: UserAuditResponseDto;
-  temp_password?: string;
+  tempPassword?: string;
 };
 
 export type UserSessionResponseDto = {
-  access_token: string;
-  token_version: number;
-  password_reset_required: boolean;
+  accessToken: string;
+  tokenVersion: number;
+  passwordResetRequired: boolean;
 };
 
 export type AuthenticationResponseDto = {

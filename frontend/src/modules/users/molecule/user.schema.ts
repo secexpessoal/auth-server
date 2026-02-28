@@ -15,30 +15,30 @@ export const updateUserProfileSchema = z.object({
   username: z.string().optional(),
   registration: z.string().max(6, "A matrícula deve ter no máximo 6 caracteres").nullable().optional(),
   position: z.string().nullable().optional(),
-  birth_date: z.string().nullable().optional(),
-  work_regime: z.enum(["HOME_WORK", "OFFICE", "HYBRID"]).optional(),
-  lives_elsewhere: z.boolean().optional(),
-  in_person_work_period: z
+  birthDate: z.string().nullable().optional(),
+  workRegime: z.enum(["HOME_WORK", "OFFICE", "HYBRID"]).optional(),
+  livesElsewhere: z.boolean().optional(),
+  inPersonWorkPeriod: z
     .object({
-      frequency_cycle_weeks: z.number().int().positive().max(52, "Máximo de 52 semanas"),
-      frequency_week_mask: z.number().int().min(0).max(127, "Máscara inválida"),
-      frequency_duration_days: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
+      frequencyCycleWeeks: z.number().int().positive().max(52, "Máximo de 52 semanas"),
+      frequencyWeekMask: z.number().int().min(0).max(127, "Máscara inválida"),
+      frequencyDurationDays: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
     })
     .superRefine((data, ctx) => {
-      const hasMask = data.frequency_week_mask > 0;
-      const hasDuration = !!data.frequency_duration_days && data.frequency_duration_days > 0;
+      const hasMask = data.frequencyWeekMask > 0;
+      const hasDuration = !!data.frequencyDurationDays && data.frequencyDurationDays > 0;
 
       if (!hasMask && !hasDuration) {
         ctx.addIssue({
           code: "custom",
           message: "Selecione ao menos um dia da semana ou informe a duração em dias",
-          path: ["frequency_week_mask"],
+          path: ["frequencyWeekMask"],
         });
 
         ctx.addIssue({
           code: "custom",
           message: "Informe a duração ou selecione dias específicos",
-          path: ["frequency_duration_days"],
+          path: ["frequencyDurationDays"],
         });
       }
 
@@ -46,21 +46,21 @@ export const updateUserProfileSchema = z.object({
         ctx.addIssue({
           code: "custom",
           message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
-          path: ["frequency_week_mask"],
+          path: ["frequencyWeekMask"],
         });
 
         ctx.addIssue({
           code: "custom",
           message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
-          path: ["frequency_duration_days"],
+          path: ["frequencyDurationDays"],
         });
       }
 
-      if (data.frequency_duration_days && data.frequency_duration_days > 365) {
+      if (data.frequencyDurationDays && data.frequencyDurationDays > 365) {
         ctx.addIssue({
           code: "custom",
           message: "A duração consecutiva não pode ultrapassar 365 dias",
-          path: ["frequency_duration_days"],
+          path: ["frequencyDurationDays"],
         });
       }
     })

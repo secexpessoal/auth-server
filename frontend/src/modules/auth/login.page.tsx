@@ -17,7 +17,7 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      if (data.session.password_reset_required) {
+      if (data.session.passwordResetRequired) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
         navigate({ to: "/reset-password" });
       } else {

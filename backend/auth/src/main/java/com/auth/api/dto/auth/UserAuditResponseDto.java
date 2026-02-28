@@ -16,11 +16,11 @@ import java.time.Instant;
 @Builder
 public record UserAuditResponseDto(
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-        @JsonProperty("created_at") Instant createdAt,
+        @JsonProperty("createdAt") Instant createdAt,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-        @JsonProperty("updated_at") Instant updatedAt,
+        @JsonProperty("updatedAt") Instant updatedAt,
 
-        @JsonProperty("updated_by") String updatedBy
+        @JsonProperty("updatedBy") String updatedBy
 ) {
 }

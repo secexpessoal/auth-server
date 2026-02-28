@@ -16,7 +16,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário ADMIN corretamente", () => {
     useAuthStore.getState().setAuth(
-      { access_token: "token_mock_123", token_version: 2, password_reset_required: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id-admin",
         email: "admin@ok.com",
@@ -26,15 +26,15 @@ describe("Auth Store (Zustand)", () => {
           username: "admin_user",
           registration: "123456",
           position: "Admin",
-          birth_date: null,
-          work_regime: "HYBRID",
-          lives_elsewhere: false,
-          in_person_work_period: null,
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
         },
         audit: {
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          updated_by: "system",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
         },
       },
     );
@@ -47,7 +47,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário comum corretamente rejeitando admin", () => {
     useAuthStore.getState().setAuth(
-      { access_token: "token_mock_123", token_version: 2, password_reset_required: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id-user",
         email: "user@ok.com",
@@ -57,15 +57,15 @@ describe("Auth Store (Zustand)", () => {
           username: "common_user",
           registration: "654321",
           position: "User",
-          birth_date: null,
-          work_regime: "HYBRID",
-          lives_elsewhere: false,
-          in_person_work_period: null,
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
         },
         audit: {
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          updated_by: "system",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
         },
       },
     );
@@ -77,7 +77,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve limpar os dados ao executar clearAuth", () => {
     useAuthStore.getState().setAuth(
-      { access_token: "token_mock_123", token_version: 2, password_reset_required: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id",
         email: "admin@ok.com",
@@ -87,15 +87,15 @@ describe("Auth Store (Zustand)", () => {
           username: "admin_user",
           registration: "123456",
           position: "Admin",
-          birth_date: null,
-          work_regime: "HYBRID",
-          lives_elsewhere: false,
-          in_person_work_period: null,
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
         },
         audit: {
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          updated_by: "system",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
         },
       },
     );

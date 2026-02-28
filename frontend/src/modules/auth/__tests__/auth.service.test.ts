@@ -18,9 +18,9 @@ describe("auth.service", () => {
     const mockResponse = {
       data: {
         session: {
-          access_token: "token123",
-          token_version: 2,
-          password_reset_required: false,
+          accessToken: "token123",
+          tokenVersion: 2,
+          passwordResetRequired: false,
         },
         user: {
           id: "1",
@@ -31,15 +31,15 @@ describe("auth.service", () => {
             username: "testuser",
             registration: "123456",
             position: "Software Engineer",
-            birth_date: null,
-            work_regime: "HYBRID",
-            lives_elsewhere: false,
-            in_person_work_period: null,
+            birthDate: null,
+            workRegime: "HYBRID",
+            livesElsewhere: false,
+            inPersonWorkPeriod: null,
           },
           audit: {
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            updated_by: "system",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            updatedBy: "system",
           },
         },
       },

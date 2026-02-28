@@ -32,8 +32,8 @@ export async function getUsersList(page = 0, limit = 50): Promise<PaginatedRespo
 /**
  * Reseta a senha de um usuário através de um administrador.
  */
-export async function resetPasswordAttempt(email: string): Promise<{ status: string; temp_password: string }> {
-  const { data } = await axiosClient.post<{ status: string; temp_password: string }>("/v1/password/admin-reset", { email });
+export async function resetPasswordAttempt(email: string): Promise<{ status: string; tempPassword: string }> {
+  const { data } = await axiosClient.post<{ status: string; tempPassword: string }>("/v1/password/admin-reset", { email });
   return data;
 }
 

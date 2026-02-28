@@ -25,56 +25,56 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "tb_ds_user", schema = "auth")
+@Table(name = "user_profiles", schema = "auth")
 public class UserData {
 
     @Id
-    @Column(name = "col_user_id")
+    @Column(name = "user_id")
     private UUID userId;
 
     @MapsId
     @OneToOne
-    @JoinColumn(name = "col_user_id")
+    @JoinColumn(name = "user_id")
     private UserAuth user;
 
-    @Column(name = "ds_user_name", nullable = false, length = 255)
+    @Column(name = "name", nullable = false, length = 255)
     private String userName;
 
-    @Column(name = "ds_registration", length = 6)
+    @Column(name = "registration", length = 6)
     @Size(min = 5, max = 6)
     private String registration;
 
-    @Column(name = "ds_position", length = 255)
+    @Column(name = "position", length = 255)
     private String position;
 
-    @Column(name = "dt_birth_date")
+    @Column(name = "birth_date")
     private Instant birthDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "ds_work_regime")
+    @Column(name = "work_regime")
     private WorkRegime workRegime;
 
-    @Column(name = "bl_lives_elsewhere")
+    @Column(name = "is_living_elsewhere")
     private Boolean livesElsewhere;
 
     @Max(52)
-    @Column(name = "ds_frequency_cycle_weeks")
+    @Column(name = "frequency_cycle_weeks")
     private Integer frequencyCycleWeeks;
 
     @Max(127)
-    @Column(name = "ds_frequency_week_mask")
+    @Column(name = "frequency_week_mask")
     private Integer frequencyWeekMask;
 
     @Max(365)
-    @Column(name = "ds_frequency_duration_days")
+    @Column(name = "frequency_duration_days")
     private Integer frequencyDurationDays;
 
     @LastModifiedDate
-    @Column(name = "dt_updated_at")
+    @Column(name = "updated_at")
     private Instant updatedAt;
 
     @LastModifiedBy
-    @Column(name = "ds_updated_by")
+    @Column(name = "updated_by")
     private String updatedBy;
 
     /**

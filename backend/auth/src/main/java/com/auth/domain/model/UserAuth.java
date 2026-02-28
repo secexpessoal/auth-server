@@ -34,35 +34,35 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "tb_auth", schema = "auth")
+@Table(name = "users", schema = "auth")
 public class UserAuth implements UserDetails {
 
     @Id
     @GeneratedUuidV7
-    @Column(name = "col_user_id", updatable = false, nullable = false)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID userId;
 
     @Email
-    @Column(name = "ds_user_email", unique = true, nullable = false, length = 100)
+    @Column(name = "email", unique = true, nullable = false, length = 100)
     private String email;
 
     @JsonIgnore
-    @Column(name = "ds_user_password", nullable = false)
+    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "ds_role")
+    @Column(name = "role")
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "tb_user_roles", schema = "auth", joinColumns = @JoinColumn(name = "col_user_id"))
+    @CollectionTable(name = "user_roles", schema = "auth", joinColumns = @JoinColumn(name = "user_id"))
     private Set<Role> roles = new HashSet<>();
 
-    @Column(name = "bl_active")
+    @Column(name = "is_active")
     private Boolean active = true;
 
-    @Column(name = "bl_password_reset_required")
+    @Column(name = "is_password_reset_required")
     private Boolean passwordResetRequired = false;
 
-    @Column(name = "int_token_version")
+    @Column(name = "token_version")
     private Integer tokenVersion = 0;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)

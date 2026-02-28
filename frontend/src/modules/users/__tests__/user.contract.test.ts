@@ -10,7 +10,7 @@ describe("API Contract Validation", () => {
       expect(mockLoginResponseAdmin).toHaveProperty("session");
       expect(mockLoginResponseAdmin).toHaveProperty("user");
 
-      expect(mockLoginResponseAdmin.session).toHaveProperty("access_token");
+      expect(mockLoginResponseAdmin.session).toHaveProperty("accessToken");
       expect(mockLoginResponseAdmin.user).toHaveProperty("id");
       expect(mockLoginResponseAdmin.user).toHaveProperty("email");
       expect(mockLoginResponseAdmin.user.profile).toHaveProperty("username");

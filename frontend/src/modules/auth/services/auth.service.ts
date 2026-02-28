@@ -18,7 +18,7 @@ export async function logoutAttempt(): Promise<void> {
 
 export async function firstChangePasswordAttempt(password: string): Promise<void> {
   await axiosClient.post("/v1/password/first-change", {
-    new_password: password,
+    newPassword: password,
   });
   useAuthStore.getState().clearAuth();
 }

@@ -36,7 +36,7 @@ export function UsersTableComponent() {
   const resetMutation = useMutation({
     mutationFn: (email: string) => resetPasswordAttempt(email),
     onSuccess: (data) => {
-      setTemporaryPassword(data.temp_password);
+      setTemporaryPassword(data.tempPassword);
       setResetDialogOpen(true);
       toast.success("Senha resetada com sucesso!");
     },
@@ -167,7 +167,7 @@ export function UsersTableComponent() {
                           Inativo
                         </span>
                       )}
-                      {user.audit.updated_by === "system" && (
+                      {user.audit.updatedBy === "system" && (
                         <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-100 uppercase tracking-tighter">
                           Exige Reset
                         </span>

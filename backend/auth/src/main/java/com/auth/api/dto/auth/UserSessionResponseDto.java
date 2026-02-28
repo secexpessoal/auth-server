@@ -12,8 +12,8 @@ import lombok.Builder;
 
 @Builder
 public record UserSessionResponseDto(
-        @JsonProperty("access_token") String accessToken,
-        @JsonProperty("token_version") Integer tokenVersion,
-        @JsonProperty("password_reset_required") boolean passwordResetRequired
+        @JsonProperty("accessToken") String accessToken,
+        @JsonProperty("tokenVersion") Integer tokenVersion,
+        @JsonProperty("passwordResetRequired") boolean passwordResetRequired
 ) {
 }

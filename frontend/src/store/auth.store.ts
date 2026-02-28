@@ -48,10 +48,10 @@ export const useAuthStore = create<AuthState>()(
 
         setAuth: (session, user) => {
           set({
-            token: session.access_token,
+            token: session.accessToken,
             user,
             isAuthenticated: true,
-            passwordResetRequired: session.password_reset_required,
+            passwordResetRequired: session.passwordResetRequired,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
 

@@ -22,15 +22,15 @@ public record UpdateUserProfileRequestDto(
         @Size(min = 5, max = 6)
         @JsonProperty("position") String position,
 
-        @JsonProperty("birth_date") Instant birthDate,
+        @JsonProperty("birthDate") Instant birthDate,
 
         @JsonProperty("registration") String registration,
 
-        @JsonProperty("work_regime") WorkRegime workRegime,
+        @JsonProperty("workRegime") WorkRegime workRegime,
 
-        @JsonProperty("lives_elsewhere") Boolean livesElsewhere,
+        @JsonProperty("livesElsewhere") Boolean livesElsewhere,
 
         @jakarta.validation.Valid
-        @JsonProperty("in_person_work_period") InPersonWorkPeriodDto inPersonWorkPeriod
+        @JsonProperty("inPersonWorkPeriod") InPersonWorkPeriodDto inPersonWorkPeriod
 ) {
 }

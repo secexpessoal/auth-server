@@ -48,7 +48,7 @@ axiosClient.interceptors.response.use(
     };
     const { status, data } = error.response || {};
 
-    if (status === 403 && data?.error === "PASSWORD_RESET_REQUIRED") {
+    if (status === 403 && data?.error === "passwordResetRequired") {
       return Promise.reject(error);
     }
 
@@ -82,12 +82,12 @@ axiosClient.interceptors.response.use(
         );
         const { session, user } = response.data;
 
-        if (!session?.access_token) throw new Error("Refresh failed");
+        if (!session?.accessToken) throw new Error("Refresh failed");
 
         useAuthStore.getState().setAuth(session, user);
-        processQueue(null, session.access_token);
+        processQueue(null, session.accessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${session.access_token}`;
+        originalRequest.headers.Authorization = `Bearer ${session.accessToken}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);

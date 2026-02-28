@@ -51,8 +51,8 @@ export function CreateUserDialog({ role }: Props) {
       toast.success(`${isAdmin ? "Administrador" : "Usuário"} cadastrado com sucesso!`);
       queryClient.invalidateQueries({ queryKey: ["users"] });
 
-      if (data?.temp_password) {
-        setGeneratedPassword(data.temp_password);
+      if (data?.tempPassword) {
+        setGeneratedPassword(data.tempPassword);
       } else {
         handleOpenChange(false);
       }

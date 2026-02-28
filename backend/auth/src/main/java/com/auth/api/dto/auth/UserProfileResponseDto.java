@@ -21,10 +21,10 @@ public record UserProfileResponseDto(
         @JsonProperty("position") String position,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-        @JsonProperty("birth_date") Instant birthDate,
+        @JsonProperty("birthDate") Instant birthDate,
 
-        @JsonProperty("work_regime") WorkRegime workRegime,
-        @JsonProperty("lives_elsewhere") boolean livesElsewhere,
-        @JsonProperty("in_person_work_period") InPersonWorkPeriodDto inPersonWorkPeriod
+        @JsonProperty("workRegime") WorkRegime workRegime,
+        @JsonProperty("livesElsewhere") boolean livesElsewhere,
+        @JsonProperty("inPersonWorkPeriod") InPersonWorkPeriodDto inPersonWorkPeriod
 ) {
 }

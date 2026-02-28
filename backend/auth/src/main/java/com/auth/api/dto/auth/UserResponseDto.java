@@ -21,6 +21,6 @@ public record UserResponseDto(
         @JsonProperty("roles") Set<String> roles,
         @JsonProperty("profile") UserProfileResponseDto profile,
         @JsonProperty("audit") UserAuditResponseDto audit,
-        @JsonProperty("temp_password") String tempPassword
+        @JsonProperty("tempPassword") String tempPassword
 ) {
 }
