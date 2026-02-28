@@ -381,7 +381,7 @@ function UserDetailsModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full sm:max-w-6xl max-h-[95vh] overflow-y-auto p-0 bg-gray-50/50 border-none shadow-2xl" showCloseButton>
+      <DialogContent className="w-full sm:max-w-5xl max-h-[95vh] overflow-y-auto p-0 bg-gray-50/50 border-none shadow-2xl" showCloseButton>
         <div className="flex flex-col h-full bg-white rounded-t-lg">
           {/* Header Section - Modern Gradient */}
           <div className="p-8 pb-14 bg-linear-to-br from-primary-700 to-indigo-900 text-white relative overflow-hidden">
@@ -407,11 +407,11 @@ function UserDetailsModal({
               event.stopPropagation();
               form.handleSubmit();
             }}
-            className="px-8 -mt-6 relative z-20 space-y-6 pb-8"
+            className="px-8 -mt-6 relative z-20 space-y-5 pb-8"
           >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-              <div className="md:col-span-7 space-y-6">
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xl shadow-gray-200/40">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+              <div className="md:col-span-7 space-y-5">
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40">
                   <div className="flex items-center gap-3 mb-6 border-l-4 border-primary-500 pl-4">
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Informações do Perfil</h3>
                   </div>
@@ -475,12 +475,12 @@ function UserDetailsModal({
                   </div>
                 </div>
 
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xl shadow-gray-200/40">
-                  <div className="flex items-center gap-3 mb-6 border-l-4 border-indigo-500 pl-4">
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40">
+                  <div className="flex items-center gap-3 mb-5 border-l-4 border-indigo-500 pl-4">
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Regime & Localização</h3>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Data de Nascimento</Label>
                       <form.Field
@@ -489,9 +489,9 @@ function UserDetailsModal({
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 className={cn(
-                                  "w-full h-12 justify-start text-left font-medium rounded-2xl bg-gray-50/50 border-gray-100 hover:bg-white transition-all px-3",
+                                  "w-full h-10 justify-start text-left font-medium rounded-xl bg-gray-50/50 border border-gray-100 hover:bg-white transition-all px-3 text-sm",
                                   !field.state.value && "text-muted-foreground",
                                 )}
                               >
@@ -531,7 +531,7 @@ function UserDetailsModal({
                         name="work_regime"
                         children={(field) => (
                           <Select onValueChange={(val: "HOME_WORK" | "OFFICE" | "HYBRID") => field.handleChange(val)} value={field.state.value}>
-                            <SelectTrigger className="w-full h-12 rounded-2xl bg-gray-50/50 border-gray-100 px-3 text-sm focus:ring-primary-500/20 transition-all font-medium">
+                            <SelectTrigger className="w-full h-10 rounded-xl bg-gray-50/50 border border-gray-100 px-3 text-sm focus:ring-primary-500/20 transition-all font-medium">
                               <SelectValue placeholder="Selecione o regime" />
                             </SelectTrigger>
 
@@ -552,7 +552,7 @@ function UserDetailsModal({
                         )}
                       />
                     </div>
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 sm:col-span-2">
+                    <div className="flex items-center space-x-4 p-4 bg-gray-50/50 rounded-xl border border-gray-100 sm:col-span-2">
                       <form.Field
                         name="lives_elsewhere"
                         children={(field) => (
@@ -571,16 +571,116 @@ function UserDetailsModal({
                         )}
                       />
                     </div>
+                    <form.Subscribe
+                      selector={(state) => state.values.work_regime}
+                      children={(workRegime) =>
+                        workRegime === "HYBRID" ? (
+                          <div className="sm:col-span-2 pt-4 border-t border-gray-100">
+                            <Label className="text-[10px] font-bold text-gray-500 ml-1 mb-2 block">Período de Trabalho (Dias Presenciais)</Label>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <form.Field
+                                name="in_person_work_period.start"
+                                children={(field) => (
+                                  <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-gray-400 ml-1">A partir de</span>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          className={cn(
+                                            "w-full h-10 justify-start text-left font-medium rounded-xl bg-gray-50/50 border border-gray-100 hover:bg-white transition-all px-3 text-sm",
+                                            !field.state.value && "text-muted-foreground",
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
+                                          {field.state.value && typeof field.state.value === "string" ? (
+                                            format(parseISO(field.state.value), "PPP", { locale: ptBR })
+                                          ) : (
+                                            <span>Selecione</span>
+                                          )}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0 rounded-2xl border-gray-100 shadow-2xl" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          locale={ptBR}
+                                          className="rounded-2xl"
+                                          captionLayout="dropdown"
+                                          startMonth={new Date(1900, 0)}
+                                          endMonth={new Date(new Date().getFullYear() + 10, 11)}
+                                          disabled={(date) => date < new Date("1900-01-01")}
+                                          onSelect={(date) => field.handleChange(date?.toISOString())}
+                                          selected={
+                                            field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined
+                                          }
+                                          defaultMonth={
+                                            field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined
+                                          }
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                )}
+                              />
+                              <form.Field
+                                name="in_person_work_period.end"
+                                children={(field) => (
+                                  <div className="space-y-1.5">
+                                    <span className="text-[10px] font-bold text-gray-400 ml-1">Até</span>
+                                    <Popover>
+                                      <PopoverTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          className={cn(
+                                            "w-full h-10 justify-start text-left font-medium rounded-xl bg-gray-50/50 border border-gray-100 hover:bg-white transition-all px-3 text-sm",
+                                            !field.state.value && "text-muted-foreground",
+                                          )}
+                                        >
+                                          <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
+                                          {field.state.value && typeof field.state.value === "string" ? (
+                                            format(parseISO(field.state.value), "PPP", { locale: ptBR })
+                                          ) : (
+                                            <span>Selecione</span>
+                                          )}
+                                        </Button>
+                                      </PopoverTrigger>
+                                      <PopoverContent className="w-auto p-0 rounded-2xl border-gray-100 shadow-2xl" align="start">
+                                        <Calendar
+                                          mode="single"
+                                          locale={ptBR}
+                                          className="rounded-2xl"
+                                          captionLayout="dropdown"
+                                          startMonth={new Date(1900, 0)}
+                                          endMonth={new Date(new Date().getFullYear() + 10, 11)}
+                                          disabled={(date) => date < new Date("1900-01-01")}
+                                          onSelect={(date) => field.handleChange(date?.toISOString())}
+                                          selected={
+                                            field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined
+                                          }
+                                          defaultMonth={
+                                            field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined
+                                          }
+                                        />
+                                      </PopoverContent>
+                                    </Popover>
+                                  </div>
+                                )}
+                              />
+                            </div>
+                          </div>
+                        ) : null
+                      }
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Right Column: Governance & Actions */}
-              <div className="md:col-span-5 space-y-6 md:sticky md:top-6">
+              <div className="md:col-span-5 space-y-5">
                 {/* Status & Governance Card */}
-                <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col h-full ring-1 ring-gray-100">
-                  <div className="space-y-8 grow">
-                    <div className="p-6 rounded-3xl bg-gray-50/70 border border-gray-100 text-center shadow-inner">
+                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col h-full ring-1 ring-gray-100">
+                  <div className="space-y-6 grow">
+                    <div className="p-5 rounded-3xl bg-gray-50/70 border border-gray-100 text-center shadow-inner">
                       <span className="block text-[10px] font-black text-gray-400 uppercase mb-4 tracking-tighter">Status Operacional</span>
 
                       <div className="flex items-center justify-center gap-3">
@@ -596,18 +696,25 @@ function UserDetailsModal({
                       </div>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest text-center">Governança</h4>
                       <div className="space-y-3">
-                        <div className="flex flex-col p-4 rounded-2xl bg-gray-50/50 border border-gray-100 group transition-all">
+                        <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
                           <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Data de Ingresso:</span>
                           <span className="text-sm font-bold text-gray-700">
                             {user.audit.created_at ? format(new Date(user.audit.created_at), "dd/MM/yyyy HH:mm") : "-"}
                           </span>
                         </div>
 
-                        <div className="flex flex-col p-4 rounded-2xl bg-gray-50/50 border border-gray-100 group transition-all">
-                          <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Responsável Atualização:</span>
+                        {user.audit.updated_at && (
+                          <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
+                            <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-amber-500">Última Modificação:</span>
+                            <span className="text-sm font-bold text-amber-700">{format(new Date(user.audit.updated_at), "dd/MM/yyyy HH:mm")}</span>
+                          </div>
+                        )}
+
+                        <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
+                          <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Responsável Modificação:</span>
                           <span className="text-sm font-bold text-primary-600 uppercase tracking-tighter truncate">
                             {user.audit.updated_by || "system"}
                           </span>
