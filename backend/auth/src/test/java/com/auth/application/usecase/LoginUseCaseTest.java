@@ -15,6 +15,7 @@ import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,10 +57,14 @@ class LoginUseCaseTest {
     void setUp() {
         testUser = new UserAuth();
         testUser.setUserId(UUID.randomUUID());
-        testUser.setUserName("testuser");
         testUser.setEmail("test@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRoles(java.util.Set.of(Role.USER));
         testUser.setActive(true);
+
+        UserData userData = new UserData();
+        userData.setUserName("testuser");
+        userData.setUser(testUser);
+        testUser.setUserData(userData);
 
         loginRequest = new AuthenticationRequestDto("test@example.com", "password");
     }
@@ -86,9 +91,8 @@ class LoginUseCaseTest {
         assertNotNull(response);
         assertEquals("fake-jwt-token", response.session().accessToken());
         assertEquals("fake-refresh-token", result.refreshToken());
-        assertEquals("testuser", response.user().username());
         assertEquals("test@example.com", response.user().email());
-        assertEquals("USER", response.user().role());
+        assertTrue(response.user().roles().contains("ROLE_USER"));
         
         verify(userService).incrementTokenVersion(testUser);
         verify(authManager).authenticate(any(UsernamePasswordAuthenticationToken.class));

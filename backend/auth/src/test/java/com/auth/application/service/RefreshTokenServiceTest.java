@@ -38,7 +38,6 @@ class RefreshTokenServiceTest {
     @DisplayName("Deve criar novo refresh token limpando os antigos")
     void shouldCreateToken() {
         UserAuth user = new UserAuth();
-        user.setUserName("tester");
         user.setEmail("tester@example.com");
         when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 

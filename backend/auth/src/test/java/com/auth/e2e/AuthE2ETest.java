@@ -15,6 +15,7 @@ import com.auth.api.dto.password.ResetPasswordRequestDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.domain.repository.RefreshTokenRepository;
 import com.auth.domain.repository.UserAuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -77,11 +78,16 @@ class AuthE2ETest {
     void fullAuthFlow() throws Exception {
         // 0. Bootstrap Admin para poder registrar usuários (regra nova: register é ADMIN only)
         UserAuth admin = new UserAuth();
-        admin.setUserName("admin-bootstrap");
         admin.setEmail("admin-boot@auth.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole(Role.ADMIN);
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
         admin.setActive(true);
+        
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-boot");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        
         userRepository.saveAndFlush(admin);
 
         AuthenticationRequestDto adminLogin = new AuthenticationRequestDto("admin-boot@auth.com", "admin123");
@@ -111,7 +117,7 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(true))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(true))
                 .andReturn();
 
         String intermediateToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
@@ -130,7 +136,7 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(finalLoginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(false))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(false))
                 .andReturn();
 
         String responseBody = finalLoginResult.getResponse().getContentAsString();
@@ -145,7 +151,7 @@ class AuthE2ETest {
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.profile.username").value("e2euser"))
                 .andExpect(jsonPath("$.email").value("e2e@example.com"));
 
         // 6. Refresh Token
@@ -164,7 +170,7 @@ class AuthE2ETest {
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + newAccessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.profile.username").value("e2euser"))
                 .andExpect(jsonPath("$.email").value("e2e@example.com"));
     }
 
@@ -173,11 +179,16 @@ class AuthE2ETest {
     void adminResetFlow() throws Exception {
         // 1. Criar admin diretamente no banco para bootstrap
         UserAuth admin = new UserAuth();
-        admin.setUserName("admin-e2e");
         admin.setEmail("admin-e2e@auth.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole(Role.ADMIN);
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
         admin.setActive(true);
+        
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-e2e");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        
         userRepository.saveAndFlush(admin);
 
         // Login do admin para pegar token
@@ -214,7 +225,7 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(true))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(true))
                 .andReturn();
 
         String userToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
@@ -233,6 +244,6 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(finalLogin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(false));
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(false));
     }
 }

@@ -66,8 +66,8 @@ class AuthControllerTest {
         AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
         
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .session().accessToken("fake-jwt")
-                .user(UserResponseDto.builder().username("admin").email("admin@auth.com").build())
+                .session(com.auth.api.dto.auth.UserSessionResponseDto.builder().accessToken("fake-jwt").build())
+                .user(UserResponseDto.builder().email("admin@auth.com").build())
                 .build();
 
         AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
@@ -79,7 +79,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-jwt"));
+                .andExpect(jsonPath("$.session.accessToken").value("fake-jwt"));
     }
 
     @Test

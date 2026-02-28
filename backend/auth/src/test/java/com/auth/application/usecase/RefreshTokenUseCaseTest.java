@@ -15,6 +15,7 @@ import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -48,10 +49,14 @@ class RefreshTokenUseCaseTest {
     @BeforeEach
     void setUp() {
         testUser = new UserAuth();
-        testUser.setUserName("testuser");
         testUser.setEmail("test@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRoles(java.util.Set.of(Role.USER));
         testUser.setActive(true);
+
+        UserData userData = new UserData();
+        userData.setUserName("testuser");
+        userData.setUser(testUser);
+        testUser.setUserData(userData);
 
         oldToken = new RefreshToken();
         oldToken.setToken("old-refresh-token");

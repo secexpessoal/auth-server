@@ -13,6 +13,7 @@ import com.auth.application.service.PasswordGeneratorService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -45,10 +46,14 @@ class RegisterUseCaseTest {
     void setUp() {
         testUser = new UserAuth();
         testUser.setUserId(UUID.randomUUID());
-        testUser.setUserName("newuser");
         testUser.setEmail("new@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRoles(java.util.Set.of(Role.USER));
         testUser.setActive(true);
+
+        UserData userData = new UserData();
+        userData.setUserName("newuser");
+        userData.setUser(testUser);
+        testUser.setUserData(userData);
 
         registerRequest = new RegisterRequestDto("newuser", "new@example.com", Role.USER);
     }
@@ -67,7 +72,6 @@ class RegisterUseCaseTest {
         // Assert
         assertNotNull(response);
         assertEquals(mockTempPass, response.tempPassword());
-        assertEquals("newuser", response.username());
         assertEquals("new@example.com", response.email());
         verify(userService).userRegister(eq(registerRequest), eq(Role.USER), eq(mockTempPass));
     }

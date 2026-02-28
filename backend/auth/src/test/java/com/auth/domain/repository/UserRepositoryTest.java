@@ -32,20 +32,16 @@ class UserRepositoryTest {
     @DisplayName("Deve salvar e buscar usuário por username e e-mail")
     void shouldSaveAndFindByUsernameAndEmail() {
         UserAuth user = new UserAuth();
-        user.setUserName("db-user");
         user.setEmail("db@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
-        Optional<UserAuth> foundByName = userRepository.findByUserName("db-user");
         Optional<UserAuth> foundByEmail = userRepository.findByEmail("db@example.com");
 
-        assertTrue(foundByName.isPresent());
         assertTrue(foundByEmail.isPresent());
-        assertEquals("db-user", foundByName.get().getUsername());
         assertEquals("db@example.com", foundByEmail.get().getEmail());
-        assertNotNull(foundByName.get().getUserId());
+        assertNotNull(foundByEmail.get().getUserId());
     }
 
     @Test

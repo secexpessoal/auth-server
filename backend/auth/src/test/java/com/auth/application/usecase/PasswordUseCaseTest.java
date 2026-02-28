@@ -48,7 +48,6 @@ class PasswordUseCaseTest {
     @BeforeEach
     void setUp() {
         testUser = new UserAuth();
-        testUser.setUserName("testuser");
         testUser.setEmail("test@example.com");
         testUser.setPassword("encoded-old-password");
     }

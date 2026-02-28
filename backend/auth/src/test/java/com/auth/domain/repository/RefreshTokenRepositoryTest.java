@@ -37,14 +37,13 @@ class RefreshTokenRepositoryTest {
     @DisplayName("Deve salvar e buscar refresh token")
     void shouldSaveAndFindByToken() {
         UserAuth user = new UserAuth();
-        user.setUserName("token-owner");
         user.setEmail("owner@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
         RefreshToken token = RefreshToken.builder()
-                .session().accessToken("my-unique-token")
+                .token("my-unique-token")
                 .user(user)
                 .expiryDate(Instant.now().plusSeconds(3600))
                 .build();
@@ -53,21 +52,20 @@ class RefreshTokenRepositoryTest {
         Optional<RefreshToken> found = refreshTokenRepository.findByToken("my-unique-token");
 
         assertTrue(found.isPresent());
-        assertEquals("token-owner", found.get().getUser().getUsername());
+        assertEquals("owner@example.com", found.get().getUser().getEmail());
     }
 
     @Test
     @DisplayName("Deve deletar tokens por usuário")
     void shouldDeleteByUser() {
         UserAuth user = new UserAuth();
-        user.setUserName("deleted-owner");
         user.setEmail("deleted@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
         RefreshToken token = RefreshToken.builder()
-                .session().accessToken("delete-me")
+                .token("delete-me")
                 .user(user)
                 .expiryDate(Instant.now().plusSeconds(3600))
                 .build();
