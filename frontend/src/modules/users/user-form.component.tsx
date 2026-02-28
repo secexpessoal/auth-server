@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useForm } from "@tanstack/react-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, UserPlus, ShieldPlus, CheckCircle2, Copy } from "lucide-react";
 import toast from "react-hot-toast";
@@ -7,7 +8,7 @@ import toast from "react-hot-toast";
 import { Input } from "../../components/sh-input/input.component";
 import { Button } from "../../components/sh-button/button.component";
 import { Label } from "../../components/sh-label/label.component";
-import { registerAdminSchema } from "./molecule/user.schema";
+import { registerAdminSchema, type RegisterAdminFormData } from "./molecule/user.schema";
 import { registerAdminAttempt, registerUserAttempt } from "./services/user.service";
 import { getErrorMessage } from "../../lib/api-error/api-error.util";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "../../components/sh-dialog/dialog.component";
@@ -22,10 +23,24 @@ export function CreateUserDialog({ role }: Props) {
   const queryClient = useQueryClient();
   const isAdmin = role === "ADMIN";
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<RegisterAdminFormData>({
+    resolver: zodResolver(registerAdminSchema),
+    mode: "onChange",
+    defaultValues: {
+      username: "",
+      email: "",
+    },
+  });
+
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setGeneratedPassword(null);
-      form.reset();
+      reset();
     }
     setOpen(newOpen);
   };
@@ -47,15 +62,9 @@ export function CreateUserDialog({ role }: Props) {
     },
   });
 
-  const form = useForm({
-    defaultValues: {
-      username: "",
-      email: "",
-    },
-    onSubmit: async ({ value }) => {
-      await registerMutation.mutateAsync(value);
-    },
-  });
+  const onSubmit = async (values: RegisterAdminFormData) => {
+    await registerMutation.mutateAsync(values);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -113,75 +122,36 @@ export function CreateUserDialog({ role }: Props) {
             </div>
           </div>
         ) : (
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="space-y-4 mt-4"
-          >
-            <form.Field
-              name="username"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = registerAdminSchema.shape.username.safeParse(value);
-                  return result.success ? undefined : "Mínimo de 3 caracteres.";
-                },
-              }}
-              children={(field) => {
-                const errorMsg = field.state.meta.errors?.length ? field.state.meta.errors[0] : undefined;
-                return (
-                  <div className="space-y-1.5">
-                    <Label htmlFor={field.name} className="ml-1">
-                      Nome de Usuário
-                    </Label>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="username" className="ml-1">
+                Nome de Usuário
+              </Label>
 
-                    <Input
-                      id={field.name}
-                      type="text"
-                      placeholder="ex: admin_master"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                      className={errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""}
-                    />
-                    {errorMsg && <p className="text-xs text-red-500 mt-1">{errorMsg}</p>}
-                  </div>
-                );
-              }}
-            />
+              <Input
+                id="username"
+                type="text"
+                placeholder="ex: admin_master"
+                {...register("username")}
+                className={errors.username ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {errors.username && <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>}
+            </div>
 
-            <form.Field
-              name="email"
-              validators={{
-                onChange: ({ value }) => {
-                  const result = registerAdminSchema.shape.email.safeParse(value);
-                  return result.success ? undefined : "Formato de E-mail inválido.";
-                },
-              }}
-              children={(field) => {
-                const errorMsg = field.state.meta.errors?.length ? field.state.meta.errors[0] : undefined;
-                return (
-                  <div className="space-y-1.5">
-                    <Label htmlFor={field.name} className="ml-1">
-                      E-mail
-                    </Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="email" className="ml-1">
+                E-mail
+              </Label>
 
-                    <Input
-                      id={field.name}
-                      type="email"
-                      placeholder="usuario@exemplo.com"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                      className={errorMsg ? "border-red-500 focus-visible:ring-red-500" : ""}
-                    />
-                    {errorMsg && <p className="text-xs text-red-500 mt-1">{errorMsg}</p>}
-                  </div>
-                );
-              }}
-            />
+              <Input
+                id="email"
+                type="email"
+                placeholder="usuario@exemplo.com"
+                {...register("email")}
+                className={errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+              />
+              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
+            </div>
 
             <div className="pt-4 flex justify-end gap-2">
               <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>

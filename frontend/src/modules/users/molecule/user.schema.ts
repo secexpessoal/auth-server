@@ -21,12 +21,26 @@ export const updateUserProfileSchema = z.object({
   in_person_work_period: z
     .object({
       frequency_cycle_weeks: z.number().int().positive().max(52, "Máximo de 52 semanas"),
-      frequency_week_mask: z.number().int().min(1).max(127, "Máscara inválida"),
-      frequency_duration_days: z.number().int().positive().max(365, "Máximo de 365 dias").nullable().optional(),
+      frequency_week_mask: z.number().int().min(0).max(127, "Máscara inválida"),
+      frequency_duration_days: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
     })
     .superRefine((data, ctx) => {
       const hasMask = data.frequency_week_mask > 0;
-      const hasDuration = !!data.frequency_duration_days;
+      const hasDuration = !!data.frequency_duration_days && data.frequency_duration_days > 0;
+
+      if (!hasMask && !hasDuration) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Selecione ao menos um dia da semana ou informe a duração em dias",
+          path: ["frequency_week_mask"],
+        });
+
+        ctx.addIssue({
+          code: "custom",
+          message: "Informe a duração ou selecione dias específicos",
+          path: ["frequency_duration_days"],
+        });
+      }
 
       if (hasMask && hasDuration) {
         ctx.addIssue({
