@@ -185,9 +185,12 @@ export function UserDetailsModal({
             }}
             className="flex-1 flex flex-col h-full overflow-hidden bg-white relative max-w-full"
           >
-            <div className="flex-1 overflow-y-auto px-8 py-10 md:px-12 md:py-12 relative w-full">
-              {/* --- PROFILE SECTION --- */}
-              <TabsContent value="profile" className="m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex-1 overflow-y-auto px-8 py-10 md:px-12 md:py-12 relative w-full">=
+              <TabsContent
+                forceMount /* WARN: Gambiarra, força o radix a não desmontar as tabs, mas tranforma elas em hidden, isso é necessário para não querbrar o tanstack */
+                value="profile"
+                className="data-[state=inactive]:hidden m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
                 <div className="flex items-center gap-4 border-b border-gray-100 pb-6 mb-10">
                   <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center">
                     <UserCircle className="w-6 h-6 text-primary-600" />
@@ -335,7 +338,7 @@ export function UserDetailsModal({
                                 captionLayout="dropdown"
                                 startMonth={new Date(1900, 0)}
                                 endMonth={new Date(new Date().getFullYear(), 11)}
-                                disabled={(date) => date < new Date("1900-01-01")}
+                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                                 onSelect={(date) => field.handleChange(date?.toISOString())}
                                 selected={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
                                 defaultMonth={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
@@ -465,6 +468,7 @@ export function UserDetailsModal({
                                   variant="ghost"
                                   onClick={() => {
                                     setHybridMode("specific");
+                                    form.setFieldValue("in_person_work_period.frequency_duration_days", null);
                                   }}
                                   className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${hybridMode === "specific" ? "bg-white text-indigo-700 shadow-sm border border-gray-100 hover:bg-white hover:text-indigo-800" : "text-gray-500 hover:text-gray-700 hover:bg-white/50"}`}
                                 >
@@ -475,6 +479,7 @@ export function UserDetailsModal({
                                   variant="ghost"
                                   onClick={() => {
                                     setHybridMode("consecutive");
+                                    form.setFieldValue("in_person_work_period.frequency_week_mask", 0);
                                   }}
                                   className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${hybridMode === "consecutive" ? "bg-white text-indigo-700 shadow-sm border border-gray-100 hover:bg-white hover:text-indigo-800" : "text-gray-500 hover:text-gray-700 hover:bg-white/50"}`}
                                 >
@@ -580,7 +585,11 @@ export function UserDetailsModal({
               </TabsContent>
 
               {/* --- GOVERNANCE SECTION --- */}
-              <TabsContent value="governance" className="m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <TabsContent
+                forceMount
+                value="governance"
+                className="data-[state=inactive]:hidden m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500"
+              >
                 <div className="flex items-center gap-4 border-b border-gray-100 pb-6 mb-10">
                   <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                     <Shield className="w-6 h-6 text-amber-600" />
