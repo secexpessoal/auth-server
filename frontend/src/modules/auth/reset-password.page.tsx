@@ -1,13 +1,13 @@
+import { Button } from "@components/sh-button/button.component";
+import { Input } from "@components/sh-input/input.component";
+import { Label } from "@components/sh-label/label.component";
+import { getErrorMessage } from "@lib/api-error/api-error.util";
+import { useAuthStore } from "@store/auth.store";
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
 import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "../../components/sh-button/button.component";
-import { Input } from "../../components/sh-input/input.component";
-import { Label } from "../../components/sh-label/label.component";
-import { getErrorMessage } from "@lib/api-error/api-error.util";
-import { useAuthStore } from "../../store/auth.store";
 import { firstChangeSchema, type FirstChangeFormData } from "./molecule/auth.schema";
 import { firstChangePasswordAttempt } from "./services/auth.service";
 

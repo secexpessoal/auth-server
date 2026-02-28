@@ -1,26 +1,32 @@
 import { Button } from "@components/sh-button/button.component";
+import { Calendar } from "@components/sh-calendar/calendar.component";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@components/sh-dialog/dialog.component";
 import { Input } from "@components/sh-input/input.component";
 import { Label } from "@components/sh-label/label.component";
+import { Popover, PopoverContent, PopoverTrigger } from "@components/sh-popover/popover.component";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components/sh-select/select.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/sh-table/table.component";
+import { Checkbox } from "@components/sh-checkbox/checkbox.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
+import { cn } from "@lib/cn.util";
 import { queryClient } from "@lib/query.util";
+import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Calendar, Check, Copy, Eye, Info, KeyRound, Loader2, RefreshCw, Save, ShieldAlert, UserCheck, UserX, X } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { Calendar as CalendarIcon, Check, Copy, Eye, Info, KeyRound, Loader2, RefreshCw, Save, ShieldAlert, UserCheck, UserX, X } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "../../auth/molecule/auth.types";
 import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt, updateUserProfile } from "../services/user.service";
-import type { UpdateUserProfileRequestDto } from "./user.types";
+import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "./user.schema";
 
 export function UsersTableComponent() {
   const [page, setPage] = useState(0);
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const {
@@ -109,10 +115,13 @@ export function UsersTableComponent() {
         <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">
           <ShieldAlert className="w-8 h-8 text-red-600" />
         </div>
+
         <p className="text-red-600 font-semibold mb-2">Erro ao carregar usuários</p>
+
         <p className="text-gray-500 text-sm mb-6 max-w-sm text-center">
           {getErrorMessage(error, "Não foi possível buscar a lista de usuários no momento.")}
         </p>
+
         <Button onClick={() => refetch()} variant="outline">
           Tentar Novamente
         </Button>
@@ -323,38 +332,50 @@ function UserDetailsModal({
   onToggleStatus: () => void;
   isPending: boolean;
 }) {
-  const { register, handleSubmit, reset } = useForm<UpdateUserProfileRequestDto>();
-
-  const onSubmit = (data: UpdateUserProfileRequestDto) => {
-    // Sanitize data: convert empty strings to null and handle nested period
-    const sanitized: UpdateUserProfileRequestDto = {
-      ...data,
-      username: data.username?.trim() || undefined,
-      registration: data.registration?.trim() || undefined,
-      position: data.position?.trim() || null,
-      birth_date: data.birth_date || null,
-      work_regime: data.work_regime || undefined,
-      in_person_work_period: data.in_person_work_period?.start || data.in_person_work_period?.end ? data.in_person_work_period : null,
-    };
-    onUpdate(sanitized);
-  };
+  const form = useForm({
+    defaultValues: {
+      username: "",
+      position: null,
+      work_regime: undefined,
+      registration: "",
+      lives_elsewhere: false,
+      birth_date: null,
+      in_person_work_period: null,
+    } as UpdateUserProfileRequestDto,
+    validators: {
+      onChange: updateUserProfileSchema,
+    },
+    onSubmit: async ({ value }) => {
+      // Sanitize data: convert empty strings to null and handle nested period
+      const sanitized: UpdateUserProfileRequestDto = {
+        ...value,
+        username: value.username?.trim() || undefined,
+        registration: value.registration?.trim() || undefined,
+        position: value.position?.trim() || null,
+        birth_date: value.birth_date || null,
+        work_regime: value.work_regime || undefined,
+        in_person_work_period: value.in_person_work_period?.start || value.in_person_work_period?.end ? value.in_person_work_period : null,
+      };
+      onUpdate(sanitized);
+    },
+  });
 
   useEffect(() => {
     if (user && open) {
-      reset({
-        username: user.profile.username,
-        registration: user.profile.registration,
+      form.reset({
+        username: user.profile.username || "",
         position: user.profile.position,
-        birth_date: user.profile.birth_date ? user.profile.birth_date.split("T")[0] : null,
         work_regime: user.profile.work_regime,
-        lives_elsewhere: user.profile.lives_elsewhere,
+        registration: user.profile.registration || "",
+        lives_elsewhere: user.profile.lives_elsewhere || false,
+        birth_date: user.profile.birth_date ? user.profile.birth_date.split("T")[0] : null,
         in_person_work_period: {
           start: user.profile.in_person_work_period?.start ? user.profile.in_person_work_period.start.split("T")[0] : null,
           end: user.profile.in_person_work_period?.end ? user.profile.in_person_work_period.end.split("T")[0] : null,
         },
       });
     }
-  }, [user, open, reset]);
+  }, [user, open, form]);
 
   if (!user) return null;
 
@@ -379,11 +400,16 @@ function UserDetailsModal({
             </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="px-8 -mt-6 relative z-20 space-y-6 pb-8">
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              form.handleSubmit();
+            }}
+            className="px-8 -mt-6 relative z-20 space-y-6 pb-8"
+          >
             <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
-              {/* Left Column: Profile & Work */}
               <div className="md:col-span-7 space-y-6">
-                {/* Profile Card */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xl shadow-gray-200/40">
                   <div className="flex items-center gap-3 mb-6 border-l-4 border-primary-500 pl-4">
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Informações do Perfil</h3>
@@ -392,32 +418,62 @@ function UserDetailsModal({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                     <div className="space-y-1.5 sm:col-span-2">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Nome de Usuário</Label>
-                      <Input
-                        {...register("username")}
-                        defaultValue={user.profile.username}
-                        className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+
+                      <form.Field
+                        name="username"
+                        children={(field) => (
+                          <Input
+                            id={field.name}
+                            value={field.state.value || ""}
+                            onChange={(event) => field.handleChange(event.target.value)}
+                            onBlur={field.handleBlur}
+                            className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+                          />
+                        )}
                       />
                     </div>
                     <div className="space-y-1.5 sm:col-span-1">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Matrícula</Label>
-                      <Input
-                        {...register("registration")}
-                        defaultValue={user.profile.registration}
-                        className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+                      <form.Field
+                        name="registration"
+                        children={(field) => (
+                          <>
+                            <Input
+                              id={field.name}
+                              maxLength={6}
+                              value={field.state.value || ""}
+                              onChange={(event) => field.handleChange(event.target.value)}
+                              onBlur={field.handleBlur}
+                              className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+                            />
+                            {field.state.meta.errors.length > 0 && (
+                              <p className="text-xs text-red-500 font-medium ml-1 flex items-center gap-1">
+                                <ShieldAlert className="w-3 h-3" />
+                                {field.state.meta.errors[0]?.message || field.state.meta.errors[0]?.toString()}
+                              </p>
+                            )}
+                          </>
+                        )}
                       />
                     </div>
                     <div className="space-y-1.5 sm:col-span-3">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Cargo / Posição Profissional</Label>
-                      <Input
-                        {...register("position")}
-                        defaultValue={user.profile.position}
-                        className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+                      <form.Field
+                        name="position"
+                        children={(field) => (
+                          <Input
+                            id={field.name}
+                            value={field.state.value || ""}
+                            onChange={(event) => field.handleChange(event.target.value)}
+                            onBlur={field.handleBlur}
+                            className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
+                          />
+                        )}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Work Regime Card */}
                 <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-xl shadow-gray-200/40">
                   <div className="flex items-center gap-3 mb-6 border-l-4 border-indigo-500 pl-4">
                     <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Regime & Localização</h3>
@@ -426,39 +482,93 @@ function UserDetailsModal({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Data de Nascimento</Label>
-                      <div className="relative group/date">
-                        <Input
-                          type="date"
-                          {...register("birth_date")}
-                          defaultValue={user.profile.birth_date ? user.profile.birth_date.split("T")[0] : ""}
-                          className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all pr-10 appearance-none"
-                        />
-                        <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none group-focus-within/date:text-primary-500 transition-colors" />
-                      </div>
+                      <form.Field
+                        name="birth_date"
+                        children={(field) => (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full h-12 justify-start text-left font-medium rounded-2xl bg-gray-50/50 border-gray-100 hover:bg-white transition-all px-3",
+                                  !field.state.value && "text-muted-foreground",
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
+                                {field.state.value && typeof field.state.value === "string" ? (
+                                  format(parseISO(field.state.value), "PPP", {
+                                    locale: ptBR,
+                                  })
+                                ) : (
+                                  <span>Selecione a data</span>
+                                )}
+                              </Button>
+                            </PopoverTrigger>
+
+                            <PopoverContent className="w-auto p-0 rounded-2xl border-gray-100 shadow-2xl" align="start">
+                              <Calendar
+                                autoFocus
+                                mode="single"
+                                locale={ptBR}
+                                className="rounded-2xl"
+                                captionLayout="dropdown"
+                                startMonth={new Date(1900, 0)}
+                                endMonth={new Date(new Date().getFullYear(), 11)}
+                                disabled={(date) => date < new Date("1900-01-01")}
+                                onSelect={(date) => field.handleChange(date?.toISOString())}
+                                selected={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
+                                defaultMonth={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      />
                     </div>
                     <div className="space-y-1.5">
                       <Label className="text-[10px] font-bold text-gray-500 ml-1">Regime de Trabalho</Label>
-                      <select
-                        {...register("work_regime")}
-                        defaultValue={user.profile.work_regime}
-                        className="w-full h-12 rounded-2xl bg-gray-50/50 border border-gray-100 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 transition-all font-medium"
-                      >
-                        <option value="HOME_WORK">Remoto (Home Office)</option>
-                        <option value="OFFICE">Presencial (Escritório)</option>
-                        <option value="HYBRID">Híbrido</option>
-                      </select>
+                      <form.Field
+                        name="work_regime"
+                        children={(field) => (
+                          <Select onValueChange={(val: "HOME_WORK" | "OFFICE" | "HYBRID") => field.handleChange(val)} value={field.state.value}>
+                            <SelectTrigger className="w-full h-12 rounded-2xl bg-gray-50/50 border-gray-100 px-3 text-sm focus:ring-primary-500/20 transition-all font-medium">
+                              <SelectValue placeholder="Selecione o regime" />
+                            </SelectTrigger>
+
+                            <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
+                              <SelectItem value="HOME_WORK" className="rounded-xl">
+                                Remoto (Home Office)
+                              </SelectItem>
+
+                              <SelectItem value="OFFICE" className="rounded-xl">
+                                Presencial (Escritório)
+                              </SelectItem>
+
+                              <SelectItem value="HYBRID" className="rounded-xl">
+                                Híbrido
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
                     </div>
                     <div className="flex items-center space-x-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 sm:col-span-2">
-                      <input
-                        type="checkbox"
-                        {...register("lives_elsewhere")}
-                        defaultChecked={user.profile.lives_elsewhere}
-                        id="lives_elsewhere"
-                        className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
+                      <form.Field
+                        name="lives_elsewhere"
+                        children={(field) => (
+                          <>
+                            <Checkbox
+                              id="lives_elsewhere"
+                              checked={field.state.value || false}
+                              onCheckedChange={(checked) => field.handleChange(checked === true)}
+                              className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
+                            />
+
+                            <Label htmlFor="lives_elsewhere" className="text-sm font-bold text-gray-700 cursor-pointer">
+                              Reside fora da cidade?
+                            </Label>
+                          </>
+                        )}
                       />
-                      <Label htmlFor="lives_elsewhere" className="text-sm font-bold text-gray-700 cursor-pointer">
-                        Reside fora da sede da empresa?
-                      </Label>
                     </div>
                   </div>
                 </div>
@@ -471,6 +581,7 @@ function UserDetailsModal({
                   <div className="space-y-8 grow">
                     <div className="p-6 rounded-3xl bg-gray-50/70 border border-gray-100 text-center shadow-inner">
                       <span className="block text-[10px] font-black text-gray-400 uppercase mb-4 tracking-tighter">Status Operacional</span>
+
                       <div className="flex items-center justify-center gap-3">
                         {user.active ? (
                           <span className="px-5 py-2 rounded-full text-base font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-2 shadow-sm">
@@ -493,6 +604,7 @@ function UserDetailsModal({
                             {user.audit.created_at ? format(new Date(user.audit.created_at), "dd/MM/yyyy HH:mm") : "-"}
                           </span>
                         </div>
+
                         <div className="flex flex-col p-4 rounded-2xl bg-gray-50/50 border border-gray-100 group transition-all">
                           <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Responsável Atualização:</span>
                           <span className="text-sm font-bold text-primary-600 uppercase tracking-tighter truncate">
@@ -544,14 +656,19 @@ function UserDetailsModal({
               >
                 Descartar
               </Button>
-              <Button
-                type="submit"
-                className="h-14 rounded-xl px-12 font-black text-lg shadow-2xl shadow-primary-200/60 bg-primary-600 hover:bg-primary-700 transition-all transform hover:-translate-y-1 active:translate-y-0"
-                disabled={isPending}
-              >
-                {isPending ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Save className="w-5 h-5 mr-3" />}
-                Persistir Alterações
-              </Button>
+              <form.Subscribe
+                selector={(state) => [state.canSubmit, state.isSubmitting]}
+                children={([canSubmit, isSubmitting]) => (
+                  <Button
+                    type="submit"
+                    className="h-14 rounded-xl px-12 font-black text-lg shadow-2xl shadow-primary-200/60 bg-primary-600 hover:bg-primary-700 transition-all transform hover:-translate-y-1 active:translate-y-0"
+                    disabled={!canSubmit || isSubmitting || isPending}
+                  >
+                    {isSubmitting || isPending ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Save className="w-5 h-5 mr-3" />}
+                    Persistir Alterações
+                  </Button>
+                )}
+              />
             </DialogFooter>
           </form>
         </div>

@@ -3,6 +3,13 @@ import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { UsersTableComponent } from "../molecule/users-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
+// Mock ResizeObserver for Radix UI components
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
 // Mocks
 vi.mock("@tanstack/react-query", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@tanstack/react-query")>();
@@ -121,6 +128,26 @@ describe("UsersTableComponent", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /Persistir Alterações/i })).toBeInTheDocument();
+    });
+  });
+
+  it("interacts with the Shadcn Select for work regime", async () => {
+    render(<UsersTableComponent />);
+    fireEvent.click(screen.getByTitle("Ver Detalhes"));
+
+    await waitFor(() => {
+      // Check for the trigger. Radix Select renders a button with role combobox
+      expect(screen.getByRole("combobox")).toBeInTheDocument();
+    });
+  });
+
+  it("renders the premium Shadcn DatePicker", async () => {
+    render(<UsersTableComponent />);
+    fireEvent.click(screen.getByTitle("Ver Detalhes"));
+
+    await waitFor(() => {
+      // The DatePicker trigger is a button that shows the placeholder or formatted date
+      expect(screen.getByText(/Selecione a data/i)).toBeInTheDocument();
     });
   });
 });
