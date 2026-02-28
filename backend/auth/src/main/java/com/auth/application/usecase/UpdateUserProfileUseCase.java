@@ -45,6 +45,7 @@ public class UpdateUserProfileUseCase {
             Integer mask = request.inPersonWorkPeriod().frequencyWeekMask();
             Integer duration = request.inPersonWorkPeriod().frequencyDurationDays();
 
+            // NOTE: A mascara de dias da semanada ganha do tempo integral, caso ambos sejam informados
             if (mask != null && mask > 0 && duration != null) {
                 duration = null;
             }
