@@ -140,7 +140,9 @@ export function UserDetailsModal({
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-2xl mb-6 border border-primary-200/50 shadow-sm">
                 <Eye className="w-6 h-6 text-primary-700" />
               </div>
+
               <DialogTitle className="text-3xl font-black tracking-tight text-gray-900 mb-2">Detalhes</DialogTitle>
+
               <DialogDescription className="text-gray-500 text-sm font-medium">
                 Perfil de acesso de <br />
                 <span className="text-primary-600 font-bold border-b border-primary-200/50 pb-0.5">{user.email}</span>.
@@ -156,6 +158,7 @@ export function UserDetailsModal({
                   <UserCircle className="w-5 h-5 mr-3 opacity-60 group-data-[state=active]:opacity-100 group-data-[state=active]:text-primary-600 transition-all" />
                   Informações do Perfil
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="regime"
                   className="w-full justify-start h-12 px-4 rounded-xl text-sm font-bold transition-all text-gray-500 hover:text-gray-900 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-indigo-100/50 group"
@@ -163,6 +166,7 @@ export function UserDetailsModal({
                   <MapPin className="w-5 h-5 mr-3 opacity-60 group-data-[state=active]:opacity-100 group-data-[state=active]:text-indigo-600 transition-all" />
                   Regime & Localização
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="governance"
                   className="w-full justify-start h-12 px-4 rounded-xl text-sm font-bold transition-all text-gray-500 hover:text-gray-900 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-amber-100/50 group"
@@ -193,6 +197,7 @@ export function UserDetailsModal({
                   <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center">
                     <UserCircle className="w-6 h-6 text-primary-600" />
                   </div>
+
                   <div>
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight">Informações do Perfil</h3>
                     <p className="text-sm text-gray-500 font-medium">Dados pessoais e profissionais do usuário.</p>
@@ -234,6 +239,7 @@ export function UserDetailsModal({
                         )}
                         placeholder="000000"
                       />
+
                       {errors.registration && (
                         <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                           <ShieldAlert className="w-3 h-3" />
@@ -255,6 +261,7 @@ export function UserDetailsModal({
                         )}
                         placeholder="Posição profissional"
                       />
+
                       {errors.position && (
                         <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                           <ShieldAlert className="w-3 h-3" />
@@ -265,6 +272,7 @@ export function UserDetailsModal({
                   </div>
                 </div>
               </TabsContent>
+
               {/* --- REGIME SECTION --- */}
               <TabsContent value="regime" className="m-0 space-y-6 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* GENERAL SETTINGS CARD */}
@@ -273,6 +281,7 @@ export function UserDetailsModal({
                     <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
                       <MapPin className="w-6 h-6 text-indigo-600" />
                     </div>
+
                     <div>
                       <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Regime & Localização</h3>
                       <p className="text-xs sm:text-sm text-gray-500 font-medium">Configurações gerais e modelo de trabalho.</p>
@@ -315,8 +324,8 @@ export function UserDetailsModal({
                                 captionLayout="dropdown"
                                 startMonth={new Date(1900, 0)}
                                 endMonth={new Date(new Date().getFullYear(), 11)}
-                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                                 onSelect={(date) => field.onChange(date?.toISOString())}
+                                disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                                 selected={field.value && typeof field.value === "string" ? parseISO(field.value) : undefined}
                                 defaultMonth={field.value && typeof field.value === "string" ? parseISO(field.value) : undefined}
                               />
@@ -340,9 +349,11 @@ export function UserDetailsModal({
                               <SelectItem value="HOME_WORK" className="rounded-xl py-3 cursor-pointer font-medium">
                                 Remoto (Home Office)
                               </SelectItem>
+
                               <SelectItem value="OFFICE" className="rounded-xl py-3 cursor-pointer font-medium">
                                 Presencial (Escritório)
                               </SelectItem>
+
                               <SelectItem value="HYBRID" className="rounded-xl py-3 cursor-pointer font-medium">
                                 Híbrido
                               </SelectItem>
@@ -383,6 +394,7 @@ export function UserDetailsModal({
                       <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-50 shadow-sm flex items-center justify-center shrink-0">
                         <MapPin className="w-5 h-5 text-indigo-600" />
                       </div>
+
                       <div>
                         <Label className="text-xl sm:text-2xl font-black text-indigo-950 mb-1 block tracking-tight">Regras do Modelo Híbrido</Label>
                         <p className="text-xs sm:text-sm text-indigo-700/70 font-medium">
@@ -407,17 +419,26 @@ export function UserDetailsModal({
                                 errors.in_person_work_period?.frequency_cycle_weeks && "border-red-400 bg-red-50/30 text-red-900",
                               )}
                             />
+
                             <div className="text-sm font-bold text-indigo-700 bg-indigo-50/80 px-4 py-3 rounded-xl border border-indigo-100/50 flex-1 w-full sm:w-auto flex items-center justify-center sm:justify-start">
                               {(() => {
-                                const val = frequencyCycleWeeks;
-                                if (typeof val !== "number" || isNaN(val)) return "semanas";
-                                if (val === 52) return "≈ 12 meses";
-                                if (val === 4) return "≈ 1 mês";
-                                if (val > 4) return `≈ ${Math.floor(val / 4)} meses`;
-                                return "semanas";
+                                const value = frequencyCycleWeeks;
+                                if (typeof value !== "number" || isNaN(value)) return "semanas";
+                                if (value === 52) return "≈ 12 meses";
+                                if (value < 4) return value === 1 ? "semana" : "semanas";
+
+                                const months = Math.floor(value / 4);
+                                const weeks = value % 4;
+                                const monthText = months === 1 ? "1 mês" : `${months} meses`;
+
+                                if (weeks === 0) return `≈ ${monthText}`;
+
+                                const weekText = weeks === 1 ? "1 semana" : `${weeks} semanas`;
+                                return `≈ ${monthText} e ${weekText}`;
                               })()}
                             </div>
                           </div>
+
                           {errors.in_person_work_period?.frequency_cycle_weeks && (
                             <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                               <ShieldAlert className="w-3 h-3" />
@@ -439,6 +460,7 @@ export function UserDetailsModal({
                             >
                               Dias Específicos
                             </Button>
+
                             <Button
                               type="button"
                               variant="ghost"
@@ -476,12 +498,14 @@ export function UserDetailsModal({
                                   <Label className="text-[11px] font-black text-gray-400 ml-1 block uppercase tracking-widest">
                                     Dias Selecionados
                                   </Label>
+
                                   {errors.in_person_work_period?.frequency_week_mask && (
                                     <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
                                       <ShieldAlert className="w-3 h-3" />
                                       {errors.in_person_work_period.frequency_week_mask.message}
                                     </p>
                                   )}
+
                                   <div className="flex flex-wrap gap-2">
                                     {DAYS.map((day) => {
                                       const isChecked = (mask & day.val) === day.val;
@@ -517,12 +541,13 @@ export function UserDetailsModal({
                                 <Label className="text-[11px] font-black text-gray-400 ml-1 uppercase tracking-widest">
                                   Duração Consecutiva (Dias)
                                 </Label>
+
                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                                   <Input
                                     type="number"
                                     min={1}
                                     value={field.value || ""}
-                                    onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                    onChange={(event) => field.onChange(event.target.value ? parseInt(event.target.value) : null)}
                                     className={cn(
                                       "h-12 w-full sm:w-28 rounded-xl bg-white border-2 border-gray-200 focus:border-indigo-500 focus:bg-indigo-50/20 transition-all text-lg font-bold px-4 shadow-sm text-center text-indigo-900",
                                       errors.in_person_work_period?.frequency_duration_days && "border-red-400 bg-red-50/30",
@@ -532,6 +557,7 @@ export function UserDetailsModal({
                                     dias seguidos
                                   </div>
                                 </div>
+
                                 {errors.in_person_work_period?.frequency_duration_days && (
                                   <p className="text-[10px] text-red-500 font-bold ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-2 mt-2">
                                     <ShieldAlert className="w-3 h-3" />
@@ -553,6 +579,7 @@ export function UserDetailsModal({
                   <div className="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center">
                     <Shield className="w-6 h-6 text-amber-600" />
                   </div>
+
                   <div>
                     <h3 className="text-2xl font-black text-gray-900 tracking-tight">Status & Governança</h3>
                     <p className="text-sm text-gray-500 font-medium">Controle de acesso do sistema.</p>
@@ -586,6 +613,7 @@ export function UserDetailsModal({
                       >
                         <KeyRound className="w-6 h-6 mr-4 opacity-70" /> Resetar Senha Alpha
                       </Button>
+
                       <Button
                         type="button"
                         variant="outline"
@@ -651,6 +679,7 @@ export function UserDetailsModal({
                 >
                   Cancelar
                 </Button>
+
                 <Button
                   type="submit"
                   className="h-12 w-full sm:w-auto rounded-xl px-8 font-black text-sm shadow-lg shadow-primary-200/50 bg-primary-600 hover:bg-primary-700 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
