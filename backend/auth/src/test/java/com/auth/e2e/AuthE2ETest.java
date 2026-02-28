@@ -39,6 +39,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.Map;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -245,5 +246,78 @@ class AuthE2ETest {
                 .content(objectMapper.writeValueAsString(finalLogin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.session.passwordResetRequired").value(false));
+    }
+
+    @Test
+    @DisplayName("Fluxo de Administração: Listagem -> Desativação -> Tentativa de Login -> Ativação -> Atualização de Perfil")
+    void adminUserManagementFlow() throws Exception {
+        // 1. Bootstrap Admin
+        UserAuth admin = new UserAuth();
+        admin.setEmail("admin-mgmt@auth.com");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
+        admin.setActive(true);
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-mgmt");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        userRepository.saveAndFlush(admin);
+
+        String adminToken = objectMapper.readValue(
+            mockMvc.perform(post("/v1/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("admin-mgmt@auth.com", "admin123"))))
+                .andReturn().getResponse().getContentAsString(), 
+            AuthenticationResponseDto.class).session().accessToken();
+
+        // 2. Criar usuário para gerenciar
+        UserAuth user = new UserAuth();
+        user.setEmail("to-manage@auth.com");
+        user.setPassword(passwordEncoder.encode("user123"));
+        user.setRoles(java.util.Set.of(Role.USER));
+        user.setActive(true);
+        UserData userData = new UserData();
+        userData.setUserName("to-manage");
+        userData.setUser(user);
+        user.setUserData(userData);
+        userRepository.saveAndFlush(user);
+
+        // 3. Listar usuários (Admin)
+        mockMvc.perform(get("/v1/user")
+                .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.meta.pagination.totalItems").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
+
+        // 4. Desativar Usuário (Admin)
+        mockMvc.perform(patch("/v1/user/deactivate")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("id", user.getUserId().toString()))
+                .andExpect(status().isNoContent());
+
+        // 5. Tentativa de Login (Usuário Desativado) - Deve falhar (Spring Security cuida disso se configurado, ou o use case)
+        // Nota: O LoginUseCase atual parece não checar active explicitamente, mas o Spring Security AuthenticationManager deve lançar DisabledException
+        mockMvc.perform(post("/v1/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("to-manage@auth.com", "user123"))))
+                .andExpect(status().isUnauthorized());
+
+        // 6. Ativar Usuário (Admin)
+        mockMvc.perform(patch("/v1/user/activate")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("id", user.getUserId().toString()))
+                .andExpect(status().isNoContent());
+
+        // 7. Atualizar Perfil (Admin)
+        com.auth.api.dto.auth.UpdateUserProfileRequestDto updateRequest = com.auth.api.dto.auth.UpdateUserProfileRequestDto.builder()
+                .position("Senior Architect")
+                .build();
+
+        mockMvc.perform(patch("/v1/user/profile/" + user.getUserId())
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.position").value("Senior Architect"));
     }
 }
