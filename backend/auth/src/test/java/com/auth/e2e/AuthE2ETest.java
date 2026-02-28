@@ -24,8 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,9 +36,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -319,5 +316,80 @@ class AuthE2ETest {
                 .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.profile.position").value("Senior Architect"));
+    }
+
+    @Test
+    @DisplayName("Fluxo de Perfil: Atualização de campos de metadados (cargo, regime, registro)")
+    void userProfileMetadataUpdateFlow() throws Exception {
+        // 1. Criar usuário
+        UserAuth user = new UserAuth();
+        user.setEmail("profile-update@auth.com");
+        user.setPassword(passwordEncoder.encode("user123"));
+        user.setRoles(java.util.Set.of(Role.USER));
+        user.setActive(true);
+        UserData userData = new UserData();
+        userData.setUserName("profile-update");
+        userData.setRegistration("111111");
+        userData.setUser(user);
+        user.setUserData(userData);
+        userRepository.saveAndFlush(user);
+
+        // 2. Login para pegar token
+        String token = objectMapper.readValue(
+                mockMvc.perform(post("/v1/user/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("profile-update@auth.com",
+                                        "user123"))))
+                        .andReturn().getResponse().getContentAsString(),
+                AuthenticationResponseDto.class).session().accessToken();
+
+        // 3. Atualizar perfil (usando o próprio token) - O endpoint /v1/user/profile/{id} requer ADMIN? 
+        // Verificando ServerSecurityConfig: .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
+        // E no UserStatusController: @PatchMapping("/profile/{id}")
+        // Parece que o Admin atualiza perfil de terceiros.
+
+        // Vamos usar um Admin para atualizar o perfil deste usuário
+        UserAuth admin = userRepository.findByEmail("admin-mgmt@auth.com").orElseGet(() -> {
+            UserAuth a = new UserAuth();
+            a.setEmail("admin-mgmt@auth.com");
+            a.setPassword(passwordEncoder.encode("admin123"));
+            a.setRoles(java.util.Set.of(Role.ADMIN));
+            a.setActive(true);
+            UserData ad = new UserData();
+            ad.setUserName("admin-mgmt");
+            ad.setUser(a);
+            a.setUserData(ad);
+            return userRepository.saveAndFlush(a);
+        });
+
+        String adminToken = objectMapper.readValue(
+                mockMvc.perform(post("/v1/user/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("admin-mgmt@auth.com",
+                                        "admin123"))))
+                        .andReturn().getResponse().getContentAsString(),
+                AuthenticationResponseDto.class).session().accessToken();
+
+        com.auth.api.dto.auth.UpdateUserProfileRequestDto updateRequest = com.auth.api.dto.auth.UpdateUserProfileRequestDto.builder()
+                .registration("222222")
+                .position("Tech Lead")
+                .workRegime(com.auth.domain.model.WorkRegime.HYBRID)
+                .build();
+
+        mockMvc.perform(patch("/v1/user/profile/" + user.getUserId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.registration").value("222222"))
+                .andExpect(jsonPath("$.profile.position").value("Tech Lead"))
+                .andExpect(jsonPath("$.profile.workRegime").value("HYBRID"));
+
+        // 4. Validar se o usuário logado vê as mudanças
+        mockMvc.perform(get("/v1/user/profile")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.registration").value("222222"))
+                .andExpect(jsonPath("$.profile.position").value("Tech Lead"));
     }
 }

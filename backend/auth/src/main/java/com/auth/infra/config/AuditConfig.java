@@ -37,10 +37,10 @@ public class AuditConfig {
 
             // Mesmo que getUsername() retorne o nome de exibição, no AuditorAware prefere-se o identificador único (E-mail).
             if (authentication.getPrincipal() instanceof UserAuth user) {
-                return Optional.of(user.getEmail());
+                return Optional.ofNullable(user.getEmail());
             }
 
-            return Optional.of(authentication.getName());
+            return Optional.ofNullable(authentication.getName());
         };
     }
 }
