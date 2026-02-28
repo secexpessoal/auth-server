@@ -32,6 +32,12 @@ export const updateUserProfileSchema = z.object({
         ctx.addIssue({
           code: "custom",
           message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
+          path: ["frequency_week_mask"],
+        });
+
+        ctx.addIssue({
+          code: "custom",
+          message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
           path: ["frequency_duration_days"],
         });
       }

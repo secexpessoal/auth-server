@@ -105,21 +105,25 @@ describe("UsersTableComponent", () => {
     fireEvent.click(detailsButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Detalhes do Usuário")).toBeInTheDocument();
+      expect(screen.getByText("Detalhes")).toBeInTheDocument();
       // Test the redesigned header content or new labels
-      expect(screen.getByText(/Gerencie perfil, regime de trabalho/i)).toBeInTheDocument();
+      expect(screen.getByText(/Perfil de acesso de/i)).toBeInTheDocument();
     });
   });
 
-  it("shows high-level sections inside the premium details modal", async () => {
+  it("shows tabs inside the premium details modal", async () => {
     render(<UsersTableComponent />);
 
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
-      expect(screen.getByText("Informações do Perfil")).toBeInTheDocument();
-      expect(screen.getByText("Regime & Localização")).toBeInTheDocument();
-      expect(screen.getByText("Governança")).toBeInTheDocument();
+      // Tab triggers
+      expect(screen.getByRole("tab", { name: /Informações do Perfil/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Regime & Localização/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Governança/i })).toBeInTheDocument();
+
+      // Current active tab content
+      expect(screen.getByRole("heading", { name: /Informações do Perfil/i })).toBeInTheDocument();
     });
   });
 
@@ -132,23 +136,42 @@ describe("UsersTableComponent", () => {
     });
   });
 
-  it("interacts with the Shadcn Select for work regime", async () => {
+  it("interacts with the Shadcn Select for work regime after switching tab", async () => {
     render(<UsersTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
-      // Check for the trigger. Radix Select renders a button with role combobox
-      expect(screen.getByRole("combobox")).toBeInTheDocument();
+      const tab = screen.getByRole("tab", { name: /Regime & Localização/i });
+      fireEvent.mouseDown(tab);
+      fireEvent.click(tab);
     });
+
+    await waitFor(
+      () => {
+        // Check for the trigger. Radix Select renders a button with role combobox
+        expect(screen.getByRole("combobox")).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 
-  it("renders the premium Shadcn DatePicker", async () => {
+  it("renders the premium Shadcn DatePicker after switching tab", async () => {
     render(<UsersTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
-      // The DatePicker trigger is a button that shows the placeholder or formatted date
-      expect(screen.getByText(/Selecione a data/i)).toBeInTheDocument();
+      const tab = screen.getByRole("tab", { name: /Regime & Localização/i });
+      // Try switching more aggressively if click is failing
+      fireEvent.mouseDown(tab);
+      fireEvent.click(tab);
     });
+
+    await waitFor(
+      () => {
+        // The DatePicker trigger is a button that shows the placeholder or formatted date
+        expect(screen.getByText(/Selecione a data/i)).toBeInTheDocument();
+      },
+      { timeout: 3000 },
+    );
   });
 });

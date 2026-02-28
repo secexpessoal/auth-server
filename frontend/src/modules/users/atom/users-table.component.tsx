@@ -1,25 +1,18 @@
 import { Button } from "@components/sh-button/button.component";
-import { Calendar } from "@components/sh-calendar/calendar.component";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@components/sh-dialog/dialog.component";
-import { Input } from "@components/sh-input/input.component";
-import { Label } from "@components/sh-label/label.component";
-import { Popover, PopoverContent, PopoverTrigger } from "@components/sh-popover/popover.component";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components/sh-select/select.component";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@components/sh-dialog/dialog.component";
+import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@components/sh-pagination/pagination.component";
+import { Spinner } from "@components/sh-spinner/spinner.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/sh-table/table.component";
-import { Checkbox } from "@components/sh-checkbox/checkbox.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
-import { cn } from "@lib/cn.util";
 import { queryClient } from "@lib/query.util";
-import { useForm } from "@tanstack/react-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { format, parseISO } from "date-fns";
-import { ptBR } from "date-fns/locale";
-import { Calendar as CalendarIcon, Check, Copy, Eye, Info, KeyRound, Loader2, RefreshCw, Save, ShieldAlert, UserCheck, UserX, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Check, Copy, Eye, Info, KeyRound, RefreshCw, ShieldAlert, UserCheck, UserX } from "lucide-react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "../../auth/molecule/auth.types";
+import { type UpdateUserProfileRequestDto } from "../molecule/user.schema";
 import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt, updateUserProfile } from "../services/user.service";
-import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "../molecule/user.schema";
+import { UserDetailsModal } from "./users-detail.component";
 
 export function UsersTableComponent() {
   const [page, setPage] = useState(0);
@@ -103,7 +96,7 @@ export function UsersTableComponent() {
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
-        <Loader2 className="w-10 h-10 text-primary-600 animate-spin mb-4" />
+        <Spinner className="w-10 h-10 text-primary-600 mb-4" />
         <p className="text-gray-500 font-medium">Carregando usuários...</p>
       </div>
     );
@@ -137,7 +130,7 @@ export function UsersTableComponent() {
       <div className="p-4 border-b border-gray-100 flex items-center justify-between">
         <h2 className="font-semibold text-gray-900">Usuários Cadastrados</h2>
         <div className="flex items-center gap-3">
-          {isRefetching && <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />}
+          {isRefetching && <Spinner className="w-4 h-4 text-gray-400" />}
           <Button variant="ghost" size="icon" onClick={() => refetch()} className="h-8 w-8 text-gray-400">
             <RefreshCw className="w-4 h-4" />
           </Button>
@@ -245,14 +238,22 @@ export function UsersTableComponent() {
           <p className="text-sm text-gray-500">
             Página {pagination.page + 1} de {pagination.totalPages}
           </p>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" disabled={!pagination.hasPrevious} onClick={() => setPage((prev) => Math.max(0, prev - 1))}>
-              Anterior
-            </Button>
-            <Button variant="outline" size="sm" disabled={!pagination.hasNext} onClick={() => setPage((prev) => prev + 1)}>
-              Próxima
-            </Button>
-          </div>
+          <Pagination className="w-auto mx-0">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage((prev) => Math.max(0, prev - 1))}
+                  className={!pagination.hasPrevious ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage((prev) => prev + 1)}
+                  className={!pagination.hasNext ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
       )}
 
@@ -265,11 +266,13 @@ export function UsersTableComponent() {
         onReset={() => selectedUser && resetMutation.mutate(selectedUser.email)}
         onToggleStatus={() => {
           if (!selectedUser) return;
+
           if (selectedUser.active) {
             deactivateMutation.mutate(selectedUser.id);
           } else {
             activateMutation.mutate(selectedUser.id);
           }
+
           setDetailsModalOpen(false);
         }}
         isPending={updateProfileMutation.isPending || resetMutation.isPending || deactivateMutation.isPending || activateMutation.isPending}
@@ -312,531 +315,5 @@ export function UsersTableComponent() {
         </DialogContent>
       </Dialog>
     </div>
-  );
-}
-
-function UserDetailsModal({
-  open,
-  onOpenChange,
-  user,
-  onUpdate,
-  onReset,
-  onToggleStatus,
-  isPending,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  user: UserResponseDto | null;
-  onUpdate: (payload: UpdateUserProfileRequestDto) => void;
-  onReset: () => void;
-  onToggleStatus: () => void;
-  isPending: boolean;
-}) {
-  const [hybridMode, setHybridMode] = useState<"specific" | "consecutive">("specific");
-
-  const form = useForm({
-    defaultValues: {
-      username: "",
-      position: null,
-      work_regime: undefined,
-      registration: "",
-      lives_elsewhere: false,
-      birth_date: null,
-      in_person_work_period: null,
-    } as UpdateUserProfileRequestDto,
-    validators: {
-      onChange: updateUserProfileSchema,
-    },
-    onSubmit: async ({ value }) => {
-      // Sanitize data: convert empty strings to null and handle nested period
-      const sanitized: UpdateUserProfileRequestDto = {
-        ...value,
-        birth_date: value.birth_date || null,
-        position: value.position?.trim() || null,
-        work_regime: value.work_regime || undefined,
-        username: value.username?.trim() || undefined,
-        registration: value.registration?.trim() || null,
-        in_person_work_period: value.in_person_work_period?.frequency_cycle_weeks
-          ? {
-              frequency_cycle_weeks: value.in_person_work_period.frequency_cycle_weeks,
-              frequency_week_mask: hybridMode === "specific" ? value.in_person_work_period.frequency_week_mask : 0,
-              frequency_duration_days: hybridMode === "consecutive" ? value.in_person_work_period.frequency_duration_days : null,
-            }
-          : null,
-      };
-      onUpdate(sanitized);
-    },
-  });
-
-  useEffect(() => {
-    if (user && open) {
-      form.reset({
-        position: user.profile.position,
-        work_regime: user.profile.work_regime,
-        username: user.profile.username || "",
-        birth_date: user.profile.birth_date || null,
-        registration: user.profile.registration || "",
-        lives_elsewhere: user.profile.lives_elsewhere || false,
-        in_person_work_period: {
-          frequency_cycle_weeks: user.profile.in_person_work_period?.frequency_cycle_weeks || 1,
-          frequency_week_mask: user.profile.in_person_work_period?.frequency_week_mask || 0,
-          frequency_duration_days: user.profile.in_person_work_period?.frequency_duration_days || null,
-        },
-      });
-      // eslint-disable-next-line
-      setHybridMode(user.profile.in_person_work_period?.frequency_duration_days ? "consecutive" : "specific");
-    }
-  }, [user, open, form]);
-
-  if (!user) return null;
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full sm:max-w-5xl max-h-[95vh] overflow-y-auto p-0 bg-gray-50/50 border-none shadow-2xl" showCloseButton>
-        <div className="flex flex-col h-full bg-white rounded-t-lg">
-          {/* Header Section - Modern Gradient */}
-          <div className="p-8 pb-14 bg-linear-to-br from-primary-700 to-indigo-900 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-12 opacity-10 transform translate-x-12 -translate-y-12">
-              <Eye className="w-64 h-64" />
-            </div>
-
-            <div className="relative z-10">
-              <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl backdrop-blur-md mb-6 border border-white/20">
-                <Eye className="w-6 h-6 text-white" />
-              </div>
-
-              <DialogTitle className="text-4xl font-extrabold tracking-tight mb-2">Detalhes do Usuário</DialogTitle>
-              <DialogDescription className="text-primary-100 text-lg max-w-2xl font-medium">
-                Gerencie perfil, regime de trabalho e governação de <span className="text-white border-b border-primary-400">{user.email}</span>.
-              </DialogDescription>
-            </div>
-          </div>
-
-          <form
-            onSubmit={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="px-8 -mt-6 relative z-20 space-y-5 pb-8"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-              <div className="md:col-span-7 space-y-5">
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40">
-                  <div className="flex items-center gap-3 mb-6 border-l-4 border-primary-500 pl-4">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Informações do Perfil</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="space-y-1.5 sm:col-span-2">
-                      <Label className="text-[10px] font-bold text-gray-500 ml-1">Nome de Usuário</Label>
-
-                      <form.Field
-                        name="username"
-                        children={(field) => (
-                          <Input
-                            id={field.name}
-                            value={field.state.value || ""}
-                            onChange={(event) => field.handleChange(event.target.value)}
-                            onBlur={field.handleBlur}
-                            className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-1">
-                      <Label className="text-[10px] font-bold text-gray-500 ml-1">Matrícula</Label>
-                      <form.Field
-                        name="registration"
-                        children={(field) => (
-                          <>
-                            <Input
-                              id={field.name}
-                              maxLength={6}
-                              value={field.state.value || ""}
-                              onChange={(event) => field.handleChange(event.target.value)}
-                              onBlur={field.handleBlur}
-                              className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
-                            />
-                            {field.state.meta.errors.length > 0 && (
-                              <p className="text-xs text-red-500 font-medium ml-1 flex items-center gap-1">
-                                <ShieldAlert className="w-3 h-3" />
-                                {field.state.meta.errors[0]?.message || field.state.meta.errors[0]?.toString()}
-                              </p>
-                            )}
-                          </>
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1.5 sm:col-span-3">
-                      <Label className="text-[10px] font-bold text-gray-500 ml-1">Cargo / Posição Profissional</Label>
-                      <form.Field
-                        name="position"
-                        children={(field) => (
-                          <Input
-                            id={field.name}
-                            value={field.state.value || ""}
-                            onChange={(event) => field.handleChange(event.target.value)}
-                            onBlur={field.handleBlur}
-                            className="h-12 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-medium"
-                          />
-                        )}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40">
-                  <div className="flex items-center gap-3 mb-5 border-l-4 border-indigo-500 pl-4">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Regime & Localização</h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-gray-500 ml-1">Data de Nascimento</Label>
-                      <form.Field
-                        name="birth_date"
-                        children={(field) => (
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                className={cn(
-                                  "w-full h-10 justify-start text-left font-medium rounded-xl bg-gray-50/50 border border-gray-100 hover:bg-white transition-all px-3 text-sm",
-                                  !field.state.value && "text-muted-foreground",
-                                )}
-                              >
-                                <CalendarIcon className="mr-2 h-4 w-4 text-gray-400" />
-                                {field.state.value && typeof field.state.value === "string" ? (
-                                  format(parseISO(field.state.value), "PPP", {
-                                    locale: ptBR,
-                                  })
-                                ) : (
-                                  <span>Selecione a data</span>
-                                )}
-                              </Button>
-                            </PopoverTrigger>
-
-                            <PopoverContent className="w-auto p-0 rounded-2xl border-gray-100 shadow-2xl" align="start">
-                              <Calendar
-                                autoFocus
-                                mode="single"
-                                locale={ptBR}
-                                className="rounded-2xl"
-                                captionLayout="dropdown"
-                                startMonth={new Date(1900, 0)}
-                                endMonth={new Date(new Date().getFullYear(), 11)}
-                                disabled={(date) => date < new Date("1900-01-01")}
-                                onSelect={(date) => field.handleChange(date?.toISOString())}
-                                selected={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
-                                defaultMonth={field.state.value && typeof field.state.value === "string" ? parseISO(field.state.value) : undefined}
-                              />
-                            </PopoverContent>
-                          </Popover>
-                        )}
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] font-bold text-gray-500 ml-1">Regime de Trabalho</Label>
-                      <form.Field
-                        name="work_regime"
-                        children={(field) => (
-                          <Select onValueChange={(val: "HOME_WORK" | "OFFICE" | "HYBRID") => field.handleChange(val)} value={field.state.value}>
-                            <SelectTrigger className="w-full h-10 rounded-xl bg-gray-50/50 border border-gray-100 px-3 text-sm focus:ring-primary-500/20 transition-all font-medium">
-                              <SelectValue placeholder="Selecione o regime" />
-                            </SelectTrigger>
-
-                            <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                              <SelectItem value="HOME_WORK" className="rounded-xl">
-                                Remoto (Home Office)
-                              </SelectItem>
-
-                              <SelectItem value="OFFICE" className="rounded-xl">
-                                Presencial (Escritório)
-                              </SelectItem>
-
-                              <SelectItem value="HYBRID" className="rounded-xl">
-                                Híbrido
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                    </div>
-                    <div className="flex items-center space-x-4 p-4 bg-gray-50/50 rounded-xl border border-gray-100 sm:col-span-2">
-                      <form.Field
-                        name="lives_elsewhere"
-                        children={(field) => (
-                          <>
-                            <Checkbox
-                              id="lives_elsewhere"
-                              checked={field.state.value || false}
-                              onCheckedChange={(checked) => field.handleChange(checked === true)}
-                              className="w-5 h-5 rounded-lg border-gray-300 text-primary-600 focus:ring-primary-500"
-                            />
-
-                            <Label htmlFor="lives_elsewhere" className="text-sm font-bold text-gray-700 cursor-pointer">
-                              Reside fora da cidade?
-                            </Label>
-                          </>
-                        )}
-                      />
-                    </div>
-                    <form.Subscribe
-                      selector={(state) => state.values.work_regime}
-                      children={(workRegime) =>
-                        workRegime === "HYBRID" ? (
-                          <div className="sm:col-span-2 pt-4 border-t border-gray-100">
-                            <Label className="text-[10px] font-bold text-gray-500 ml-1 mb-2 block">Período de Trabalho (Dias Presenciais)</Label>
-                            <div className="grid grid-cols-1 gap-6">
-                              <form.Field
-                                name="in_person_work_period.frequency_cycle_weeks"
-                                children={(field) => (
-                                  <div className="space-y-1.5">
-                                    <span className="text-[10px] font-bold text-gray-400 ml-1">Repetir a cada (semanas)</span>
-                                    <div className="flex items-center gap-4">
-                                      <div className="relative">
-                                        <Input
-                                          type="number"
-                                          min={1}
-                                          max={52}
-                                          value={field.state.value || ""}
-                                          onChange={(event) => field.handleChange(parseInt(event.target.value) || 0)}
-                                          className={cn(
-                                            "h-12 w-28 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-lg font-bold px-4 text-center shadow-inner",
-                                            field.state.meta.errors.length > 0 && "border-red-500 bg-red-50/50",
-                                          )}
-                                        />
-                                      </div>
-                                      <span className="text-sm font-bold text-gray-500 bg-gray-50/80 px-4 py-2 rounded-xl border border-gray-100">
-                                        {(() => {
-                                          const val = field.state.value;
-                                          if (typeof val !== "number") return "semana(s)";
-                                          if (val === 52) return "≈ 12 meses";
-                                          if (val === 4) return "≈ 1 mês";
-                                          if (val > 4) return `≈ ${Math.floor(val / 4)} meses`;
-                                          return "semana(s)";
-                                        })()}
-                                      </span>
-                                    </div>
-                                    {field.state.meta.errors.length > 0 && (
-                                      <p className="text-[10px] text-red-500 font-bold mt-1 ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-1">
-                                        <ShieldAlert className="w-3 h-3" />
-                                        {field.state.meta.errors[0]?.message || field.state.meta.errors[0]?.toString()}
-                                      </p>
-                                    )}
-                                  </div>
-                                )}
-                              />
-
-                              <div className="space-y-3 pt-2 border-t border-gray-100">
-                                <span className="text-[10px] font-bold text-gray-400 ml-1 block">Modo de Frequência</span>
-                                <div className="flex bg-gray-50/80 p-1.5 rounded-2xl border border-gray-100 w-fit shadow-inner">
-                                  <button
-                                    type="button"
-                                    onClick={() => setHybridMode("specific")}
-                                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${hybridMode === "specific" ? "bg-white text-primary-600 shadow-sm border border-gray-200/50 scale-[1.02]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"}`}
-                                  >
-                                    Dias específicos
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => setHybridMode("consecutive")}
-                                    className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${hybridMode === "consecutive" ? "bg-white text-primary-600 shadow-sm border border-gray-200/50 scale-[1.02]" : "text-gray-500 hover:text-gray-700 hover:bg-gray-100/50"}`}
-                                  >
-                                    Período consecutivo
-                                  </button>
-                                </div>
-                              </div>
-
-                              {hybridMode === "specific" ? (
-                                <form.Field
-                                  name="in_person_work_period.frequency_week_mask"
-                                  children={(field) => {
-                                    const mask = typeof field.state.value === "number" ? field.state.value : 0;
-                                    const DAYS = [
-                                      { id: "mon", label: "Seg", val: 1 },
-                                      { id: "tue", label: "Ter", val: 2 },
-                                      { id: "wed", label: "Qua", val: 4 },
-                                      { id: "thu", label: "Qui", val: 8 },
-                                      { id: "fri", label: "Sex", val: 16 },
-                                      { id: "sat", label: "Sáb", val: 32 },
-                                      { id: "sun", label: "Dom", val: 64 },
-                                    ];
-
-                                    return (
-                                      <div className="space-y-2 mt-2">
-                                        <span className="text-[10px] font-bold text-gray-400 ml-1 block">Dias Selecionados</span>
-                                        <div className="flex flex-wrap gap-2.5">
-                                          {DAYS.map((day) => {
-                                            const isChecked = (mask & day.val) === day.val;
-                                            return (
-                                              <button
-                                                key={day.id}
-                                                type="button"
-                                                onClick={() => {
-                                                  if (isChecked) {
-                                                    field.handleChange(mask & ~day.val);
-                                                  } else {
-                                                    field.handleChange(mask | day.val);
-                                                  }
-                                                }}
-                                                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-sm font-bold transition-all duration-300 ${isChecked ? "bg-primary-600 text-white shadow-[0_8px_16px_-6px_rgba(79,70,229,0.4)] scale-110 border-0" : "bg-white border-2 border-gray-100 text-gray-400 hover:border-gray-200 hover:text-gray-600 hover:bg-gray-50/50"}`}
-                                              >
-                                                {day.label}
-                                              </button>
-                                            );
-                                          })}
-                                        </div>
-                                      </div>
-                                    );
-                                  }}
-                                />
-                              ) : (
-                                <form.Field
-                                  name="in_person_work_period.frequency_duration_days"
-                                  children={(field) => (
-                                    <div className="space-y-1.5 mt-2">
-                                      <span className="text-[10px] font-bold text-gray-400 ml-1">Duração Consecutiva (Dias)</span>
-                                      <div className="flex items-center gap-3">
-                                        <Input
-                                          type="number"
-                                          min={1}
-                                          value={field.state.value || ""}
-                                          onChange={(e) => field.handleChange(e.target.value ? parseInt(e.target.value) : null)}
-                                          placeholder="Ex: 7"
-                                          className={cn(
-                                            "h-12 w-32 rounded-2xl bg-white border-2 border-gray-100 focus:border-primary-500 focus:bg-white transition-all text-lg font-bold px-4 shadow-sm",
-                                            field.state.meta.errors.length > 0 && "border-red-500 bg-red-50",
-                                          )}
-                                        />
-                                        <span className="text-sm font-bold text-gray-500">dia(s)</span>
-                                      </div>
-                                      {field.state.meta.errors.length > 0 && (
-                                        <p className="text-[10px] text-red-500 font-bold mt-2 ml-1 flex items-center gap-1 animate-in fade-in slide-in-from-left-1">
-                                          <ShieldAlert className="w-3 h-3" />
-                                          {field.state.meta.errors[0]?.message || field.state.meta.errors[0]?.toString()}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        ) : null
-                      }
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Right Column: Governance & Actions */}
-              <div className="md:col-span-5 space-y-5">
-                {/* Status & Governance Card */}
-                <div className="bg-white rounded-3xl p-5 border border-gray-100 shadow-xl shadow-gray-200/40 flex flex-col h-full ring-1 ring-gray-100">
-                  <div className="space-y-6 grow">
-                    <div className="p-5 rounded-3xl bg-gray-50/70 border border-gray-100 text-center shadow-inner">
-                      <span className="block text-[10px] font-black text-gray-400 uppercase mb-4 tracking-tighter">Status Operacional</span>
-
-                      <div className="flex items-center justify-center gap-3">
-                        {user.active ? (
-                          <span className="px-5 py-2 rounded-full text-base font-bold bg-emerald-100 text-emerald-700 border border-emerald-200 flex items-center gap-2 shadow-sm">
-                            <Check className="w-4 h-4" /> Ativo
-                          </span>
-                        ) : (
-                          <span className="px-5 py-2 rounded-full text-base font-bold bg-red-100 text-red-700 border border-red-200 flex items-center gap-2 shadow-sm">
-                            <X className="w-4 h-4" /> Inativo
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest text-center">Governança</h4>
-                      <div className="space-y-3">
-                        <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
-                          <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Data de Ingresso:</span>
-                          <span className="text-sm font-bold text-gray-700">
-                            {user.audit.created_at ? format(new Date(user.audit.created_at), "dd/MM/yyyy HH:mm") : "-"}
-                          </span>
-                        </div>
-
-                        {user.audit.updated_at && (
-                          <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
-                            <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-amber-500">Última Modificação:</span>
-                            <span className="text-sm font-bold text-amber-700">{format(new Date(user.audit.updated_at), "dd/MM/yyyy HH:mm")}</span>
-                          </div>
-                        )}
-
-                        <div className="flex flex-col p-4 rounded-xl bg-gray-50/50 border border-gray-100 group transition-all">
-                          <span className="text-[10px] font-bold text-gray-400 mb-1 group-hover:text-primary-400">Responsável Modificação:</span>
-                          <span className="text-sm font-bold text-primary-600 uppercase tracking-tighter truncate">
-                            {user.audit.updated_by || "system"}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="pt-6 border-t border-gray-100 space-y-4">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="w-full h-12 rounded-2xl justify-start font-bold border-amber-200 text-amber-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-300 transition-all px-5 shadow-sm"
-                        onClick={onReset}
-                        disabled={isPending}
-                      >
-                        <KeyRound className="w-4 h-4 mr-3" /> Resetar Senha Alpha
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className={`w-full h-12 rounded-2xl justify-start font-bold transition-all px-5 shadow-sm ${user.active ? "border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 hover:border-red-300" : "border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300"}`}
-                        onClick={onToggleStatus}
-                        disabled={isPending}
-                      >
-                        {user.active ? (
-                          <>
-                            <UserX className="w-4 h-4 mr-3" /> Bloquear Acesso
-                          </>
-                        ) : (
-                          <>
-                            <UserCheck className="w-4 h-4 mr-3" /> Liberar Acesso
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="bg-gray-50/80 -mx-8 px-8 py-6 rounded-b-3xl border-t border-gray-200 gap-4 mt-6 backdrop-blur-sm">
-              <Button
-                type="button"
-                variant="ghost"
-                className="h-14 rounded-xl px-8 font-bold text-gray-500 hover:bg-white hover:shadow-sm"
-                onClick={() => onOpenChange(false)}
-              >
-                Descartar
-              </Button>
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) => (
-                  <Button
-                    type="submit"
-                    className="h-14 rounded-xl px-12 font-black text-lg shadow-2xl shadow-primary-200/60 bg-primary-600 hover:bg-primary-700 transition-all transform hover:-translate-y-1 active:translate-y-0"
-                    disabled={!canSubmit || isSubmitting || isPending}
-                  >
-                    {isSubmitting || isPending ? <Loader2 className="w-6 h-6 animate-spin mr-3" /> : <Save className="w-5 h-5 mr-3" />}
-                    Persistir Alterações
-                  </Button>
-                )}
-              />
-            </DialogFooter>
-          </form>
-        </div>
-      </DialogContent>
-    </Dialog>
   );
 }
