@@ -36,7 +36,7 @@ public class UserData {
     @JoinColumn(name = "col_user_id")
     private UserAuth user;
 
-    @Column(name = "ds_user_name", nullable = false, length = 30)
+    @Column(name = "ds_user_name", nullable = false, length = 255)
     private String userName;
 
     @Column(name = "ds_registration", length = 6)

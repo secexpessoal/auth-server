@@ -349,11 +349,11 @@ function UserDetailsModal({
       // Sanitize data: convert empty strings to null and handle nested period
       const sanitized: UpdateUserProfileRequestDto = {
         ...value,
-        username: value.username?.trim() || undefined,
-        registration: value.registration?.trim() || undefined,
-        position: value.position?.trim() || null,
         birth_date: value.birth_date || null,
+        position: value.position?.trim() || null,
         work_regime: value.work_regime || undefined,
+        username: value.username?.trim() || undefined,
+        registration: value.registration?.trim() || null,
         in_person_work_period: value.in_person_work_period?.start || value.in_person_work_period?.end ? value.in_person_work_period : null,
       };
       onUpdate(sanitized);
@@ -363,15 +363,15 @@ function UserDetailsModal({
   useEffect(() => {
     if (user && open) {
       form.reset({
-        username: user.profile.username || "",
         position: user.profile.position,
         work_regime: user.profile.work_regime,
+        username: user.profile.username || "",
+        birth_date: user.profile.birth_date || null,
         registration: user.profile.registration || "",
         lives_elsewhere: user.profile.lives_elsewhere || false,
-        birth_date: user.profile.birth_date ? user.profile.birth_date.split("T")[0] : null,
         in_person_work_period: {
-          start: user.profile.in_person_work_period?.start ? user.profile.in_person_work_period.start.split("T")[0] : null,
-          end: user.profile.in_person_work_period?.end ? user.profile.in_person_work_period.end.split("T")[0] : null,
+          start: user.profile.in_person_work_period?.start || null,
+          end: user.profile.in_person_work_period?.end || null,
         },
       });
     }
@@ -393,6 +393,7 @@ function UserDetailsModal({
               <div className="inline-flex items-center justify-center p-3 bg-white/10 rounded-2xl backdrop-blur-md mb-6 border border-white/20">
                 <Eye className="w-6 h-6 text-white" />
               </div>
+
               <DialogTitle className="text-4xl font-extrabold tracking-tight mb-2">Detalhes do Usuário</DialogTitle>
               <DialogDescription className="text-primary-100 text-lg max-w-2xl font-medium">
                 Gerencie perfil, regime de trabalho e governação de <span className="text-white border-b border-primary-400">{user.email}</span>.

@@ -4,11 +4,12 @@ import { UsersTableComponent } from "../molecule/users-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 // Mock ResizeObserver for Radix UI components
-global.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+global.ResizeObserver = ResizeObserverMock as typeof globalThis.ResizeObserver;
 
 // Mocks
 vi.mock("@tanstack/react-query", async (importOriginal) => {

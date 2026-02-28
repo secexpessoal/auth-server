@@ -16,7 +16,7 @@ import java.time.Instant;
 
 @Builder
 public record UpdateUserProfileRequestDto(
-        @Size(min = 3, max = 30)
+        @Size(min = 3, max = 100)
         @JsonProperty("username") String username,
 
         @Size(min = 5, max = 6)

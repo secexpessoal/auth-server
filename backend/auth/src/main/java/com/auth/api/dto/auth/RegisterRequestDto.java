@@ -16,7 +16,7 @@ import lombok.Builder;
 
 @Builder
 public record RegisterRequestDto(
-        @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
+        @Size(min = 3, max = 100, message = "O nome de usuário deve ter entre 3 e 100 caracteres")
         @NotBlank(message = "O nome de usuário não pode estar em branco")
         @JsonProperty("username")
         String userName,
