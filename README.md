@@ -162,11 +162,9 @@ sequenceDiagram
     API-->>User: Retorna Perfil Atualizado
 ```
 
-````
-
 ---
 
-## �️ Módulo 5: Painel Administrativo (Frontend)
+## 🖥️ Módulo 5: Painel Administrativo (Frontend)
 
 O frontend foi desenvolvido como um SPA (Single Page Application) moderno, focado em alta performance e experiência do desenvolvedor.
 
@@ -187,7 +185,7 @@ Localizado no diretório `/frontend`:
 
 ---
 
-## �🔗 Guia de Integração para Outros Backends
+## 🔗 Guia de Integração para Outros Backends
 
 Fluxo sugerido para aplicações externas que utilizam o Auth Server como Provedor de Identidade (IdP).
 
@@ -212,7 +210,7 @@ sequenceDiagram
         Auth-->>MyApp: 401 Unauthorized
         MyApp->>User: 401 Unauthorized (Exige novo login no Auth Server)
     end
-````
+```
 
 ### Regras de Ouro para APIs Externas:
 
