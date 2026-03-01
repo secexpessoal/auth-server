@@ -1,5 +1,5 @@
 import { Label } from "@components/sh-label/label.component";
-import { cn } from "@lib/cn.util";
+import { cn } from "@lib/cn/cn.util";
 import type { Label as LabelPrimitive } from "radix-ui";
 import { Slot } from "radix-ui";
 import * as React from "react";

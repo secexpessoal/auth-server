@@ -38,10 +38,13 @@ public class ListUsersController {
     public ResponseEntity<@NonNull PaginatedResponseDto<UserResponseDto>> listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String position,
             HttpServletRequest request
     ) {
         String requestUrl = request.getRequestURL().toString();
-        PaginatedResponseDto<UserResponseDto> response = listUsersUseCase.execute(page, limit, requestUrl);
+        PaginatedResponseDto<UserResponseDto> response = listUsersUseCase.execute(page, limit, requestUrl, email, userName, position);
         return ResponseEntity.ok(response);
     }
 }

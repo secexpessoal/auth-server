@@ -1,7 +1,7 @@
 import * as React from "react";
 import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react";
 
-import { cn } from "@lib/cn.util";
+import { cn } from "@lib/cn/cn.util";
 import { buttonVariants } from "@components/sh-button/button.variants";
 import { type Button } from "@components/sh-button/button.component";
 

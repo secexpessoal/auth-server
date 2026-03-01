@@ -22,9 +22,15 @@ export async function registerUserAttempt(payload: RegisterRequestDto): Promise<
 /**
  * Busca a lista paginada de usuários.
  */
-export async function getUsersList(page = 0, limit = 50): Promise<PaginatedResponseDto<UserResponseDto>> {
+export async function getUsersList(
+  page = 0,
+  limit = 50,
+  email?: string,
+  userName?: string,
+  position?: string,
+): Promise<PaginatedResponseDto<UserResponseDto>> {
   const { data } = await axiosClient.get<PaginatedResponseDto<UserResponseDto>>(`/v1/user`, {
-    params: { page, limit },
+    params: { page, limit, email, userName, position },
   });
   return data;
 }

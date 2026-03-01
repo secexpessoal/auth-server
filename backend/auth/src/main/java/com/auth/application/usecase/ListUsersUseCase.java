@@ -12,10 +12,12 @@ import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.api.dto.common.PaginationMetaDto;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,9 +33,11 @@ public class ListUsersUseCase {
 
     private final UserAuthRepository userRepository;
 
-    public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl) {
+    public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl, String email, String userName, String position) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<UserAuth> usersPage = userRepository.findAll(pageable);
+        Specification<UserAuth> spec = UserSpecification.filterBy(email, userName, position);
+        
+        Page<UserAuth> usersPage = userRepository.findAll(spec, pageable);
 
         List<UserResponseDto> data = usersPage.getContent().stream()
                 .map(user -> {
@@ -77,8 +81,13 @@ public class ListUsersUseCase {
                 .hasPrevious(usersPage.hasPrevious())
                 .build();
 
-        String nextLink = usersPage.hasNext() ? requestUrl + "?page=" + (page + 1) + "&limit=" + limit : "";
-        String prevLink = usersPage.hasPrevious() ? requestUrl + "?page=" + (page - 1) + "&limit=" + limit : "";
+        StringBuilder queryParams = new StringBuilder();
+        if (email != null && !email.isBlank()) queryParams.append("&email=").append(email);
+        if (userName != null && !userName.isBlank()) queryParams.append("&userName=").append(userName);
+        if (position != null && !position.isBlank()) queryParams.append("&position=").append(position);
+
+        String nextLink = usersPage.hasNext() ? requestUrl + "?page=" + (page + 1) + "&limit=" + limit + queryParams : "";
+        String prevLink = usersPage.hasPrevious() ? requestUrl + "?page=" + (page - 1) + "&limit=" + limit + queryParams : "";
 
         return PaginatedResponseDto.<UserResponseDto>builder()
                 .data(data)

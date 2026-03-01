@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Spinner } from "@components/sh-spinner/spinner.component";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@components/sh-tabs/tabs.component";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { cn } from "@lib/cn.util";
+import { cn } from "@lib/cn/cn.util";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {

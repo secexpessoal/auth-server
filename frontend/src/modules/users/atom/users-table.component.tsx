@@ -1,12 +1,14 @@
 import { Button } from "@components/sh-button/button.component";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@components/sh-dialog/dialog.component";
+import { Input } from "@components/sh-input/input.component";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@components/sh-pagination/pagination.component";
 import { Spinner } from "@components/sh-spinner/spinner.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/sh-table/table.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
-import { queryClient } from "@lib/query.util";
+import { useDebounce } from "@lib/hooks/use-debounce.hook";
+import { queryClient } from "@lib/query/query.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, Eye, Info, KeyRound, RefreshCw, ShieldAlert, UserCheck, UserX } from "lucide-react";
+import { Check, Copy, Eye, Info, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "../../auth/molecule/auth.types";
@@ -16,11 +18,19 @@ import { UserDetailsModal } from "./users-detail.component";
 
 export function UsersTableComponent() {
   const [page, setPage] = useState(0);
-  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
-  const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
-  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
   const [copied, setCopied] = useState(false);
+
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
+
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+
+  const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
+
+  const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
 
   const {
     data: paginatedUsers,
@@ -29,8 +39,9 @@ export function UsersTableComponent() {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["users", page],
-    queryFn: () => getUsersList(page, 50),
+    queryKey: ["users", page, debouncedSearchTerm],
+    queryFn: () => getUsersList(page, 50, debouncedSearchTerm, debouncedSearchTerm, debouncedSearchTerm),
+    placeholderData: (previousData) => previousData,
   });
 
   const resetMutation = useMutation({
@@ -94,7 +105,7 @@ export function UsersTableComponent() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !paginatedUsers) {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
         <Spinner className="w-10 h-10 text-primary-600 mb-4" />
@@ -128,9 +139,24 @@ export function UsersTableComponent() {
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-4 border-b border-gray-100 flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">Usuários Cadastrados</h2>
-        <div className="flex items-center gap-3">
+      <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1">
+          <h2 className="font-semibold text-gray-900 whitespace-nowrap hidden lg:block">Usuários Cadastrados</h2>
+          <div className="relative w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+
+            <Input
+              placeholder="Buscar por nome, e-mail ou cargo..."
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(0); // Reset page when searching
+              }}
+              className="pl-10 h-10 bg-gray-50/50 border-gray-100 focus:bg-white transition-all rounded-xl"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-3 justify-end">
           {isRefetching && <Spinner className="w-4 h-4 text-gray-400" />}
           <Button variant="ghost" size="icon" onClick={() => refetch()} className="h-8 w-8 text-gray-400">
             <RefreshCw className="w-4 h-4" />
@@ -144,6 +170,7 @@ export function UsersTableComponent() {
           <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
             <TableHead>Nome</TableHead>
             <TableHead>Email</TableHead>
+            <TableHead>Nível de Acesso</TableHead>
             <TableHead>Cargo</TableHead>
             <TableHead className="text-right">Ações</TableHead>
           </TableRow>
@@ -152,7 +179,7 @@ export function UsersTableComponent() {
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className="h-32 text-center text-gray-500">
+              <TableCell colSpan={5} className="h-32 text-center text-gray-500">
                 Nenhum usuário encontrado.
               </TableCell>
             </TableRow>
@@ -190,6 +217,14 @@ export function UsersTableComponent() {
                         {role.replace("ROLE_", "")}
                       </span>
                     ))}
+                  </div>
+                </TableCell>
+
+                <TableCell>
+                  <div className="max-w-[200px]">
+                    <span className="text-gray-600 text-sm font-medium truncate block" title={user.profile.position || ""}>
+                      {user.profile.position || "-"}
+                    </span>
                   </div>
                 </TableCell>
 
