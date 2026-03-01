@@ -7,19 +7,22 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.*;
 import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.api.dto.common.PaginationMetaDto;
-import com.auth.domain.model.User;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Caso de Uso responsável por listar os usuários com paginação.
@@ -28,23 +31,45 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ListUsersUseCase {
 
-    private final UserRepository userRepository;
+    private final UserAuthRepository userRepository;
 
-    public PaginatedResponseDto<MetadataUserResponseDto> execute(int page, int limit, String requestUrl) {
+    public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl, String email, String userName, String position) {
         Pageable pageable = PageRequest.of(page, limit);
-        Page<User> usersPage = userRepository.findAll(pageable);
+        Specification<UserAuth> spec = UserSpecification.filterBy(email, userName, position);
+        
+        Page<UserAuth> usersPage = userRepository.findAll(spec, pageable);
 
-        List<MetadataUserResponseDto> data = usersPage.getContent().stream()
-                .map(user -> MetadataUserResponseDto.builder()
-                        .id(user.getUserId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .role(user.getRole() != null ? user.getRole().name() : null)
-                        .active(user.getActive() != null && user.getActive())
-                        .createdAt(user.getCreatedAt())
-                        .updatedAt(user.getUpdatedAt())
-                        .updatedBy(user.getUpdatedBy())
-                        .build())
+        List<UserResponseDto> data = usersPage.getContent().stream()
+                .map(user -> {
+                    UserProfileResponseDto profile = UserProfileResponseDto.builder()
+                            .username(user.getUserData().getUserName())
+                            .registration(user.getUserData().getRegistration())
+                            .position(user.getUserData().getPosition())
+                            .birthDate(user.getUserData().getBirthDate())
+                            .workRegime(user.getUserData().getWorkRegime())
+                            .livesElsewhere(user.getUserData().getLivesElsewhere() != null && user.getUserData().getLivesElsewhere())
+                            .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
+                                    .frequencyCycleWeeks(user.getUserData().getFrequencyCycleWeeks())
+                                    .frequencyWeekMask(user.getUserData().getFrequencyWeekMask())
+                                    .frequencyDurationDays(user.getUserData().getFrequencyDurationDays())
+                                    .build())
+                            .build();
+
+                    UserAuditResponseDto audit = UserAuditResponseDto.builder()
+                            .createdAt(user.getCreatedAt())
+                            .updatedAt(user.getUserData().getUpdatedAt())
+                            .updatedBy(user.getUserData().getUpdatedBy())
+                            .build();
+
+                    return UserResponseDto.builder()
+                            .id(user.getUserId())
+                            .email(user.getEmail())
+                            .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                            .active(user.getActive() != null && user.getActive())
+                            .profile(profile)
+                            .audit(audit)
+                            .build();
+                })
                 .toList();
 
         PaginationMetaDto paginationMeta = PaginationMetaDto.builder()
@@ -56,10 +81,15 @@ public class ListUsersUseCase {
                 .hasPrevious(usersPage.hasPrevious())
                 .build();
 
-        String nextLink = usersPage.hasNext() ? requestUrl + "?page=" + (page + 1) + "&limit=" + limit : "";
-        String prevLink = usersPage.hasPrevious() ? requestUrl + "?page=" + (page - 1) + "&limit=" + limit : "";
+        StringBuilder queryParams = new StringBuilder();
+        if (email != null && !email.isBlank()) queryParams.append("&email=").append(email);
+        if (userName != null && !userName.isBlank()) queryParams.append("&userName=").append(userName);
+        if (position != null && !position.isBlank()) queryParams.append("&position=").append(position);
 
-        return PaginatedResponseDto.<MetadataUserResponseDto>builder()
+        String nextLink = usersPage.hasNext() ? requestUrl + "?page=" + (page + 1) + "&limit=" + limit + queryParams : "";
+        String prevLink = usersPage.hasPrevious() ? requestUrl + "?page=" + (page - 1) + "&limit=" + limit + queryParams : "";
+
+        return PaginatedResponseDto.<UserResponseDto>builder()
                 .data(data)
                 .meta(Map.of("pagination", paginationMeta))
                 .links(Map.of("next", nextLink, "prev", prevLink))

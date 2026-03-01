@@ -12,8 +12,8 @@ import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
 import com.auth.application.service.PasswordGeneratorService;
 import com.auth.application.service.UserService;
-import com.auth.domain.model.User;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.repository.UserAuthRepository;
 import com.auth.infra.exception.custom.BadRequestException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,7 +34,7 @@ class PasswordUseCaseTest {
     @Mock
     private UserService userService;
     @Mock
-    private UserRepository userRepository;
+    private UserAuthRepository userRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -43,12 +43,11 @@ class PasswordUseCaseTest {
     @InjectMocks
     private PasswordUseCase passwordUseCase;
 
-    private User testUser;
+    private UserAuth testUser;
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
-        testUser.setUserName("testuser");
+        testUser = new UserAuth();
         testUser.setEmail("test@example.com");
         testUser.setPassword("encoded-old-password");
     }

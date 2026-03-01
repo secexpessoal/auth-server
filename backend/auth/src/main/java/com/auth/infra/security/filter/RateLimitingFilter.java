@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -37,11 +38,14 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
 
+    @Value("${security.rate-limit.enabled:true}")
+    private boolean enabled;
+
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (path.startsWith("/v1/user/login") || path.startsWith("/v1/user/register") || path.startsWith("/v1/password/reset")) {
+        if (enabled && (path.startsWith("/v1/user/login") || path.startsWith("/v1/user/register") || path.startsWith("/v1/password/reset"))) {
             String ip = getClientIP(request);
             Bucket bucket = resolveBucket(ip);
 

@@ -19,7 +19,7 @@ public class CookieService {
         return ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .path("/v1/user/refresh")
+                .path("/v1/user")
                 .maxAge(maxAgeSeconds)
                 .sameSite("Strict")
                 .build();
@@ -29,7 +29,7 @@ public class CookieService {
         return ResponseCookie.from("refresh_token", "")
                 .httpOnly(true)
                 .secure(cookieSecure)
-                .path("/v1/user/refresh")
+                .path("/v1/user")
                 .maxAge(0) // Remove o cookie
                 .sameSite("Strict")
                 .build();

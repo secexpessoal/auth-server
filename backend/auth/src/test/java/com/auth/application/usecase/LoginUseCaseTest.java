@@ -14,7 +14,8 @@ import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,17 +50,21 @@ class LoginUseCaseTest {
     @InjectMocks
     private LoginUseCase loginUseCase;
 
-    private User testUser;
+    private UserAuth testUser;
     private AuthenticationRequestDto loginRequest;
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
+        testUser = new UserAuth();
         testUser.setUserId(UUID.randomUUID());
-        testUser.setUserName("testuser");
         testUser.setEmail("test@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRoles(java.util.Set.of(Role.USER));
         testUser.setActive(true);
+
+        UserData userData = new UserData();
+        userData.setUserName("testuser");
+        userData.setUser(testUser);
+        testUser.setUserData(userData);
 
         loginRequest = new AuthenticationRequestDto("test@example.com", "password");
     }
@@ -76,21 +81,21 @@ class LoginUseCaseTest {
         
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setToken("fake-refresh-token");
-        when(refreshTokenService.createRefreshToken(testUser)).thenReturn(refreshToken);
+        refreshToken.setVersion(1);
+        when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(refreshToken);
 
         // Act
-        AuthenticationResult result = loginUseCase.execute(loginRequest);
+        AuthenticationResult result = loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer");
         AuthenticationResponseDto response = result.responseDto();
 
         // Assert
         assertNotNull(response);
-        assertEquals("fake-jwt-token", response.token());
+        assertEquals("fake-jwt-token", response.session().accessToken());
         assertEquals("fake-refresh-token", result.refreshToken());
-        assertEquals("testuser", response.metadata().username());
-        assertEquals("test@example.com", response.metadata().email());
-        assertEquals("USER", response.metadata().role());
+        assertEquals(1, response.session().tokenVersion());
+        assertEquals("test@example.com", response.user().email());
+        assertTrue(response.user().roles().contains("ROLE_USER"));
         
-        verify(userService).incrementTokenVersion(testUser);
         verify(authManager).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
@@ -102,7 +107,7 @@ class LoginUseCaseTest {
                 .thenThrow(new BadCredentialsException("Usuário ou senha inválidos"));
 
         // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(loginRequest));
+        assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer"));
         verify(userService, never()).incrementTokenVersion(any());
     }
 }

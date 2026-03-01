@@ -33,6 +33,7 @@ public class PasswordController {
 
     private final PasswordUseCase passwordUseCase;
 
+    // NOTE: Rota autenticada
     @Operation(summary = "Troca voluntária de senha", description = "Altera a senha do usuário logado mediante confirmação da senha antiga.")
     @PostMapping("/change")
     public ResponseEntity<@NonNull Map<String, String>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequestDto request) {
@@ -40,6 +41,7 @@ public class PasswordController {
         return ResponseEntity.ok(Map.of("status", "Senha alterada com sucesso"));
     }
 
+    // NOTE: Rota autenticada, pela primeira senha/random
     @Operation(summary = "Troca de senha de primeiro acesso", description = "Define uma nova senha definitiva após o primeiro login ou reset administrativo.")
     @PostMapping("/first-change")
     public ResponseEntity<@NonNull Map<String, String>> firstChange(Authentication authentication, @Valid @RequestBody FirstChangePasswordRequestDto request) {
@@ -47,13 +49,14 @@ public class PasswordController {
         return ResponseEntity.ok(Map.of("status", "Senha de primeiro acesso atualizada com sucesso"));
     }
 
+    // NOTE: Rota privada e só para ADMIN
     @Operation(summary = "Reset administrativo de senha", description = "Gera uma senha temporária para um usuário. Requer cargo ADMIN.")
     @PostMapping("/admin-reset")
     public ResponseEntity<@NonNull Map<String, String>> resetByAdmin(@Valid @RequestBody ResetPasswordRequestDto request) {
         String tempPass = passwordUseCase.resetByAdmin(request);
         return ResponseEntity.ok(Map.of(
                 "status", "Senha resetada pelo administrador",
-                "temp_password", tempPass
+                "tempPassword", tempPass
         ));
     }
 }

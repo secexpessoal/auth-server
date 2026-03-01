@@ -9,8 +9,8 @@ package com.auth.application.service;
 
 import com.auth.api.dto.auth.RegisterRequestDto;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.repository.UserAuthRepository;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserAuthRepository userRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -42,16 +42,15 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve registrar usuário com sucesso")
     void shouldRegisterUser() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com");
-        when(userRepository.findByUserName("john")).thenReturn(Optional.empty());
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", Role.USER);
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass123")).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        User saved = userService.userRegister(request, Role.USER, "pass123");
+        UserAuth saved = userService.userRegister(request, Role.USER, "pass123");
 
         assertNotNull(saved);
-        assertEquals("john", saved.getUsername());
+        assertEquals("john@example.com", saved.getEmail());
         assertEquals("john@example.com", saved.getEmail());
         assertEquals("hashed", saved.getPassword());
         verify(userRepository).save(any());
@@ -60,8 +59,8 @@ class UserServiceTest {
     @Test
     @DisplayName("Deve lançar exceção se usuário já existir")
     void shouldThrowIfUserExists() {
-        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com");
-        when(userRepository.findByUserName("john")).thenReturn(Optional.of(new User()));
+        RegisterRequestDto request = new RegisterRequestDto("john", "john@example.com", Role.USER);
+        when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.of(new UserAuth()));
 
         assertThrows(BadRequestException.class, () -> userService.userRegister(request, Role.USER, "pass123"));
     }

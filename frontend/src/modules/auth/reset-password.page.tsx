@@ -1,13 +1,14 @@
-import { useForm } from "@tanstack/react-form";
+import { Button } from "@components/sh-button/button.component";
+import { Input } from "@components/sh-input/input.component";
+import { Label } from "@components/sh-label/label.component";
+import { getErrorMessage } from "@lib/api-error/api-error.util";
+import { useAuthStore } from "@store/auth.store";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
 import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
-import { Button } from "../../components/sh-button/button.component";
-import { Input } from "../../components/sh-input/input.component";
-import { Label } from "../../components/sh-label/label.component";
-import { getErrorMessage } from "@lib/api-error/api-error.util";
-import { useAuthStore } from "../../store/auth.store";
 import { firstChangeSchema, type FirstChangeFormData } from "./molecule/auth.schema";
 import { firstChangePasswordAttempt } from "./services/auth.service";
 
@@ -24,18 +25,22 @@ export function ResetPasswordPage() {
     },
   });
 
-  const form = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<FirstChangeFormData>({
+    resolver: zodResolver(firstChangeSchema),
+    mode: "onChange",
     defaultValues: {
       password: "",
       confirmPassword: "",
     },
-    validators: {
-      onChange: firstChangeSchema,
-    },
-    onSubmit: async ({ value }) => {
-      mutation.mutate(value);
-    },
   });
+
+  const onSubmit = async (values: FirstChangeFormData) => {
+    mutation.mutate(values);
+  };
 
   // Protected Route Logic: If not authenticated or reset not required, redirect home
   if (!isAuthenticated) return <Navigate to="/login" />;
@@ -54,92 +59,58 @@ export function ResetPasswordPage() {
               <h1 className="text-3xl font-bold text-gray-900 tracking-tight mb-2">Definir Nova Senha</h1>
 
               <p className="text-gray-500">
-                Olá, <span className="font-semibold text-gray-900">{user?.username}</span>.
+                Olá, <span className="font-semibold text-gray-900">{user?.profile.username}</span>.
                 <br />
                 Para sua segurança, você deve definir uma nova senha personalizada.
               </p>
             </div>
 
-            <form
-              onSubmit={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                form.handleSubmit();
-              }}
-              className="space-y-6"
-            >
-              <form.Field
-                name="password"
-                children={(field) => (
-                  <div className="space-y-2 group">
-                    <Label htmlFor={field.name} className="ml-1 transition-colors group-focus-within:text-primary-600">
-                      Nova Senha
-                    </Label>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2 group">
+                <Label htmlFor="password" className="ml-1 transition-colors group-focus-within:text-primary-600">
+                  Nova Senha
+                </Label>
 
-                    <Input
-                      id={field.name}
-                      type="password"
-                      placeholder="••••••••"
-                      value={field.state.value}
-                      onChange={(event) => field.handleChange(event.target.value)}
-                      onBlur={field.handleBlur}
-                      className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                    />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register("password")}
+                  className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
+                />
 
-                    {field.state.meta.errors.length > 0 && (
-                      <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">
-                        {field.state.meta.errors[0]?.message}
-                      </p>
-                    )}
-                  </div>
+                {errors.password && (
+                  <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.password.message}</p>
                 )}
-              />
+              </div>
 
-              <form.Field
-                name="confirmPassword"
-                children={(field) => (
-                  <div className="space-y-2 group">
-                    <Label htmlFor={field.name} className="ml-1 transition-colors group-focus-within:text-primary-600">
-                      Confirmar Nova Senha
-                    </Label>
+              <div className="space-y-2 group">
+                <Label htmlFor="confirmPassword" className="ml-1 transition-colors group-focus-within:text-primary-600">
+                  Confirmar Nova Senha
+                </Label>
 
-                    <Input
-                      id={field.name}
-                      type="password"
-                      placeholder="••••••••"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      onBlur={field.handleBlur}
-                      className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                    />
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="••••••••"
+                  {...register("confirmPassword")}
+                  className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
+                />
 
-                    {field.state.meta.errors.length > 0 && (
-                      <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">
-                        {field.state.meta.errors[0]?.message}
-                      </p>
-                    )}
-                  </div>
+                {errors.confirmPassword && (
+                  <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.confirmPassword.message}</p>
                 )}
-              />
+              </div>
 
-              <form.Subscribe
-                selector={(state) => [state.canSubmit, state.isSubmitting]}
-                children={([canSubmit, isSubmitting]) => (
-                  <Button
-                    type="submit"
-                    className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary-200 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:hover:scale-100"
-                    disabled={!canSubmit || isSubmitting || mutation.isPending}
-                  >
-                    {isSubmitting || mutation.isPending ? (
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                    ) : (
-                      <ShieldCheck className="w-5 h-5 mr-2" />
-                    )}
+              <Button
+                type="submit"
+                className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary-200 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:hover:scale-100"
+                disabled={!isValid || isSubmitting || mutation.isPending}
+              >
+                {isSubmitting || mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <ShieldCheck className="w-5 h-5 mr-2" />}
 
-                    {isSubmitting || mutation.isPending ? "Atualizando..." : "Atualizar e Sair"}
-                  </Button>
-                )}
-              />
+                {isSubmitting || mutation.isPending ? "Atualizando..." : "Atualizar e Sair"}
+              </Button>
             </form>
           </div>
 

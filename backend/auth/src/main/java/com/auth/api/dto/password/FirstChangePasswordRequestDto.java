@@ -16,7 +16,7 @@ import lombok.Builder;
 public record FirstChangePasswordRequestDto(
         @NotBlank(message = "A nova senha não pode estar em branco")
         @Size(min = 6, message = "A nova senha deve ter no mínimo 6 caracteres")
-        @JsonProperty("new_password")
+        @JsonProperty("newPassword")
         String newPassword
 ) {
 }

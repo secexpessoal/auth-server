@@ -8,7 +8,7 @@
 package com.auth.application.service;
 
 import com.auth.domain.model.RefreshToken;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.RefreshTokenRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
@@ -29,16 +29,23 @@ public class RefreshTokenService {
     private long refreshTokenExpiration;
 
     @Transactional
-    public RefreshToken createRefreshToken(User user) {
-        // Remove token existente para não acumular lixo no banco e evitar erro 409
-        refreshTokenRepository.deleteByUser(user);
-        refreshTokenRepository.flush(); // Força a deleção antes da nova inserção
+    public RefreshToken createRefreshToken(UserAuth user, String userAgent, String ipAddress, String origin, String referer) {
+        // NOTE: Agora buscamos se já existe um token para esta mesma ORIGEM GRANULAR (UA + IP + Origin + Referer)
+        // Se existir, atualizamos o token, a expiração e INCREMENTAMOS a versão daquela sessão específica
+        RefreshToken refreshToken = refreshTokenRepository
+                .findByUserAndUserAgentAndIpAddressAndOriginAndReferer(user, userAgent, ipAddress, origin, referer)
+                .orElseGet(() -> RefreshToken.builder()
+                        .user(user)
+                        .userAgent(userAgent)
+                        .ipAddress(ipAddress)
+                        .origin(origin)
+                        .referer(referer)
+                        .version(0)
+                        .build());
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .token(UUID.randomUUID().toString())
-                .expiryDate(Instant.now().plusMillis(refreshTokenExpiration))
-                .build();
+        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenExpiration));
+        refreshToken.setVersion(refreshToken.getVersion() + 1);
 
         return refreshTokenRepository.save(refreshToken);
     }
@@ -57,7 +64,12 @@ public class RefreshTokenService {
     }
 
     @Transactional
-    public void deleteByUser(User user) {
+    public void deleteByToken(String token) {
+        refreshTokenRepository.deleteByToken(token);
+    }
+
+    @Transactional
+    public void deleteByUser(UserAuth user) {
         refreshTokenRepository.deleteByUser(user);
     }
 }

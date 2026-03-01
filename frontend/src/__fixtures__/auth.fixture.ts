@@ -1,33 +1,61 @@
-import type { AuthenticationResponseDto, MetadataUserResponseDto } from "../modules/auth/molecule/auth.types";
+import type { AuthenticationResponseDto, UserResponseDto } from "../modules/auth/molecule/auth.types";
 
-export const mockAdminUser: MetadataUserResponseDto = {
+export const mockAdminUser: UserResponseDto = {
   id: "019c9cf6-ff7d-7cd0-9050-fc0a6d4c3689",
-  username: "admin_test",
   email: "admin@ok.com",
-  role: "ADMIN",
+  roles: ["ROLE_ADMIN"],
   active: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  profile: {
+    username: "admin_test",
+    registration: "123456",
+    position: "Admin",
+    birthDate: null,
+    workRegime: "HYBRID",
+    livesElsewhere: false,
+    inPersonWorkPeriod: null,
+  },
+  audit: {
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    updatedBy: "system",
+  },
 };
 
-export const mockCommonUser: MetadataUserResponseDto = {
+export const mockCommonUser: UserResponseDto = {
   id: "019c9cf6-ff7d-7cd0-9050-fc0a6d4c3690",
-  username: "common_test",
   email: "user@ok.com",
-  role: "USER",
+  roles: ["ROLE_USER"],
   active: true,
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  profile: {
+    username: "common_test",
+    registration: "654321",
+    position: "User",
+    birthDate: null,
+    workRegime: "HYBRID",
+    livesElsewhere: false,
+    inPersonWorkPeriod: null,
+  },
+  audit: {
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    updatedBy: "system",
+  },
 };
 
 export const mockLoginResponseAdmin: AuthenticationResponseDto = {
-  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_admin_token",
-  password_reset_required: false,
-  metadata: mockAdminUser,
+  session: {
+    accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_admin_token",
+    tokenVersion: 2,
+    passwordResetRequired: false,
+  },
+  user: mockAdminUser,
 };
 
 export const mockLoginResponseCommon: AuthenticationResponseDto = {
-  token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_common_token",
-  password_reset_required: false,
-  metadata: mockCommonUser,
+  session: {
+    accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_common_token",
+    tokenVersion: 2,
+    passwordResetRequired: false,
+  },
+  user: mockCommonUser,
 };

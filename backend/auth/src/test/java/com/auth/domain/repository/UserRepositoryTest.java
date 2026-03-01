@@ -8,7 +8,7 @@
 package com.auth.domain.repository;
 
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,32 +26,28 @@ import static org.junit.jupiter.api.Assertions.*;
 class UserRepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAuthRepository userRepository;
 
     @Test
     @DisplayName("Deve salvar e buscar usuário por username e e-mail")
     void shouldSaveAndFindByUsernameAndEmail() {
-        User user = new User();
-        user.setUserName("db-user");
+        UserAuth user = new UserAuth();
         user.setEmail("db@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
-        Optional<User> foundByName = userRepository.findByUserName("db-user");
-        Optional<User> foundByEmail = userRepository.findByEmail("db@example.com");
+        Optional<UserAuth> foundByEmail = userRepository.findByEmail("db@example.com");
 
-        assertTrue(foundByName.isPresent());
         assertTrue(foundByEmail.isPresent());
-        assertEquals("db-user", foundByName.get().getUsername());
         assertEquals("db@example.com", foundByEmail.get().getEmail());
-        assertNotNull(foundByName.get().getUserId());
+        assertNotNull(foundByEmail.get().getUserId());
     }
 
     @Test
     @DisplayName("Deve retornar vazio para e-mail inexistente")
     void shouldReturnEmptyForNonExistentUser() {
-        Optional<User> found = userRepository.findByEmail("ghost@example.com");
+        Optional<UserAuth> found = userRepository.findByEmail("ghost@example.com");
         assertTrue(found.isEmpty());
     }
 }

@@ -9,14 +9,13 @@ package com.auth.application.service;
 
 import com.auth.api.dto.auth.RegisterRequestDto;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
+import com.auth.domain.repository.UserAuthRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
-
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +26,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
+    private final UserAuthRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -40,21 +39,21 @@ public class UserService {
      * @return A entidade User persistida
      * @throws BadRequestException Caso o nome de usuário já exista
      */
-    public User userRegister(RegisterRequestDto request, Role role, String tempPassword) {
-        if (userRepository.findByUserName(request.userName()).isPresent()) {
-            throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este nome de usuário já está em uso!");
-        }
-
+    public UserAuth userRegister(RegisterRequestDto request, Role role, String tempPassword) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este e-mail já está em uso!");
         }
 
-        User user = new User();
-        user.setUserName(request.userName());
+        UserAuth user = new UserAuth();
         user.setEmail(request.email());
         user.setPassword(passwordEncoder.encode(tempPassword));
-        user.setRole(role);
+        user.getRoles().add(role);
         user.setPasswordResetRequired(true);
+
+        UserData userData = new UserData();
+        userData.setUserName(request.userName());
+        userData.setUser(user);
+        user.setUserData(userData);
 
         return userRepository.save(user);
     }
@@ -64,7 +63,7 @@ public class UserService {
      *
      * @param user Usuário que terá a sessão rotacionada
      */
-    public void incrementTokenVersion(User user) {
+    public void incrementTokenVersion(UserAuth user) {
         Integer currentVersion = user.getTokenVersion();
         user.setTokenVersion(currentVersion + 1);
         userRepository.saveAndFlush(user);
@@ -77,7 +76,7 @@ public class UserService {
      * @return Entidade User encontrada
      * @throws NotFoundException Caso o usuário não exista
      */
-    public User userIsPresent(String email) {
+    public UserAuth userIsPresent(String email) {
         return userRepository.findByEmail(email).orElseThrow(
                 () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!"));
     }

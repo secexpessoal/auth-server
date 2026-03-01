@@ -7,7 +7,7 @@
  */
 package com.auth.infra.security.service;
 
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -57,7 +57,7 @@ public class JwtGeneratorService {
         return claimsResolver.apply(claims);
     }
 
-    public String generateToken(User user) {
+    public String generateToken(UserAuth user) {
         Map<String, Object> claims = new HashMap<>();
 
         // NOTE: Versão do token
@@ -75,7 +75,7 @@ public class JwtGeneratorService {
                 .compact();
     }
 
-    public boolean isTokenValid(String token, User user) {
+    public boolean isTokenValid(String token, UserAuth user) {
         final String email = extractEmail(token);
         final Integer version = extractTokenVersion(token);
 

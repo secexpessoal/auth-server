@@ -3,7 +3,7 @@ import type { InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../../store/auth.store";
 import toast from "react-hot-toast";
 import { getErrorMessage } from "../api-error/api-error.util";
-import type { DataObjectError } from "../../modules/auth/molecule/auth.types";
+import type { DataObjectError, UserResponseDto, UserSessionResponseDto } from "../../modules/auth/molecule/auth.types";
 
 export const axiosClient = axios.create({
   baseURL: "",
@@ -48,7 +48,7 @@ axiosClient.interceptors.response.use(
     };
     const { status, data } = error.response || {};
 
-    if (status === 403 && data?.error === "PASSWORD_RESET_REQUIRED") {
+    if (status === 403 && data?.error === "passwordResetRequired") {
       return Promise.reject(error);
     }
 
@@ -75,16 +75,19 @@ axiosClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const response = await axios.post("/v1/user/refresh", {}, { withCredentials: true });
-        const newUser = response.data.metadata;
-        const newToken = response.data.token;
+        const response = await axios.post<{ session: UserSessionResponseDto; user: UserResponseDto }>(
+          "/v1/user/refresh",
+          {},
+          { withCredentials: true },
+        );
+        const { session, user } = response.data;
 
-        if (!newToken) throw new Error("Refresh failed");
+        if (!session?.accessToken) throw new Error("Refresh failed");
 
-        useAuthStore.getState().setAuth(newToken, newUser, response.data.password_reset_required);
-        processQueue(null, newToken);
+        useAuthStore.getState().setAuth(session, user);
+        processQueue(null, session.accessToken);
 
-        originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        originalRequest.headers.Authorization = `Bearer ${session.accessToken}`;
         return axiosClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError as AxiosError, null);

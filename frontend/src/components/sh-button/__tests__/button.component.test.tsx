@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect, vi } from "vitest";
-import { Button } from "../button.component";
 import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+import { Button } from "../button.component";
 
 describe("Button", () => {
   it("renders correctly with default props", () => {
@@ -18,6 +18,9 @@ describe("Button", () => {
 
     rerender(<Button variant="outline">Outline</Button>);
     expect(screen.getByRole("button")).toHaveAttribute("data-variant", "outline");
+
+    rerender(<Button variant="ghost">Ghost</Button>);
+    expect(screen.getByRole("button")).toHaveAttribute("data-variant", "ghost");
   });
 
   it("renders with different sizes", () => {
@@ -26,6 +29,9 @@ describe("Button", () => {
 
     rerender(<Button size="lg">Large</Button>);
     expect(screen.getByRole("button")).toHaveAttribute("data-size", "lg");
+
+    rerender(<Button size="icon">Icon</Button>);
+    expect(screen.getByRole("button")).toHaveAttribute("data-size", "icon");
   });
 
   it("handles click events", async () => {
@@ -51,6 +57,12 @@ describe("Button", () => {
     );
     const link = screen.getByRole("link", { name: /link button/i });
     expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/test");
     expect(link).toHaveAttribute("data-slot", "button");
+  });
+
+  it("applies custom className", () => {
+    render(<Button className="custom-class">Custom</Button>);
+    expect(screen.getByRole("button")).toHaveClass("custom-class");
   });
 });

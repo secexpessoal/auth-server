@@ -1,12 +1,12 @@
-// Reusing MetadataUserResponseDto because RegisterController returns it directly now
-import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
+import type { UserResponseDto } from "@modules/auth/molecule/auth.types";
+
+export type RegisterResponseDto = UserResponseDto;
 
 export type RegisterRequestDto = {
   email: string;
   username: string;
+  role?: "USER" | "MANAGER";
 };
-
-export type RegisterResponseDto = MetadataUserResponseDto;
 
 export type PaginationMetaDto = {
   page: number;

@@ -1,15 +1,15 @@
-import { useForm } from "@tanstack/react-form";
+import { Button } from "@components/sh-button/button.component";
+import { Input } from "@components/sh-input/input.component";
+import { Label } from "@components/sh-label/label.component";
+import { getErrorMessage } from "@lib/api-error/api-error.util";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Mail, Lock, LogIn, Loader2 } from "lucide-react";
+import { Loader2, Lock, LogIn, Mail } from "lucide-react";
 import toast from "react-hot-toast";
-
-import { Input } from "../../components/sh-input/input.component";
-import { Button } from "../../components/sh-button/button.component";
-import { Label } from "../../components/sh-label/label.component";
-import { loginSchema } from "./molecule/auth.schema";
+import { loginSchema, type LoginFormData } from "./molecule/auth.schema";
 import { loginAttempt } from "./services/auth.service";
-import { getErrorMessage } from "../../lib/api-error/api-error.util";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -17,12 +17,12 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      if (data.password_reset_required) {
+      if (data.session.passwordResetRequired) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
         navigate({ to: "/reset-password" });
       } else {
-        if (data.metadata.role === "ADMIN") {
-          toast.success(`Bem-vindo, ${data.metadata.username}!`);
+        if (data.user.roles.includes("ROLE_ADMIN")) {
+          toast.success(`Bem-vindo, ${data.user.profile.username}!`);
         }
 
         navigate({ to: "/" });
@@ -33,21 +33,21 @@ export function LoginPage() {
     },
   });
 
-  const form = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
       password: "",
     },
-    validators: {
-      onChange({ value }) {
-        const result = loginSchema.safeParse(value);
-        return result.success ? undefined : "Preencha os campos corretamente";
-      },
-    },
-    onSubmit: async ({ value }) => {
-      await loginMutation.mutateAsync(value);
-    },
   });
+
+  const onSubmit = async (values: LoginFormData) => {
+    await loginMutation.mutateAsync(values);
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 relative overflow-hidden">
@@ -64,70 +64,33 @@ export function LoginPage() {
           <p className="text-gray-500 mt-2 text-sm">Faça login para gerenciar o sistema</p>
         </div>
 
-        <form
-          onSubmit={(evemt) => {
-            evemt.preventDefault();
-            evemt.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="space-y-6"
-        >
-          <form.Field
-            name="email"
-            children={(field) => (
-              <div className="space-y-1">
-                <Label htmlFor={field.name} className="ml-1">
-                  E-mail
-                </Label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-1">
+            <Label htmlFor="email" className="ml-1">
+              E-mail
+            </Label>
 
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
 
-                  <Input
-                    id={field.name}
-                    type="email"
-                    className="pl-10"
-                    placeholder="admin@exemplo.com"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                  />
-                </div>
+              <Input id="email" type="email" className="pl-10" placeholder="admin@exemplo.com" {...register("email")} />
+            </div>
 
-                {field.state.meta.errors?.length ? (
-                  <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{field.state.meta.errors.join(", ")}</p>
-                ) : null}
-              </div>
-            )}
-          />
+            {errors.email && <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{errors.email.message}</p>}
+          </div>
 
-          <form.Field
-            name="password"
-            children={(field) => (
-              <div className="space-y-1">
-                <Label htmlFor={field.name} className="ml-1">
-                  Senha
-                </Label>
+          <div className="space-y-1">
+            <Label htmlFor="password" className="ml-1">
+              Senha
+            </Label>
 
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                  <Input
-                    id={field.name}
-                    type="password"
-                    className="pl-10"
-                    placeholder="••••••••"
-                    value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    onBlur={field.handleBlur}
-                  />
-                </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Input id="password" type="password" className="pl-10" placeholder="••••••••" {...register("password")} />
+            </div>
 
-                {field.state.meta.errors?.length ? (
-                  <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{field.state.meta.errors.join(", ")}</p>
-                ) : null}
-              </div>
-            )}
-          />
+            {errors.password && <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{errors.password.message}</p>}
+          </div>
 
           <Button type="submit" className="w-full h-12 text-lg shadow-primary-500/25" disabled={loginMutation.isPending}>
             {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

@@ -8,7 +8,7 @@
 package com.auth.domain.repository;
 
 import com.auth.domain.model.RefreshToken;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,5 +18,13 @@ import java.util.UUID;
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
     Optional<RefreshToken> findByToken(String token);
-    void deleteByUser(User user);
+
+    void deleteByUser(UserAuth user);
+
+    void deleteByToken(String token);
+
+    Optional<RefreshToken> findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
+            UserAuth user, String userAgent, String ipAddress, String origin, String referer);
+
+    void deleteByExpiryDateBefore(java.time.Instant now);
 }

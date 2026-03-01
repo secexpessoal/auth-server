@@ -14,7 +14,8 @@ import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -42,16 +43,20 @@ class RefreshTokenUseCaseTest {
     @InjectMocks
     private RefreshTokenUseCase refreshTokenUseCase;
 
-    private User testUser;
+    private UserAuth testUser;
     private RefreshToken oldToken;
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
-        testUser.setUserName("testuser");
+        testUser = new UserAuth();
         testUser.setEmail("test@example.com");
-        testUser.setRole(Role.USER);
+        testUser.setRoles(java.util.Set.of(Role.USER));
         testUser.setActive(true);
+
+        UserData userData = new UserData();
+        userData.setUserName("testuser");
+        userData.setUser(testUser);
+        testUser.setUserData(userData);
 
         oldToken = new RefreshToken();
         oldToken.setToken("old-refresh-token");
@@ -69,7 +74,8 @@ class RefreshTokenUseCaseTest {
         
         RefreshToken newToken = new RefreshToken();
         newToken.setToken("new-refresh-token");
-        when(refreshTokenService.createRefreshToken(testUser)).thenReturn(newToken);
+        newToken.setVersion(2);
+        when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(newToken);
 
         // Act
         AuthenticationResult result = refreshTokenUseCase.execute(request);
@@ -77,9 +83,10 @@ class RefreshTokenUseCaseTest {
 
         // Assert
         assertNotNull(response);
-        assertEquals("new-jwt", response.token());
+        assertEquals("new-jwt", response.session().accessToken());
         assertEquals("new-refresh-token", result.refreshToken());
-        verify(userService).incrementTokenVersion(testUser);
+        assertEquals(2, response.session().tokenVersion());
+        verify(refreshTokenService).deleteByToken("old-refresh-token");
         verify(refreshTokenService).verifyExpiration(oldToken);
     }
 }

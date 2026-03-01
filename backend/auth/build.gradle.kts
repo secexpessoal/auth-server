@@ -28,6 +28,7 @@ dependencies {
     implementation(libs.spring.boot.starter.webmvc)
     implementation(libs.spring.boot.starter.validation)
     implementation(libs.spring.boot.starter.restclient)
+    implementation(libs.spring.boot.starter.actuator)
     developmentOnly(libs.spring.boot.devtools)
     
     // Security

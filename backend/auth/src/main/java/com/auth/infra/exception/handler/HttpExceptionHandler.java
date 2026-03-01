@@ -16,9 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -83,12 +86,39 @@ public class HttpExceptionHandler {
     }
 
     /**
-     * Trata requisições para rotas que não existem.
+     * Trata requisições para rotas que não existem (Spring Boot 3.2+).
+     */
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<DataObjectError> handleNoResourceFound(NoResourceFoundException exception) {
+        log.warn("Recurso não encontrado: {}", exception.getResourcePath());
+        return buildErrorResponse("O recurso solicitado não foi encontrado no servidor", HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Trata requisições para rotas que não possuem manipulador.
      */
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<DataObjectError> handleNotFound(NoHandlerFoundException exception) {
         log.warn("Rota não encontrada: {}", exception.getRequestURL());
         return buildErrorResponse("O recurso solicitado não foi encontrado", HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Trata erros de parâmetros ausentes na requisição.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<DataObjectError> handleMissingParams(MissingServletRequestParameterException exception) {
+        log.warn("Parâmetro obrigatório ausente: {}", exception.getParameterName());
+        return buildErrorResponse("O parâmetro '" + exception.getParameterName() + "' é obrigatório", HttpStatus.BAD_REQUEST);
+    }
+
+    /**
+     * Trata erros de tipo de argumento inválido (ex: string onde se espera long).
+     */
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<DataObjectError> handleTypeMismatch(MethodArgumentTypeMismatchException exception) {
+        log.warn("Tipo de argumento inválido para o parâmetro {}: {}", exception.getName(), exception.getValue());
+        return buildErrorResponse("Valor inválido para o parâmetro '" + exception.getName() + "'", HttpStatus.BAD_REQUEST);
     }
 
     /**

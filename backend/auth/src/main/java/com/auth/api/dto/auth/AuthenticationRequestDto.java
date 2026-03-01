@@ -16,8 +16,8 @@ import lombok.Builder;
 
 @Builder
 public record AuthenticationRequestDto(
-        @Email(message = "O e-mail deve ser válido")
         @NotBlank(message = "O e-mail não pode estar em branco")
+        @Email(message = "O e-mail deve ser válido")
         @JsonProperty("email")
         String email,
 

@@ -7,15 +7,14 @@ describe("API Contract Validation", () => {
   describe("auth.types.ts Contract", () => {
     it("Should correctly map all fields of AuthenticationResponseDto", () => {
       // If the signature changes in the backend, this test (and TS compiler) will catch it if we update the fixture
-      expect(mockLoginResponseAdmin).toHaveProperty("token");
-      expect(mockLoginResponseAdmin).toHaveProperty("password_reset_required");
-      expect(mockLoginResponseAdmin).toHaveProperty("metadata");
+      expect(mockLoginResponseAdmin).toHaveProperty("session");
+      expect(mockLoginResponseAdmin).toHaveProperty("user");
 
-      expect(mockLoginResponseAdmin.metadata).toHaveProperty("id");
-      expect(mockLoginResponseAdmin.metadata).toHaveProperty("username");
-      expect(mockLoginResponseAdmin.metadata).toHaveProperty("email");
-      expect(mockLoginResponseAdmin.metadata).toHaveProperty("role");
-      expect(mockLoginResponseAdmin.metadata).toHaveProperty("active");
+      expect(mockLoginResponseAdmin.session).toHaveProperty("accessToken");
+      expect(mockLoginResponseAdmin.user).toHaveProperty("id");
+      expect(mockLoginResponseAdmin.user).toHaveProperty("email");
+      expect(mockLoginResponseAdmin.user.profile).toHaveProperty("username");
+      expect(mockLoginResponseAdmin.user).toHaveProperty("active");
     });
   });
 

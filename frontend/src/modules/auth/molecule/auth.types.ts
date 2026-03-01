@@ -1,19 +1,44 @@
-export type MetadataUserResponseDto = {
+export type InPersonWorkPeriodDto = {
+  frequencyCycleWeeks: number;
+  frequencyWeekMask: number;
+  frequencyDurationDays: number | null;
+};
+
+export type UserProfileResponseDto = {
+  username: string;
+  registration: string;
+  position: string;
+  birthDate: string | null;
+  workRegime: "HOME_WORK" | "OFFICE" | "HYBRID";
+  livesElsewhere: boolean;
+  inPersonWorkPeriod: InPersonWorkPeriodDto | null;
+};
+
+export type UserAuditResponseDto = {
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: string;
+};
+
+export type UserResponseDto = {
   id: string;
-  role: string;
   email: string;
   active: boolean;
-  username: string;
-  created_at?: string;
-  updated_at?: string;
-  updated_by?: string;
-  temp_password?: string;
+  roles: string[];
+  profile: UserProfileResponseDto;
+  audit: UserAuditResponseDto;
+  tempPassword?: string;
+};
+
+export type UserSessionResponseDto = {
+  accessToken: string;
+  tokenVersion: number;
+  passwordResetRequired: boolean;
 };
 
 export type AuthenticationResponseDto = {
-  readonly token: string;
-  readonly password_reset_required: boolean;
-  readonly metadata: MetadataUserResponseDto;
+  readonly session: UserSessionResponseDto;
+  readonly user: UserResponseDto;
 };
 
 export type AuthenticationRequestDto = {

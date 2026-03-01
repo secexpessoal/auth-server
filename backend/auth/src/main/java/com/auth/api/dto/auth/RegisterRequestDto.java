@@ -7,6 +7,7 @@
  */
 package com.auth.api.dto.auth;
 
+import com.auth.domain.model.Role;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.Email;
@@ -16,7 +17,7 @@ import lombok.Builder;
 
 @Builder
 public record RegisterRequestDto(
-        @Size(min = 3, max = 30, message = "O nome de usuário deve ter entre 3 e 30 caracteres")
+        @Size(min = 3, max = 100, message = "O nome de usuário deve ter entre 3 e 100 caracteres")
         @NotBlank(message = "O nome de usuário não pode estar em branco")
         @JsonProperty("username")
         String userName,
@@ -24,6 +25,12 @@ public record RegisterRequestDto(
         @Email(message = "O e-mail deve ser válido")
         @NotBlank(message = "O e-mail não pode estar em branco")
         @JsonProperty("email")
-        String email
+        String email,
+
+        @JsonProperty("role")
+        Role role
 ) {
+    public Role role() {
+        return role != null ? role : Role.USER;
+    }
 }

@@ -160,4 +160,15 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Remove number input arrows globally */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
 }
