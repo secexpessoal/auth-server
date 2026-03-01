@@ -6,7 +6,7 @@ COPY ../frontend/package*.json ./
 RUN npm install
 
 COPY ../frontend/ ./
-RUN npm run build
+RUN npm run build:docker
 
 FROM openjdk:25-ea-jdk-slim AS backend-build
 
