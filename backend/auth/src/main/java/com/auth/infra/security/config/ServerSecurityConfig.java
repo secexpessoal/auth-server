@@ -49,10 +49,15 @@ public class ServerSecurityConfig {
                     matcherRegistry
                             // Public API Matchers
                             .requestMatchers("/v1/user/login").permitAll()
+                            .requestMatchers("/v1/user/logout").permitAll()
                             .requestMatchers("/v1/user/refresh").permitAll()
-                            // Registro removido das rotas públicas
 
-                            // Admin API Matchers
+                            // NOTE: Precisa estar autenticado
+                            .requestMatchers("/v1/password/change").authenticated()
+                            .requestMatchers("/v1/user/profile/**").authenticated()
+                            .requestMatchers("/v1/password/first-change").authenticated()
+
+                            // NOTE: Precisa de Admin
                             .requestMatchers("/v1/user/register").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/admin").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/admin-reset").hasRole(Role.ADMIN.name())
@@ -60,11 +65,10 @@ public class ServerSecurityConfig {
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/deactivate").hasRole(Role.ADMIN.name())
 
-                            // Swagger Docs
+                            // NOTE: Swagger
                             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
-                            // SPA routing: permit all GET requests that aren't API endpoints (assets, html, SPA routes)
-                            .requestMatchers("/v1/password/first-change").authenticated()
+                            // NOTE: Roteamento SPA: permitir todas as solicitações GET que não sejam endpoints de API (assets, html, rotas SPA)
                             .requestMatchers(HttpMethod.GET, "/**").permitAll()
                             .anyRequest().authenticated();
                 })

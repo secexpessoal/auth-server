@@ -14,13 +14,19 @@ import lombok.Builder;
 
 @Builder
 public record InPersonWorkPeriodDto(
-        @Min(1) @Max(52)
-        @JsonProperty("frequencyCycleWeeks") Integer frequencyCycleWeeks,
+        @Min(1)
+        @Max(52)
+        @JsonProperty("frequencyCycleWeeks")
+        Integer frequencyCycleWeeks,
 
-        @Min(0) @Max(127)
-        @JsonProperty("frequencyWeekMask") Integer frequencyWeekMask,
+        @Min(0)
+        @Max(127)
+        @JsonProperty("frequencyWeekMask")
+        Integer frequencyWeekMask,
 
-        @Min(1) @Max(365)
-        @JsonProperty("frequencyDurationDays") Integer frequencyDurationDays
+        @Min(1)
+        @Max(365)
+        @JsonProperty("frequencyDurationDays")
+        Integer frequencyDurationDays
 ) {
 }

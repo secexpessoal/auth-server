@@ -32,6 +32,7 @@ public class ListUsersController {
 
     private final ListUsersUseCase listUsersUseCase;
 
+    // NOTE: Rota privada e só para ADMIN
     @GetMapping
     @Operation(summary = "Lista usuários com paginação", description = "Retorna uma lista de usuários cadastrados no formato paginado. Apenas para ADMIN.")
     public ResponseEntity<@NonNull PaginatedResponseDto<UserResponseDto>> listUsers(

@@ -12,7 +12,10 @@ import lombok.Builder;
 
 @Builder
 public record AuthenticationResponseDto(
-        @JsonProperty("session") UserSessionResponseDto session,
-        @JsonProperty("user") UserResponseDto user
+        @JsonProperty("session")
+        UserSessionResponseDto session,
+
+        @JsonProperty("user")
+        UserResponseDto user
 ) {
 }

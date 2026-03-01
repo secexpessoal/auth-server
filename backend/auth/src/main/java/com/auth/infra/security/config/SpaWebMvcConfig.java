@@ -1,5 +1,6 @@
 package com.auth.infra.security.config;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -9,10 +10,6 @@ import org.springframework.web.servlet.resource.PathResourceResolver;
 
 import java.io.IOException;
 
-/**
- * Configure global static resource handling for the Single Page Application (React/Tanstack).
- * Defers any non-API request mapping to the React Router.
- */
 @Configuration
 public class SpaWebMvcConfig implements WebMvcConfigurer {
 
@@ -23,20 +20,20 @@ public class SpaWebMvcConfig implements WebMvcConfigurer {
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
                     @Override
-                    protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                    protected Resource getResource(@NonNull String resourcePath, @NonNull Resource location) throws IOException {
                         Resource requestedResource = location.createRelative(resourcePath);
-                        
-                        // 1. If the exact file exists (e.g. /assets/index-xyz.js), return it.
+
+                        // NOTE: Se o arquivo exato existir (por exemplo, /assets/index-xyz.js), retorne-o.
                         if (requestedResource.exists() && requestedResource.isReadable()) {
                             return requestedResource;
                         }
-                        
-                        // 2. If it is an API call passing by mistake, allow it to 404 naturally.
+
+                        // NOTE: Se for uma chamada de API que passou por engano, permita que ela retorne um erro 404 naturalmente.
                         if (resourcePath.startsWith("v1/") || resourcePath.startsWith("swagger-ui/") || resourcePath.startsWith("v3/")) {
                             return null;
                         }
 
-                        // 3. Otherwise, it's a deep-linked SPA route (e.g. /login). Return index.html.
+                        // NOTE: Caso contrário, trata-se de uma rota SPA com link direto (por exemplo, /login). Retorna index.html.
                         return new ClassPathResource("/static/index.html");
                     }
                 });

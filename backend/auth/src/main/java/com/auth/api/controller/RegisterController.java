@@ -34,8 +34,9 @@ public class RegisterController {
 
     private final RegisterUseCase registerUseCase;
 
+    // NOTE: Rota privada e só para ADMIN
     @PostMapping
-    @Operation(summary = "Registra um novo usuário comum", description = "Cria uma conta com o cargo USER ou MANAGER. Aberto ao público.")
+    @Operation(summary = "Registra um novo usuário comum", description = "Cria uma conta com o cargo USER ou MANAGER.")
     public ResponseEntity<@NonNull UserResponseDto> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
         Role requestedRole = registerRequest.role();
         
@@ -47,6 +48,7 @@ public class RegisterController {
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
+    // NOTE: Rota privada e só para ADMIN
     @PostMapping("/admin")
     @Operation(summary = "Registra um novo administrador", description = "Cria uma conta com o cargo ADMIN. Requer token de administrador.")
     public ResponseEntity<@NonNull UserResponseDto> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {

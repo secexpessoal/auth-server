@@ -16,15 +16,26 @@ import java.time.Instant;
 
 @Builder
 public record UserProfileResponseDto(
-        @JsonProperty("username") String username,
-        @JsonProperty("registration") String registration,
-        @JsonProperty("position") String position,
+        @JsonProperty("username")
+        String username,
+
+        @JsonProperty("registration")
+        String registration,
+
+        @JsonProperty("position")
+        String position,
 
         @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
-        @JsonProperty("birthDate") Instant birthDate,
+        @JsonProperty("birthDate")
+        Instant birthDate,
 
-        @JsonProperty("workRegime") WorkRegime workRegime,
-        @JsonProperty("livesElsewhere") boolean livesElsewhere,
-        @JsonProperty("inPersonWorkPeriod") InPersonWorkPeriodDto inPersonWorkPeriod
+        @JsonProperty("workRegime")
+        WorkRegime workRegime,
+
+        @JsonProperty("livesElsewhere")
+        boolean livesElsewhere,
+
+        @JsonProperty("inPersonWorkPeriod")
+        InPersonWorkPeriodDto inPersonWorkPeriod
 ) {
 }

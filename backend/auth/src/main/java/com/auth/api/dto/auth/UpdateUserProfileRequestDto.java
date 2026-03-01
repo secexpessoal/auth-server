@@ -9,6 +9,7 @@ package com.auth.api.dto.auth;
 
 import com.auth.domain.model.WorkRegime;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 
@@ -17,20 +18,27 @@ import java.time.Instant;
 @Builder
 public record UpdateUserProfileRequestDto(
         @Size(min = 3, max = 100)
-        @JsonProperty("username") String username,
+        @JsonProperty("username")
+        String username,
 
         @Size(min = 5, max = 6)
-        @JsonProperty("position") String position,
+        @JsonProperty("position")
+        String position,
 
-        @JsonProperty("birthDate") Instant birthDate,
+        @JsonProperty("birthDate")
+        Instant birthDate,
 
-        @JsonProperty("registration") String registration,
+        @JsonProperty("registration")
+        String registration,
 
-        @JsonProperty("workRegime") WorkRegime workRegime,
+        @JsonProperty("workRegime")
+        WorkRegime workRegime,
 
-        @JsonProperty("livesElsewhere") Boolean livesElsewhere,
+        @JsonProperty("livesElsewhere")
+        Boolean livesElsewhere,
 
-        @jakarta.validation.Valid
-        @JsonProperty("inPersonWorkPeriod") InPersonWorkPeriodDto inPersonWorkPeriod
+        @Valid
+        @JsonProperty("inPersonWorkPeriod")
+        InPersonWorkPeriodDto inPersonWorkPeriod
 ) {
 }

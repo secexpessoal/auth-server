@@ -41,6 +41,7 @@ public class AuthController {
     private final ValidationUseCase validationUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
 
+    // NOTE: Rota publica
     @PostMapping("/login")
     @Operation(summary = "Realiza o login do usuário", description = "Valida as credenciais, retorna JWT no JSON e envia Refresh Token num cookie HttpOnly.")
     public ResponseEntity<@NonNull AuthenticationResponseDto> login(@Valid @RequestBody AuthenticationRequestDto loginRequest) {
@@ -51,6 +52,7 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
     }
 
+    // NOTE: Rota publica
     @PostMapping("/refresh")
     @Operation(summary = "Renova o token de acesso", description = "Lê o Refresh Token do cookie HttpOnly e retorna um novo Access Token.")
     public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = true) String refreshTokenCookie) {
@@ -62,6 +64,7 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
     }
 
+    // NOTE: Não sei se precisa ser auth, por que ele mata o refresh token
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador.")
     public ResponseEntity<@NonNull Void> logout() {
@@ -70,6 +73,7 @@ public class AuthController {
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
+    // NOTE: Rota privada, usuário precisa mandar o token
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
     public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {

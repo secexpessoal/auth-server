@@ -15,12 +15,25 @@ import java.util.UUID;
 
 @Builder
 public record UserResponseDto(
-        @JsonProperty("id") UUID id,
-        @JsonProperty("email") String email,
-        @JsonProperty("active") boolean active,
-        @JsonProperty("roles") Set<String> roles,
-        @JsonProperty("profile") UserProfileResponseDto profile,
-        @JsonProperty("audit") UserAuditResponseDto audit,
-        @JsonProperty("tempPassword") String tempPassword
+        @JsonProperty("id")
+        UUID id,
+
+        @JsonProperty("email")
+        String email,
+
+        @JsonProperty("active")
+        boolean active,
+
+        @JsonProperty("roles")
+        Set<String> roles,
+
+        @JsonProperty("profile")
+        UserProfileResponseDto profile,
+
+        @JsonProperty("audit")
+        UserAuditResponseDto audit,
+
+        @JsonProperty("tempPassword")
+        String tempPassword
 ) {
 }

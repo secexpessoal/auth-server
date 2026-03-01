@@ -1,99 +1,188 @@
 # System Auth - Spring JWT
 
-Este projeto é um painel administrativo para controle de usuários e uma API de autenticação robusta para aplicações externas, utilizando tokens JWT.
+Serviço centralizado de gestão de identidade e autenticação para ecossistemas de aplicações. Este projeto provê um Painel Administrativo para controle de ciclo de vida de usuários e uma API robusta baseada em JWT para integração com serviços externos.
 
-## Principais Acessos
+---
 
-- `/` : Interface do Painel Administrativo (Frontend).
-- `/swagger-ui.html` : Documentação interativa e testes da API (Swagger/OpenAPI).
+## 🚀 Acessos Rápidos
 
-## Intuito do Projeto
+- **Painel Administrativo (Frontend)**: `/`
+- **Documentação de API (Swagger)**: `/swagger-ui.html`
 
-O sistema centraliza a gestão de identidade, permitindo que administradores controlem o ciclo de vida dos usuários (criação, ativação, desativação). Ele expõe endpoints para que outras aplicações realizem autenticação de forma segura e padronizada.
+---
 
-### Funcionalidades:
+## 🏗️ Fluxo Geral do Ecossistema
 
-- **Gestão de Usuários**: Listagem paginada, ativação e desativação de contas.
-- **Segurança**: Autenticação via JWT com suporte a Refresh Token via Cookie HttpOnly.
-- **Controle de Senhas**: Troca voluntária, primeiro acesso e reset administrativo.
-- **Perfis**: Consulta e atualização de metadados de perfil.
-
-## Fluxo de Autenticação e Registro
-
-Abaixo, o diagrama detalha como um administrador cria usuários e como o processo de login funciona para aplicações externas.
+Este diagrama ilustra a relação entre o Administrador, o Usuário Final, o Auth Server e as Aplicações de Terceiros.
 
 ```mermaid
 sequenceDiagram
-    participant Admin as Administrador (Painel)
-    participant App as Aplicação Externa (Client)
-    participant API as Auth API (Backend)
+    autonumber
+    participant Admin as Administrador
+    participant User as Usuário Final
+    participant Auth as Auth Server (Este App)
+    participant Ext as App Externa (Seu Backend)
+
+    Note over Admin, Auth: Gestão Administrativa
+    Admin->>Auth: Cria/Ativa Usuários e Reseta Senhas
+
+    Note over User, Auth: Autenticação
+    User->>Auth: Realiza Login e obtém JWT
+
+    Note over User, Ext: Consumo de Serviços
+    User->>Ext: Requisição com Token JWT
+    Ext->>Auth: Valida Token e obtém Identidade
+    Auth-->>Ext: Retorna Claims (Roles, ID, Email)
+    Ext-->>User: Entrega Recurso Protegido
+```
+
+---
+
+## 🔐 Módulo 1: Autenticação e Gestão de Sessão (Público)
+
+Detalhamento técnico do processo de login, renovação via Refresh Token (Cookie HttpOnly) e encerramento de sessão.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Client as Cliente (Web/Mobile)
+    participant API as Auth API
     participant DB as Banco de Dados
 
-    Note over Admin, DB: Gestão de Usuários
-    Admin->>API: POST /v1/user/register (Cria usuário)
-    API->>DB: Salva usuário com status PENDENTE
-    Admin->>API: PATCH /v1/user/activate (Ativa usuário)
-    API->>DB: Atualiza status para ATIVO
-
-    Note over App, DB: Fluxo de Autenticação
-    App->>API: POST /v1/user/login (Credenciais)
-    API->>DB: Valida credenciais e status
+    Note over Client, DB: Processo de Login
+    Client->>API: POST /v1/user/login (Email/Senha)
+    API->>DB: Valida credenciais e status (Ativo?)
     DB-->>API: Usuário OK
-    API-->>App: Retorna JWT Access Token + Cookie Refresh Token
+    API-->>Client: 200 OK (JSON: AccessToken | Set-Cookie: RefreshToken)
+
+    Note over Client, DB: Ciclo de Refresh (Silencioso)
+    Client->>API: POST /v1/user/refresh (Lê Cookie HttpOnly)
+    API->>DB: Valida persistência do Refresh Token
+    DB-->>API: Token Válido
+    API-->>Client: 200 OK (JSON: Novo AccessToken | Set-Cookie: Novo RefreshToken)
+
+    Note over Client, DB: Logout
+    Client->>API: POST /v1/user/logout
+    API-->>Client: 204 No Content (Limpa Cookie de Refresh)
 ```
 
-## Gestão de Metadados e Operações Administrativas
+---
 
-Este fluxo descreve como o sistema lida com a manutenção de dados e status dos usuários após o registro.
+## 👥 Módulo 2: Gestão de Contas e Ciclo de Vida (ADMIN)
+
+Fluxo completo de criação e controle de privilégios executado exclusivamente por administradores.
 
 ```mermaid
 sequenceDiagram
-    participant Admin as Administrador (Painel)
-    participant API as Auth API (Backend)
+    autonumber
+    participant Admin as Administrador
+    participant API as Auth API
     participant DB as Banco de Dados
 
-    Note over Admin, DB: Operações de Metadados
-    Admin->>API: GET /v1/user (Lista paginada)
-    API->>DB: Consulta usuários
-    DB-->>API: Lista de dados
-    API-->>Admin: Retorna JSON paginado
+    Note over Admin, DB: Registro de Novos Membros
+    Admin->>API: POST /v1/user/register (Payload: User/Manager)
+    API->>DB: Persiste com Status PENDENTE
+    API-->>Admin: Usuário Criado (Pendente)
 
-    Admin->>API: PATCH /v1/user/profile/{id} (Atualiza dados)
-    API->>DB: Update metadados
-    DB-->>API: Sucesso
-    API-->>Admin: Perfil atualizado
+    Note over Admin, DB: Gestão de Status
+    Admin->>API: GET /v1/user (Consulta Paginada)
+    Admin->>API: PATCH /v1/user/activate?id={uuid}
+    API->>DB: Altera Status para ATIVO
+    Admin->>API: PATCH /v1/user/deactivate?id={uuid}
+    API->>DB: Altera Status para INATIVO
 
-    Admin->>API: POST /v1/password/admin-reset (Reset de senha)
-    API->>DB: Gera senha temporária
-    DB-->>API: Senha OK
-    API-->>Admin: Retorna senha provisória
+    Note over Admin, DB: Registro de Administradores
+    Admin->>API: POST /v1/user/register/admin
+    API->>DB: Persiste novo ADMIN
 ```
 
-## Como Conectar e Chamar Operações
+---
 
-Para integrar sua aplicação com este serviço, utilize os endpoints conforme as categorias abaixo:
+## 🔑 Módulo 3: Segurança e Políticas de Senha
 
-### 1. Autenticação e Sessão (`/v1/user`)
+Processos de segurança para troca voluntária, segurança de primeiro acesso e recuperação administrativa.
 
-- **Login**: `POST /login` - Retorna `accessToken` no corpo e define `refresh_token` no cookie.
-- **Refresh**: `POST /refresh` - Usa o cookie de refresh para renovar o acesso.
-- **Logout**: `POST /logout` - Invalida o cookie de sessão.
-- **Perfil**: `GET /profile` - Retorna os dados do usuário logado (Requer Bearer Token).
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as Usuário
+    participant Admin as Administrador
+    participant API as Auth API
+    participant DB as Banco de Dados
 
-### 2. Gestão de Usuários e Registro
+    Note over User, DB: Troca Voluntária (Logado)
+    User->>API: POST /v1/password/change (Senha Antiga/Nova)
+    API->>DB: Valida atual e persiste nova
+    API-->>User: Confirmação de Alteração
 
-- **Registro**: `POST /v1/user/register` - Cria novo usuário (Apenas Admin).
-- **Registro Admin**: `POST /v1/user/register/admin` - Cria novo administrador.
-- **Listagem**: `GET /v1/user` - Lista usuários com paginação (Apenas Admin).
-- **Ativação**: `PATCH /v1/user/activate?id={uuid}` - Ativa conta.
-- **Desativação**: `PATCH /v1/user/deactivate?id={uuid}` - Suspende conta.
-- **Atualizar Perfil**: `PATCH /v1/user/profile/{id}` - Altera metadados do usuário.
+    Note over User, DB: Primeiro Acesso (Pós-Registro ou Reset)
+    User->>API: POST /v1/password/first-change (Nova Senha Definitiva)
+    API->>DB: Remove flag de troca obrigatória
+    API-->>User: Acesso Integral Configurado
 
-### 3. Gestão de Senhas (`/v1/password`)
+    Note over Admin, DB: Reset Emergencial
+    Admin->>API: POST /v1/password/admin-reset (ID)
+    API->>DB: Gera hash temporário e marca como "Troca Obrigatória"
+    API-->>Admin: Retorna Senha Temporária em Texto Puro (Para comunicar o usuário)
+```
 
-- **Troca de Senha**: `POST /change` - Altera a própria senha (Autenticado).
-- **Primeiro Acesso**: `POST /first-change` - Define senha após reset ou criação.
-- **Reset Admin**: `POST /admin-reset` - Gera nova senha para o usuário (Apenas Admin).
+---
+
+## 👤 Módulo 4: Perfil e Dados Cadastrais (Autenticado)
+
+Acesso a metadados do usuário logado e edição de informações de perfil.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as Usuário Logado
+    participant API as Auth API
+    participant DB as Banco de Dados
+
+    User->>API: GET /v1/user/profile (Header: Authorization)
+    API->>DB: Busca detalhes do portador do token
+    DB-->>API: Dados (Roles, Email, Metadados)
+    API-->>User: Retorna Objeto Perfil
+
+    User->>API: PATCH /v1/user/profile/{id} (Novos dados)
+    API->>DB: Atualiza campos permitidos
+    API-->>User: Retorna Perfil Atualizado
+```
+
+---
+
+## 🔗 Guia de Integração para Outros Backends
+
+Fluxo sugerido para aplicações externas que utilizam o Auth Server como Provedor de Identidade (IdP).
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant User as Usuário Final
+    participant MyApp as Sua API (Externo)
+    participant Auth as Auth Server (Este Projeto)
+
+    Note over User, MyApp: Início da Requisição
+    User->>MyApp: Chama recurso protegido (Envia JWT no Header)
+
+    Note over MyApp, Auth: Validação de Identidade (Auth Interceptor)
+    MyApp->>Auth: GET /v1/user/profile (Repassa o Token JWT)
+
+    alt Token é Válido
+        Auth-->>MyApp: 200 OK (JSON: id, email, roles, metadata)
+        Note left of MyApp: Aplica Lógica de Autorização Interna baseada nas Roles recebidas
+        MyApp->>User: 200 OK (Retorna os dados da sua API)
+    else Token Inválido/Expirado
+        Auth-->>MyApp: 401 Unauthorized
+        MyApp->>User: 401 Unauthorized (Exige novo login no Auth Server)
+    end
+```
+
+### Regras de Ouro para APIs Externas:
+
+1. **Não armazene senhas**: Deixe que o Painel Admin deste projeto cuide de toda a gestão de segurança.
+2. **Valide em cada request**: Utilize o endpoint de perfil do Auth Server como uma barreira de segurança (Introspecção de Token).
+3. **Roles Dinâmicas**: Use as roles retornadas pelo Auth Server para controlar o acesso granular às suas próprias rotas.
 
 ---
 
