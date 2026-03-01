@@ -30,8 +30,11 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
+import toast from "react-hot-toast";
 import type { UserResponseDto } from "../../auth/molecule/auth.types";
 import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "../molecule/user.schema";
+import { updateUserRoles } from "../services/user.service";
+// import { Badge } from "@components/sh-badge/badge.component";
 
 export function UserDetailsModal({
   open,
@@ -40,6 +43,7 @@ export function UserDetailsModal({
   onUpdate,
   onReset,
   onToggleStatus,
+  onUpdateRoles,
   isPending,
 }: {
   open: boolean;
@@ -48,10 +52,13 @@ export function UserDetailsModal({
   onUpdate: (payload: UpdateUserProfileRequestDto) => void;
   onReset: () => void;
   onToggleStatus: () => void;
+  onUpdateRoles?: (roles: string[]) => void;
   isPending: boolean;
 }) {
   const [hybridMode, setHybridMode] = useState<"specific" | "consecutive">("specific");
   const [prevSignature, setPrevSignature] = useState<string | null>(null);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [isUpdatingRoles, setIsUpdatingRoles] = useState(false);
 
   const {
     control,
@@ -98,6 +105,7 @@ export function UserDetailsModal({
     setPrevSignature(currentSignature);
     if (open && user) {
       setHybridMode(user.profile.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
+      setSelectedRoles(user.roles);
     }
   }
 
@@ -632,6 +640,81 @@ export function UserDetailsModal({
                             <UserCheck className="w-6 h-6 mr-4 opacity-70" /> Liberar Acesso
                           </>
                         )}
+                      </Button>
+                    </div>
+
+                    <div className="space-y-4 pt-6 mt-6 border-t border-gray-100">
+                      <div className="flex items-center gap-2 mb-2">
+                        <ShieldAlert className="w-5 h-5 text-amber-500" />
+                        <h4 className="text-[12px] font-black text-gray-500 uppercase tracking-widest">Gestão de Cargos</h4>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-3">
+                        {["ROLE_ADMIN", "ROLE_MANAGER", "ROLE_USER"].map((role) => (
+                          <div
+                            key={role}
+                            className={cn(
+                              "flex items-center justify-between p-4 rounded-2xl border transition-all cursor-pointer group",
+                              selectedRoles.includes(role) ? "bg-primary-50/50 border-primary-200" : "bg-white border-gray-100 hover:border-gray-200",
+                            )}
+                            onClick={() => {
+                              if (selectedRoles.includes(role)) {
+                                if (selectedRoles.length > 1) {
+                                  setSelectedRoles(selectedRoles.filter((r) => r !== role));
+                                } else {
+                                  toast.error("O usuário deve possuir pelo menos um cargo.");
+                                }
+                              } else {
+                                setSelectedRoles([...selectedRoles, role]);
+                              }
+                            }}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className={cn(
+                                  "w-5 h-5 rounded-lg border-2 flex items-center justify-center transition-all",
+                                  selectedRoles.includes(role) ? "bg-primary-600 border-primary-600" : "border-gray-300 group-hover:border-gray-400",
+                                )}
+                              >
+                                {selectedRoles.includes(role) && <Check className="w-3.5 h-3.5 text-white" />}
+                              </div>
+                              <span className={cn("text-sm font-bold", selectedRoles.includes(role) ? "text-primary-900" : "text-gray-600")}>
+                                {role === "ROLE_ADMIN" ? "Administrador" : role === "ROLE_MANAGER" ? "Gestor" : "Usuário Comum"}
+                              </span>
+                            </div>
+                            {selectedRoles.includes(role) && (
+                              <div className="bg-primary-100/50 text-primary-700 font-black px-2 py-0.5 rounded-md text-[9px] uppercase tracking-tighter border border-primary-200/50">
+                                Selecionado
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="default"
+                        className="w-full h-14 rounded-2xl font-black text-sm shadow-md bg-gray-900 hover:bg-black transition-all mt-2"
+                        disabled={
+                          isUpdatingRoles || isPending || JSON.stringify([...selectedRoles].sort()) === JSON.stringify([...user.roles].sort())
+                        }
+                        onClick={async () => {
+                          try {
+                            setIsUpdatingRoles(true);
+                            await updateUserRoles(user.id, selectedRoles);
+                            toast.success("Cargos atualizados com sucesso!");
+                            if (onUpdateRoles) onUpdateRoles(selectedRoles);
+                            // Sincronizar localmente se necessário ou deixar o refresh cuidar
+                          } catch (error) {
+                            console.error("Erro ao atualizar cargos:", error);
+                            toast.error("Erro ao atualizar cargos.");
+                          } finally {
+                            setIsUpdatingRoles(false);
+                          }
+                        }}
+                      >
+                        {isUpdatingRoles ? <Spinner className="w-4 h-4 mr-2" /> : <Shield className="w-4 h-4 mr-2" />}
+                        Aplicar Novos Cargos
                       </Button>
                     </div>
                   </div>

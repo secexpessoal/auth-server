@@ -311,6 +311,9 @@ export function UsersTableComponent() {
 
           setDetailsModalOpen(false);
         }}
+        onUpdateRoles={() => {
+          queryClient.invalidateQueries({ queryKey: ["users"] });
+        }}
         isPending={updateProfileMutation.isPending || resetMutation.isPending || deactivateMutation.isPending || activateMutation.isPending}
       />
 

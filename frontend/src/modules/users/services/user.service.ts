@@ -67,3 +67,13 @@ export async function updateUserProfile(userId: string, payload: UpdateUserProfi
   const { data } = await axiosClient.patch<UserResponseDto>(`/v1/user/profile/${userId}`, payload);
   return data;
 }
+
+/**
+ * Atualiza os cargos (roles) de um usuário.
+ */
+export async function updateUserRoles(userId: string, roles: string[]): Promise<UserResponseDto> {
+  // O backend espera um set de Role (enum), enviamos as strings sem o prefixo ROLE_
+  const sanitizedRoles = roles.map((r) => r.replace("ROLE_", ""));
+  const { data } = await axiosClient.patch<UserResponseDto>(`/v1/user/${userId}/roles`, { roles: sanitizedRoles });
+  return data;
+}
