@@ -1,8 +1,9 @@
 import { Outlet, createRootRoute, createRoute, createRouter, redirect } from "@tanstack/react-router";
-import { AppErrorBoundary } from "./app-error-boundary.component";
+import { AppErrorBoundary } from "./errors/app-error-boundary.component";
 import { useAuthStore } from "../store/auth.store";
 import { LoginPage } from "../modules/auth/login.page";
 import { ResetPasswordPage } from "../modules/auth/reset-password.page";
+import { NotFoundPage } from "./errors/not-found.page";
 import { UsersPage } from "../modules/users/users.page";
 import toast from "react-hot-toast";
 
@@ -79,6 +80,7 @@ export const routeTree = rootRoute.addChildren([loginRoute, protectedLayout.addC
 export const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  defaultNotFoundComponent: NotFoundPage,
 });
 
 // NOTE: Subscrição reativa para gerenciar navegação baseada no estado global (Perfec SPA Architecture)
