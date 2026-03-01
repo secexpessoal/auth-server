@@ -87,16 +87,26 @@ sequenceDiagram
     API-->>Admin: Usuário Criado (Pendente)
 
     Note over Admin, DB: Gestão de Status
-    Admin->>API: GET /v1/user (Consulta Paginada)
-    Admin->>API: PATCH /v1/user/activate?id={uuid}
+    Admin->>Auth API: GET /v1/user?email={...}&userName={...}&position={...}
+    Admin->>Auth API: PATCH /v1/user/activate?id={uuid}
     API->>DB: Altera Status para ATIVO
-    Admin->>API: PATCH /v1/user/deactivate?id={uuid}
+    Admin->>Auth API: PATCH /v1/user/deactivate?id={uuid}
     API->>DB: Altera Status para INATIVO
+
+    Note over Admin, DB: Gestão de Perfis e Cargos
+    Admin->>Auth API: PATCH /v1/user/profile/{id} (Atualiza Metadados)
+    Admin->>Auth API: PATCH /v1/user/{id}/roles (Atualiza Roles: USER, MANAGER, ADMIN)
 
     Note over Admin, DB: Registro de Administradores
     Admin->>API: POST /v1/user/register/admin
     API->>DB: Persiste novo ADMIN
 ```
+
+### Detalhes de Endpoints ADMIN:
+
+- **Listagem Paginada (`GET /v1/user`)**: Suporta filtros por `email`, `userName` e `position` (Cargo).
+- **Gestão de Roles (`PATCH /v1/user/{id}/roles`)**: Permite alteração granular dos privilégios de acesso de qualquer usuário.
+- **Registro de Administradores (`POST /v1/user/register/admin`)**: Endpoint exclusivo para criação de novas contas com privilégios totais.
 
 ---
 
@@ -146,10 +156,13 @@ sequenceDiagram
     DB-->>API: Dados (Roles, Email, Metadados)
     API-->>User: Retorna Objeto Perfil
 
+    Note over User, API: Edição de Perfil
     User->>API: PATCH /v1/user/profile/{id} (Novos dados)
-    API->>DB: Atualiza campos permitidos
+    API->>DB: Atualiza campos permitidos (Nome, Cargo, etc)
     API-->>User: Retorna Perfil Atualizado
 ```
+
+````
 
 ---
 
@@ -199,7 +212,7 @@ sequenceDiagram
         Auth-->>MyApp: 401 Unauthorized
         MyApp->>User: 401 Unauthorized (Exige novo login no Auth Server)
     end
-```
+````
 
 ### Regras de Ouro para APIs Externas:
 
@@ -237,6 +250,28 @@ Cada log gerado no backend inclui:
 
 - `requestId`: ID único para rastrear uma operação de ponta a ponta.
 - `userEmail`: Identificação do usuário que realizou a ação.
+
+---
+
+## ⚠️ Sistema de Erros Unificado
+
+O projeto possui um sistema híbrido de tratamento de erros que garante a melhor experiência tanto para desenvolvedores (API) quanto para usuários (Interface).
+
+### Fluxo de Redirecionamento:
+
+1. O Backend (`CustomErrorController`) intercepta erros de infraestrutura ou rotas não mapeadas.
+2. Se a requisição **não** for para `/v1/**` (ex: usuário digitou URL errada no browser):
+   - O backend responde com `302 Found` para `/?error_code={status}`.
+3. O Frontend intercepta o parâmetro via Router e renderiza a componente `ErrorPage`.
+4. Se for uma chamada de API (`/v1/**`), o backend retorna um JSON estruturado com a mensagem de erro.
+
+### Componente de UI (`ErrorPage`):
+
+Localizada em `frontend/src/app/errors/error.page.tsx`, esta página oferece:
+
+- Identificação visual do erro (404, 403, 500).
+- Detalhes técnicos opcionais para depuração.
+- Atalhos para "Voltar ao Início" ou "Página Anterior".
 
 ---
 
