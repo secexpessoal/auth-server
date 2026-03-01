@@ -11,7 +11,9 @@ import com.auth.application.service.CustomUserDetailsService;
 import com.auth.domain.model.Role;
 import com.auth.infra.security.filter.CsrfCookieFilter;
 import com.auth.infra.security.filter.JwtAuthenticationFilter;
+import com.auth.infra.security.filter.MdcFilter;
 import com.auth.infra.security.filter.PasswordResetFilter;
+import com.auth.infra.security.filter.RateLimitingFilter;
 import com.auth.infra.security.handler.CustomAccessDeniedHandler;
 import com.auth.infra.security.handler.CustomAuthenticationEntryPoint;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -40,6 +42,8 @@ public class ServerSecurityConfig {
     private final JwtGeneratorService jwtGeneratorService;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
+    private final RateLimitingFilter rateLimitingFilter;
+    private final MdcFilter mdcFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -50,6 +54,8 @@ public class ServerSecurityConfig {
         CsrfCookieFilter csrfCookieFilter = new CsrfCookieFilter();
 
         httpSecurity
+                .addFilterBefore(mdcFilter, UsernamePasswordAuthenticationFilter.class) // NOTE: MDC em primeiro para rastrear tudo
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // NOTE: Permite o JS ler o cookie XSRF-TOKEN
                         .csrfTokenRequestHandler(csrftokenrequestattributehandler)

@@ -1,0 +1,132 @@
+Initialized native services in: C:\Users\vinicius\.gradle\native
+Initialized jansi services in: C:\Users\vinicius\.gradle\native
+The client will now receive all logging from the daemon (pid: 8480). The daemon log file: C:\Users\vinicius\.gradle\daemon\9.3.0\daemon-8480.out.log
+Starting 34th build in daemon [uptime: 2 hrs 46 mins 38.22 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 12 worker leases.
+Operational build model parameters: {requiresToolingModels=false, parallelProjectExecution=false, configureOnDemand=false, configurationCache=false, configurationCacheParallelStore=false, configurationCacheParallelLoad=true, isolatedProjects=false, parallelProjectConfiguration=false, intermediateModelCache=false, parallelToolingApiActions=false, invalidateCoupledProjects=false, modelAsProjectDependency=false, resilientModelBuilding=false}
+Now considering [C:\Users\vinicius\Desktop\spring-jwt-auth\backend] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\settings.gradle.kts'.
+Projects loaded. Root project using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\build.gradle.kts'.
+Included projects: [root project 'spring-jwt-auth', project ':auth']
+
+> Configure project :
+Evaluating root project 'spring-jwt-auth' using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2', apply: false]
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7', apply: false]
+
+> Configure project :auth
+Evaluating project ':auth' using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2']
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7']
+Applying dependency management to configuration 'annotationProcessor' in project 'auth'
+Applying dependency management to configuration 'apiElements' in project 'auth'
+Applying dependency management to configuration 'archives' in project 'auth'
+Applying dependency management to configuration 'bootArchives' in project 'auth'
+Applying dependency management to configuration 'compileClasspath' in project 'auth'
+Applying dependency management to configuration 'compileOnly' in project 'auth'
+Applying dependency management to configuration 'default' in project 'auth'
+Applying dependency management to configuration 'developmentOnly' in project 'auth'
+Applying dependency management to configuration 'implementation' in project 'auth'
+Applying dependency management to configuration 'mainSourceElements' in project 'auth'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'auth'
+Applying dependency management to configuration 'runtimeClasspath' in project 'auth'
+Applying dependency management to configuration 'runtimeElements' in project 'auth'
+Applying dependency management to configuration 'runtimeOnly' in project 'auth'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'auth'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'auth'
+Applying dependency management to configuration 'testCompileClasspath' in project 'auth'
+Applying dependency management to configuration 'testCompileOnly' in project 'auth'
+Applying dependency management to configuration 'testImplementation' in project 'auth'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'auth'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'auth'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'auth'
+All projects evaluated.
+Task path ':auth:test' matched project ':auth'
+Task name matched 'test'
+Selected primary task 'test' from project :auth
+Resolving global dependency management for project 'auth'
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':auth:compileJava', task ':auth:processResources', task ':auth:classes', task ':auth:compileTestJava', task ':auth:processTestResources', task ':auth:testClasses', task ':auth:test']
+Tasks that were excluded: []
+Resolve mutations for :auth:compileJava (Thread[#5201,Execution worker,5,main]) started.
+:auth:compileJava (Thread[#5201,Execution worker,5,main]) started.
+
+> Task :auth:compileJava
+Custom actions are attached to task ':auth:compileJava'.
+Caching disabled for task ':auth:compileJava' because:
+  Build cache is disabled
+Task ':auth:compileJava' is not up-to-date because:
+  One or more additional actions for task ':auth:compileJava' have changed.
+The input changes require a full rebuild for incremental task ':auth:compileJava'.
+Compilation mode: in-process compilation
+Full recompilation is required because no incremental change information is available. This is usually caused by clean builds or changing compiler arguments.
+Compiling with toolchain 'C:\Users\vinicius\AppData\Local\mise\installs\java\25.0.2'.
+Compiling with JDK Java compiler API.
+C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\domain\model\RefreshToken.java:53: warning: @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+    private Integer version = 0;
+                    ^
+C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:43: error: cannot find symbol
+    private final RateLimitingFilter rateLimitingFilter;
+                  ^
+  symbol:   class RateLimitingFilter
+  location: class ServerSecurityConfig
+C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:44: error: cannot find symbol
+    private final MdcFilter mdcFilter;
+                  ^
+  symbol:   class MdcFilter
+  location: class ServerSecurityConfig
+C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:36: error: cannot find symbol
+@RequiredArgsConstructor
+^
+  symbol:   class RateLimitingFilter
+  location: class ServerSecurityConfig
+3 errors
+1 warning
+
+> Task :auth:compileJava FAILED
+
+[Incubating] Problems report is available at: file:///C:/Users/vinicius/Desktop/spring-jwt-auth/backend/build/reports/problems/problems-report.html
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':auth:compileJava'.
+> Compilation failed; see the compiler output below.
+  C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\domain\model\RefreshToken.java:53: warning: @Builder will ignore the initializing expression entirely. If you want the initializing expression to serve as default, add @Builder.Default. If it is not supposed to be settable during building, make the field final.
+      private Integer version = 0;
+                      ^
+  C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:43: error: cannot find symbol
+      private final RateLimitingFilter rateLimitingFilter;
+                    ^
+    symbol:   class RateLimitingFilter
+    location: class ServerSecurityConfig
+  C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:44: error: cannot find symbol
+      private final MdcFilter mdcFilter;
+                    ^
+    symbol:   class MdcFilter
+    location: class ServerSecurityConfig
+  C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\main\java\com\auth\infra\security\config\ServerSecurityConfig.java:36: error: cannot find symbol
+  @RequiredArgsConstructor
+  ^
+    symbol:   class RateLimitingFilter
+    location: class ServerSecurityConfig
+  3 errors
+  1 warning
+
+* Try:
+> Check your code and dependencies to fix the compilation error(s)
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 4s
+1 actionable task: 1 executed
+Watched directory hierarchies: [C:\Users\vinicius\Desktop\spring-jwt-auth\backend]

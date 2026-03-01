@@ -37,6 +37,7 @@ class RateLimitingFilterTest {
     @BeforeEach
     void setUp() {
         rateLimitingFilter = new RateLimitingFilter(objectMapper);
+        org.springframework.test.util.ReflectionTestUtils.setField(rateLimitingFilter, "enabled", true);
     }
 
     @Test

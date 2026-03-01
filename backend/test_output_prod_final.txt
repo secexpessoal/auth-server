@@ -1,0 +1,531 @@
+Initialized native services in: C:\Users\vinicius\.gradle\native
+Initialized jansi services in: C:\Users\vinicius\.gradle\native
+The client will now receive all logging from the daemon (pid: 8480). The daemon log file: C:\Users\vinicius\.gradle\daemon\9.3.0\daemon-8480.out.log
+Starting 38th build in daemon [uptime: 2 hrs 51 mins 11.707 secs, performance: 100%, GC rate: 0.00/s, heap usage: 0% of 2 GiB]
+Using 12 worker leases.
+Operational build model parameters: {requiresToolingModels=false, parallelProjectExecution=false, configureOnDemand=false, configurationCache=false, configurationCacheParallelStore=false, configurationCacheParallelLoad=true, isolatedProjects=false, parallelProjectConfiguration=false, intermediateModelCache=false, parallelToolingApiActions=false, invalidateCoupledProjects=false, modelAsProjectDependency=false, resilientModelBuilding=false}
+Now considering [C:\Users\vinicius\Desktop\spring-jwt-auth\backend] as hierarchies to watch
+Watching the file system is configured to be enabled if available
+File system watching is active
+Starting Build
+Settings evaluated using settings file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\settings.gradle.kts'.
+Projects loaded. Root project using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\build.gradle.kts'.
+Included projects: [root project 'spring-jwt-auth', project ':auth']
+
+> Configure project :
+Evaluating root project 'spring-jwt-auth' using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2', apply: false]
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7', apply: false]
+
+> Configure project :auth
+Evaluating project ':auth' using build file 'C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\build.gradle.kts'.
+Resolved plugin [id: 'org.gradle.java']
+Resolved plugin [id: 'org.springframework.boot', version: '4.0.2']
+Resolved plugin [id: 'io.spring.dependency-management', version: '1.1.7']
+Applying dependency management to configuration 'annotationProcessor' in project 'auth'
+Applying dependency management to configuration 'apiElements' in project 'auth'
+Applying dependency management to configuration 'archives' in project 'auth'
+Applying dependency management to configuration 'bootArchives' in project 'auth'
+Applying dependency management to configuration 'compileClasspath' in project 'auth'
+Applying dependency management to configuration 'compileOnly' in project 'auth'
+Applying dependency management to configuration 'default' in project 'auth'
+Applying dependency management to configuration 'developmentOnly' in project 'auth'
+Applying dependency management to configuration 'implementation' in project 'auth'
+Applying dependency management to configuration 'mainSourceElements' in project 'auth'
+Applying dependency management to configuration 'productionRuntimeClasspath' in project 'auth'
+Applying dependency management to configuration 'runtimeClasspath' in project 'auth'
+Applying dependency management to configuration 'runtimeElements' in project 'auth'
+Applying dependency management to configuration 'runtimeOnly' in project 'auth'
+Applying dependency management to configuration 'testAndDevelopmentOnly' in project 'auth'
+Applying dependency management to configuration 'testAnnotationProcessor' in project 'auth'
+Applying dependency management to configuration 'testCompileClasspath' in project 'auth'
+Applying dependency management to configuration 'testCompileOnly' in project 'auth'
+Applying dependency management to configuration 'testImplementation' in project 'auth'
+Applying dependency management to configuration 'testResultsElementsForTest' in project 'auth'
+Applying dependency management to configuration 'testRuntimeClasspath' in project 'auth'
+Applying dependency management to configuration 'testRuntimeOnly' in project 'auth'
+All projects evaluated.
+Task path ':auth:test' matched project ':auth'
+Task name matched 'test'
+Selected primary task 'test' from project :auth
+Resolving global dependency management for project 'auth'
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Excluding []
+Tasks to be executed: [task ':auth:compileJava', task ':auth:processResources', task ':auth:classes', task ':auth:compileTestJava', task ':auth:processTestResources', task ':auth:testClasses', task ':auth:test']
+Tasks that were excluded: []
+Resolve mutations for :auth:compileJava (Thread[#5859,Execution worker,5,main]) started.
+:auth:compileJava (Thread[#5859,Execution worker,5,main]) started.
+
+> Task :auth:compileJava UP-TO-DATE
+Custom actions are attached to task ':auth:compileJava'.
+Caching disabled for task ':auth:compileJava' because:
+  Build cache is disabled
+Skipping task ':auth:compileJava' as it is up-to-date.
+Resolve mutations for :auth:processResources (Thread[#5859,Execution worker,5,main]) started.
+:auth:processResources (Thread[#5859,Execution worker,5,main]) started.
+
+> Task :auth:processResources UP-TO-DATE
+Caching disabled for task ':auth:processResources' because:
+  Build cache is disabled
+  Not worth caching
+Skipping task ':auth:processResources' as it is up-to-date.
+Resolve mutations for :auth:classes (Thread[#5859,Execution worker,5,main]) started.
+:auth:classes (Thread[#5859,Execution worker,5,main]) started.
+
+> Task :auth:classes UP-TO-DATE
+Skipping task ':auth:classes' as it has no actions.
+Resolve mutations for :auth:compileTestJava (Thread[#5865,Execution worker Thread 7,5,main]) started.
+:auth:compileTestJava (Thread[#5859,Execution worker,5,main]) started.
+
+> Task :auth:compileTestJava UP-TO-DATE
+Custom actions are attached to task ':auth:compileTestJava'.
+Caching disabled for task ':auth:compileTestJava' because:
+  Build cache is disabled
+Skipping task ':auth:compileTestJava' as it is up-to-date.
+Resolve mutations for :auth:processTestResources (Thread[#5859,Execution worker,5,main]) started.
+:auth:processTestResources (Thread[#5858,included builds,5,main]) started.
+
+> Task :auth:processTestResources
+Caching disabled for task ':auth:processTestResources' because:
+  Build cache is disabled
+  Not worth caching
+Task ':auth:processTestResources' is not up-to-date because:
+  Input property 'rootSpec$1' file C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\src\test\resources\application-test.properties has changed.
+Resolve mutations for :auth:testClasses (Thread[#5858,included builds,5,main]) started.
+:auth:testClasses (Thread[#5858,included builds,5,main]) started.
+
+> Task :auth:testClasses
+Skipping task ':auth:testClasses' as it has no actions.
+Resolve mutations for :auth:test (Thread[#5858,included builds,5,main]) started.
+:auth:test (Thread[#5858,included builds,5,main]) started.
+Gradle Test Executor 16 started executing tests.
+
+> Task :auth:test
+Caching disabled for task ':auth:test' because:
+  Build cache is disabled
+Task ':auth:test' is not up-to-date because:
+  Task has failed previously.
+Starting process 'Gradle Test Executor 16'. Working directory: C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth Command: C:\Users\vinicius\AppData\Local\mise\installs\java\25.0.2\bin\java.exe -Dorg.gradle.internal.worker.tmpdir=C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\build\tmp\test\work @C:\Users\vinicius\.gradle\.tmp\gradle-worker-classpath6095652996238387105txt -Xmx512m -Dfile.encoding=UTF-8 -Duser.country=BR -Duser.language=pt -Duser.variant -ea worker.org.gradle.process.internal.worker.GradleWorkerMain 'Gradle Test Executor 16'
+Successfully started process 'Gradle Test Executor 16'
+
+AuthE2ETest STANDARD_OUT
+    04:56:15.024 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.auth.e2e.AuthE2ETest]: AuthE2ETest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    04:56:15.153 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.e2e.AuthE2ETest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:15.518-03:00  INFO 22488 --- [auth] [    Test worker] com.auth.e2e.AuthE2ETest                 : Starting AuthE2ETest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:15.520-03:00  INFO 22488 --- [auth] [    Test worker] com.auth.e2e.AuthE2ETest                 : The following 1 profile is active: "test"
+    2026-03-01T04:56:16.441-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:16.509-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 60 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:17.204-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:17.256-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.2.1.Final
+    2026-03-01T04:56:17.674-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:17.702-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+    2026-03-01T04:56:17.844-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:17.847-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+    2026-03-01T04:56:17.866-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:17.888-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:18.814-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:18.860-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:18.936-03:00  INFO 22488 --- [auth] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+    2026-03-01T04:56:19.181-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:19.181-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:19.347-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:19.641-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:20.265-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:20.325-03:00  INFO 22488 --- [auth] [    Test worker] com.auth.e2e.AuthE2ETest                 : Started AuthE2ETest in 5.029 seconds (process running for 6.249)
+
+AuthE2ETest > Fluxo de Administra├º├úo: Listagem -> Desativa├º├úo -> Tentativa de Login -> Ativa├º├úo -> Atualiza├º├úo de Perfil STANDARD_ERROR
+    Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+    WARNING: A Java agent has been loaded dynamically (C:\Users\vinicius\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.17.8\f09415827a71be7ed621c7bd02550678f28bc81c\byte-buddy-agent-1.17.8.jar)
+    WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+    WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+    WARNING: Dynamic loading of agents will be disallowed by default in a future release
+
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :auth:test
+
+AuthE2ETest > Fluxo de Administra├º├úo: Listagem -> Desativa├º├úo -> Tentativa de Login -> Ativa├º├úo -> Atualiza├º├úo de Perfil STANDARD_OUT
+    2026-03-01T04:56:21.145-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:21.146-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:21.146-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-03-01T04:56:21.470-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio admin-mgmt@auth.com autenticado com sucesso. Roles: [ADMIN]
+    2026-03-01T04:56:21.828-03:00 ERROR 22488 --- [auth] [    Test worker] c.a.i.e.handler.HttpExceptionHandler     : Falha de autentica├º├úo: User account is locked
+
+AuthE2ETest > Fluxo de Perfil: Atualiza├º├úo de campos de metadados (cargo, regime, registro) STANDARD_OUT
+    2026-03-01T04:56:21.871-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:21.871-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:21.871-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+    2026-03-01T04:56:21.989-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio profile-update@auth.com autenticado com sucesso. Roles: [USER]
+    2026-03-01T04:56:22.105-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio admin-mgmt@auth.com autenticado com sucesso. Roles: [ADMIN]
+
+AuthE2ETest > Fluxo de Seguran├ºa: Admin Reset -> Login -> First Change STANDARD_OUT
+    2026-03-01T04:56:22.127-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:22.127-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:22.128-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-03-01T04:56:22.244-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio admin-e2e@auth.com autenticado com sucesso. Roles: [ADMIN]
+    2026-03-01T04:56:22.435-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio to-reset@example.com autenticado com sucesso. Roles: [USER]
+    2026-03-01T04:56:22.557-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio to-reset@example.com autenticado com sucesso. Roles: [USER]
+
+AuthE2ETest > Fluxo Completo: Registro -> Login com Senha Tempor├íria -> Troca Senha -> Login Final -> Profile -> Refresh -> Profile STANDARD_OUT
+    2026-03-01T04:56:22.566-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:22.566-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:22.567-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-03-01T04:56:22.696-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio admin-boot@auth.com autenticado com sucesso. Roles: [ADMIN]
+    2026-03-01T04:56:22.818-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio e2e@example.com autenticado com sucesso. Roles: [USER]
+    2026-03-01T04:56:22.937-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio e2e@example.com autenticado com sucesso. Roles: [USER]
+
+RateLimitingFilterTest > Deve bloquear requisi├º├Áes que excedem o limite FAILED
+    org.opentest4j.AssertionFailedError: expected: <429> but was: <200>
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:158)
+        at app//org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:139)
+        at app//org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:201)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:152)
+        at app//org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:147)
+        at app//org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:558)
+        at app//com.auth.infra.security.filter.RateLimitingFilterTest.deveBloquearExcesso(RateLimitingFilterTest.java:71)
+
+AuthApplicationTests STANDARD_OUT
+    2026-03-01T04:56:23.085-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.AuthApplicationTests]: AuthApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:23.100-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.AuthApplicationTests
+
+AuthControllerTest STANDARD_OUT
+    2026-03-01T04:56:23.112-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.api.controller.AuthControllerTest]: AuthControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:23.133-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.api.controller.AuthControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:23.159-03:00  INFO 22488 --- [auth] [    Test worker] c.a.api.controller.AuthControllerTest    : Starting AuthControllerTest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:23.159-03:00  INFO 22488 --- [auth] [    Test worker] c.a.api.controller.AuthControllerTest    : The following 1 profile is active: "test"
+    2026-03-01T04:56:23.409-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:23.429-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 19 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:23.725-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:23.753-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:23.755-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+    2026-03-01T04:56:23.756-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn10: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:23.756-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+    2026-03-01T04:56:23.756-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:23.756-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:23.835-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:23.847-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:23.967-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:24.026-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:24.026-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:24.137-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:24.365-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:24.389-03:00  INFO 22488 --- [auth] [    Test worker] c.a.api.controller.AuthControllerTest    : Started AuthControllerTest in 1.25 seconds (process running for 10.314)
+
+AuthControllerTest > POST /v1/user/login - Deve retornar 200 e tokens STANDARD_OUT
+    2026-03-01T04:56:24.467-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:24.468-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:24.468-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+AuthControllerTest > POST /v1/user/login - Deve retornar 400 se campos estiverem inv├ílidos STANDARD_OUT
+    2026-03-01T04:56:24.508-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:24.509-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:24.510-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+    2026-03-01T04:56:24.518-03:00  WARN 22488 --- [auth] [    Test worker] c.a.i.e.handler.HttpExceptionHandler     : Erro de valida├º├úo em 2 campos: {password=A senha n├úo pode estar em branco, email=O e-mail deve ser v├ílido}
+
+ListUsersControllerTest STANDARD_OUT
+    2026-03-01T04:56:24.527-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.api.controller.ListUsersControllerTest]: ListUsersControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:24.529-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.api.controller.ListUsersControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:24.555-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.ListUsersControllerTest          : Starting ListUsersControllerTest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:24.555-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.ListUsersControllerTest          : The following 1 profile is active: "test"
+    2026-03-01T04:56:24.880-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:24.907-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 24 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:25.038-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:25.058-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:25.060-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+    2026-03-01T04:56:25.061-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection conn20: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:25.061-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+    2026-03-01T04:56:25.061-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:25.061-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:25.104-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:25.111-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:25.147-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:25.147-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:25.178-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:25.232-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:25.360-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:25.374-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.ListUsersControllerTest          : Started ListUsersControllerTest in 0.841 seconds (process running for 11.299)
+
+ListUsersControllerTest > Deve retornar 200 e lista paginada de usu├írios STANDARD_OUT
+    2026-03-01T04:56:25.449-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:25.449-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:25.450-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+
+PasswordControllerTest STANDARD_OUT
+    2026-03-01T04:56:25.464-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.api.controller.PasswordControllerTest]: PasswordControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:25.465-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.api.controller.PasswordControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:25.487-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.PasswordControllerTest  : Starting PasswordControllerTest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:25.488-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.PasswordControllerTest  : The following 1 profile is active: "test"
+    2026-03-01T04:56:25.734-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:25.764-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 27 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:25.909-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:25.928-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:25.930-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+    2026-03-01T04:56:25.931-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection conn30: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:25.932-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+    2026-03-01T04:56:25.933-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:25.933-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:25.983-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:25.991-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:26.019-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:26.020-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:26.053-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:26.108-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:26.209-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:26.220-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.PasswordControllerTest  : Started PasswordControllerTest in 0.752 seconds (process running for 12.144)
+
+PasswordControllerTest > Deve retornar 200 ao solicitar reset administrativo STANDARD_OUT
+    2026-03-01T04:56:26.286-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:26.286-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:26.286-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+PasswordControllerTest > Deve retornar 200 ao trocar senha de primeiro acesso STANDARD_OUT
+    2026-03-01T04:56:26.298-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:26.298-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:26.299-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+RegisterControllerTest STANDARD_OUT
+    2026-03-01T04:56:26.308-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.api.controller.RegisterControllerTest]: RegisterControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:26.309-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.api.controller.RegisterControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:26.325-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.RegisterControllerTest  : Starting RegisterControllerTest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:26.325-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.RegisterControllerTest  : The following 1 profile is active: "test"
+    2026-03-01T04:56:26.575-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:26.602-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 24 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:26.726-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:26.746-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:26.747-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+    2026-03-01T04:56:26.747-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection conn40: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:26.747-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+    2026-03-01T04:56:26.747-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:26.749-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:26.789-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:26.795-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:26.819-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:26.819-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:26.846-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:26.900-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:26.993-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:27.004-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.controller.RegisterControllerTest  : Started RegisterControllerTest in 0.692 seconds (process running for 12.928)
+
+RegisterControllerTest > POST /v1/user/register - Deve registrar novo usu├írio STANDARD_OUT
+    2026-03-01T04:56:27.070-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:27.070-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:27.070-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+UserStatusControllerTest STANDARD_OUT
+    2026-03-01T04:56:27.089-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.api.controller.UserStatusControllerTest]: UserStatusControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:27.090-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.api.controller.UserStatusControllerTest
+
+      .   ____          _            __ _ _
+     /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+    ( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+     \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+      '  |____| .__|_| |_|_| |_\__, | / / / /
+     =========|_|==============|___/=/_/_/_/
+
+     :: Spring Boot ::                (v4.0.2)
+
+    2026-03-01T04:56:27.110-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.UserStatusControllerTest         : Starting UserStatusControllerTest using Java 25.0.2 with PID 22488 (started by vinicius in C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth)
+    2026-03-01T04:56:27.110-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.UserStatusControllerTest         : The following 1 profile is active: "test"
+    2026-03-01T04:56:27.364-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+    2026-03-01T04:56:27.387-03:00  INFO 22488 --- [auth] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 3 JPA repository interfaces.
+    2026-03-01T04:56:27.592-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+    2026-03-01T04:56:27.610-03:00  INFO 22488 --- [auth] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+    2026-03-01T04:56:27.611-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Starting...
+    2026-03-01T04:56:27.612-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-6 - Added connection conn50: url=jdbc:h2:mem:testdb user=SA
+    2026-03-01T04:56:27.612-03:00  INFO 22488 --- [auth] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Start completed.
+    2026-03-01T04:56:27.612-03:00  WARN 22488 --- [auth] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: H2Dialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+    2026-03-01T04:56:27.613-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+    	Database JDBC URL [jdbc:h2:mem:testdb]
+    	Database driver: H2 JDBC Driver
+    	Database dialect: H2Dialect
+    	Database version: 2.4.240
+    	Default catalog/schema: TESTDB/PUBLIC
+    	Autocommit mode: undefined/unknown
+    	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+    	JDBC fetch size: 100
+    	Pool: DataSourceConnectionProvider
+    	Minimum pool size: undefined/unknown
+    	Maximum pool size: undefined/unknown
+    2026-03-01T04:56:27.651-03:00  INFO 22488 --- [auth] [    Test worker] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+    2026-03-01T04:56:27.657-03:00  INFO 22488 --- [auth] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+    2026-03-01T04:56:27.681-03:00  INFO 22488 --- [auth] [    Test worker] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+    2026-03-01T04:56:27.681-03:00  WARN 22488 --- [auth] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+    2026-03-01T04:56:27.708-03:00  WARN 22488 --- [auth] [    Test worker] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+    2026-03-01T04:56:27.751-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page: class path resource [static/index.html]
+    2026-03-01T04:56:27.843-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+    2026-03-01T04:56:27.856-03:00  INFO 22488 --- [auth] [    Test worker] c.a.a.c.UserStatusControllerTest         : Started UserStatusControllerTest in 0.764 seconds (process running for 13.781)
+
+UserStatusControllerTest > Deve retornar 204 ao ativar usu├írio com sucesso STANDARD_OUT
+    2026-03-01T04:56:27.922-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:27.923-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:27.923-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+UserStatusControllerTest > Deve retornar 204 ao desativar usu├írio com sucesso STANDARD_OUT
+    2026-03-01T04:56:27.928-03:00  INFO 22488 --- [auth] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+    2026-03-01T04:56:27.929-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+    2026-03-01T04:56:27.930-03:00  INFO 22488 --- [auth] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+
+LoginUseCaseTest > Deve realizar login com sucesso e retornar tokens e metadados STANDARD_OUT
+    2026-03-01T04:56:28.399-03:00  INFO 22488 --- [auth] [    Test worker] c.auth.application.usecase.LoginUseCase  : Usu├írio test@example.com autenticado com sucesso. Roles: [USER]
+
+RefreshTokenRepositoryTest STANDARD_OUT
+    2026-03-01T04:56:28.481-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.domain.repository.RefreshTokenRepositoryTest]: RefreshTokenRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:28.493-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.domain.repository.RefreshTokenRepositoryTest
+
+UserDataRepositoryTest STANDARD_OUT
+    2026-03-01T04:56:28.523-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.domain.repository.UserDataRepositoryTest]: UserDataRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:28.524-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.domain.repository.UserDataRepositoryTest
+
+UserRepositoryTest STANDARD_OUT
+    2026-03-01T04:56:28.544-03:00  INFO 22488 --- [auth] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.auth.domain.repository.UserRepositoryTest]: UserRepositoryTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+    2026-03-01T04:56:28.545-03:00  INFO 22488 --- [auth] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.auth.AuthApplication for test class com.auth.domain.repository.UserRepositoryTest
+
+Gradle Test Executor 16 finished executing tests.
+2026-03-01T04:56:28.646-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.650-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-01T04:56:28.653-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-03-01T04:56:28.654-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.655-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-03-01T04:56:28.655-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-03-01T04:56:28.660-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.661-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-03-01T04:56:28.661-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-03-01T04:56:28.664-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.664-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-03-01T04:56:28.665-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+2026-03-01T04:56:28.666-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.668-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+2026-03-01T04:56:28.669-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+2026-03-01T04:56:28.670-03:00  INFO 22488 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-01T04:56:28.671-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-03-01T04:56:28.671-03:00  INFO 22488 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+
+> Task :auth:test FAILED
+
+64 tests completed, 1 failed
+Generating HTML test report...
+Finished generating test html results (0.026 secs) into: C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\build\reports\tests\test
+Finished generating test XML results (0.015 secs) into: C:\Users\vinicius\Desktop\spring-jwt-auth\backend\auth\build\test-results\test
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':auth:test'.
+> There were failing tests. See the report at: file:///C:/Users/vinicius/Desktop/spring-jwt-auth/backend/auth/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+5 actionable tasks: 2 executed, 3 up-to-date
+Watched directory hierarchies: [C:\Users\vinicius\Desktop\spring-jwt-auth\backend]
+BUILD FAILED in 15s

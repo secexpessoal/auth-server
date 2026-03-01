@@ -25,4 +25,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
 
     Optional<RefreshToken> findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
             UserAuth user, String userAgent, String ipAddress, String origin, String referer);
+
+    void deleteByExpiryDateBefore(java.time.Instant now);
 }

@@ -50,6 +50,7 @@ public class RefreshToken {
     private String referer;
 
     @Column(name = "version")
+    @Builder.Default
     private Integer version = 0;
 
     @Column(name = "expires_at", nullable = false)
