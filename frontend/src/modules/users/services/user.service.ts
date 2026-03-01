@@ -1,6 +1,7 @@
-import { axiosClient } from "../../../lib/axios/axios.util";
-import type { RegisterRequestDto, RegisterResponseDto, PaginatedResponseDto } from "../molecule/user.types";
-import type { MetadataUserResponseDto } from "../../auth/molecule/auth.types";
+import { axiosClient } from "@lib/axios/axios.util";
+import type { UserResponseDto } from "../../auth/molecule/auth.types";
+import type { UpdateUserProfileRequestDto } from "../molecule/user.schema";
+import type { PaginatedResponseDto, RegisterRequestDto, RegisterResponseDto } from "../molecule/user.types";
 
 /**
  * Registra um novo administrador. Somente usuários com Role.ADMIN podem fazer isso.
@@ -21,9 +22,15 @@ export async function registerUserAttempt(payload: RegisterRequestDto): Promise<
 /**
  * Busca a lista paginada de usuários.
  */
-export async function getUsersList(page = 0, limit = 50): Promise<PaginatedResponseDto<MetadataUserResponseDto>> {
-  const { data } = await axiosClient.get(`/v1/user`, {
-    params: { page, limit },
+export async function getUsersList(
+  page = 0,
+  limit = 50,
+  email?: string,
+  userName?: string,
+  position?: string,
+): Promise<PaginatedResponseDto<UserResponseDto>> {
+  const { data } = await axiosClient.get<PaginatedResponseDto<UserResponseDto>>(`/v1/user`, {
+    params: { page, limit, email, userName, position },
   });
   return data;
 }
@@ -31,8 +38,8 @@ export async function getUsersList(page = 0, limit = 50): Promise<PaginatedRespo
 /**
  * Reseta a senha de um usuário através de um administrador.
  */
-export async function resetPasswordAttempt(email: string): Promise<{ status: string; temp_password: string }> {
-  const { data } = await axiosClient.post<{ status: string; temp_password: string }>("/v1/password/admin-reset", { email });
+export async function resetPasswordAttempt(email: string): Promise<{ status: string; tempPassword: string }> {
+  const { data } = await axiosClient.post<{ status: string; tempPassword: string }>("/v1/password/admin-reset", { email });
   return data;
 }
 
@@ -52,4 +59,21 @@ export async function activateUserAttempt(userId: string): Promise<void> {
   await axiosClient.patch("/v1/user/activate", null, {
     params: { id: userId },
   });
+}
+/**
+ * Atualiza o perfil de um usuário.
+ */
+export async function updateUserProfile(userId: string, payload: UpdateUserProfileRequestDto): Promise<UserResponseDto> {
+  const { data } = await axiosClient.patch<UserResponseDto>(`/v1/user/profile/${userId}`, payload);
+  return data;
+}
+
+/**
+ * Atualiza os cargos (roles) de um usuário.
+ */
+export async function updateUserRoles(userId: string, roles: string[]): Promise<UserResponseDto> {
+  // O backend espera um set de Role (enum), enviamos as strings sem o prefixo ROLE_
+  const sanitizedRoles = roles.map((r) => r.replace("ROLE_", ""));
+  const { data } = await axiosClient.patch<UserResponseDto>(`/v1/user/${userId}/roles`, { roles: sanitizedRoles });
+  return data;
 }

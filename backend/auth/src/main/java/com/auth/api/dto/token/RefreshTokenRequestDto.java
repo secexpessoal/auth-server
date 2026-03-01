@@ -14,7 +14,7 @@ import lombok.Builder;
 @Builder
 public record RefreshTokenRequestDto(
         @NotBlank(message = "O refresh token não pode estar em branco")
-        @JsonProperty("refresh_token")
+        @JsonProperty("refreshToken")
         String refreshToken
 ) {
 }

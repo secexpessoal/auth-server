@@ -14,17 +14,16 @@ import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.model.UserData;
 import com.auth.domain.repository.RefreshTokenRepository;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.repository.UserAuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,8 +36,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Map;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -55,7 +54,7 @@ class AuthE2ETest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAuthRepository userRepository;
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
@@ -76,12 +75,17 @@ class AuthE2ETest {
     @DisplayName("Fluxo Completo: Registro -> Login com Senha Temporária -> Troca Senha -> Login Final -> Profile -> Refresh -> Profile")
     void fullAuthFlow() throws Exception {
         // 0. Bootstrap Admin para poder registrar usuários (regra nova: register é ADMIN only)
-        User admin = new User();
-        admin.setUserName("admin-bootstrap");
+        UserAuth admin = new UserAuth();
         admin.setEmail("admin-boot@auth.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole(Role.ADMIN);
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
         admin.setActive(true);
+        
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-boot");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        
         userRepository.saveAndFlush(admin);
 
         AuthenticationRequestDto adminLogin = new AuthenticationRequestDto("admin-boot@auth.com", "admin123");
@@ -89,10 +93,10 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminLogin)))
                 .andReturn();
-        String adminToken = objectMapper.readValue(adminLoginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).token();
+        String adminToken = objectMapper.readValue(adminLoginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
 
         // 1. Registro (usando token do admin)
-        RegisterRequestDto regRequest = new RegisterRequestDto("e2euser", "e2e@example.com");
+        RegisterRequestDto regRequest = new RegisterRequestDto("e2euser", "e2e@example.com", Role.USER);
         MvcResult regResult = mockMvc.perform(post("/v1/user/register")
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -102,7 +106,7 @@ class AuthE2ETest {
 
         // Captura senha temporária
         Map<String, Object> regResponse = objectMapper.readValue(regResult.getResponse().getContentAsString(), Map.class);
-        String tempPassword = (String) regResponse.get("temp_password");
+        String tempPassword = (String) regResponse.get("tempPassword");
         assertNotNull(tempPassword);
 
         // 2. Login com senha temporária
@@ -111,10 +115,10 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(true))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(true))
                 .andReturn();
 
-        String intermediateToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).token();
+        String intermediateToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
 
         // 3. Troca de senha obrigatória
         FirstChangePasswordRequestDto changeRequest = new FirstChangePasswordRequestDto("new-secure-password");
@@ -130,12 +134,12 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(finalLoginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(false))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(false))
                 .andReturn();
 
         String responseBody = finalLoginResult.getResponse().getContentAsString();
         AuthenticationResponseDto authResponse = objectMapper.readValue(responseBody, AuthenticationResponseDto.class);
-        String accessToken = authResponse.token();
+        String accessToken = authResponse.session().accessToken();
         
         Cookie cookie = finalLoginResult.getResponse().getCookie("refresh_token");
         assertNotNull(cookie);
@@ -145,7 +149,7 @@ class AuthE2ETest {
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + accessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.profile.username").value("e2euser"))
                 .andExpect(jsonPath("$.email").value("e2e@example.com"));
 
         // 6. Refresh Token
@@ -158,13 +162,13 @@ class AuthE2ETest {
 
         String newResponseBody = refreshResult.getResponse().getContentAsString();
         AuthenticationResponseDto newAuthResponse = objectMapper.readValue(newResponseBody, AuthenticationResponseDto.class);
-        String newAccessToken = newAuthResponse.token();
+        String newAccessToken = newAuthResponse.session().accessToken();
 
         // 7. Acessar Profile com novo token
         mockMvc.perform(get("/v1/user/profile")
                 .header("Authorization", "Bearer " + newAccessToken))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.username").value("e2euser"))
+                .andExpect(jsonPath("$.profile.username").value("e2euser"))
                 .andExpect(jsonPath("$.email").value("e2e@example.com"));
     }
 
@@ -172,12 +176,17 @@ class AuthE2ETest {
     @DisplayName("Fluxo de Segurança: Admin Reset -> Login -> First Change")
     void adminResetFlow() throws Exception {
         // 1. Criar admin diretamente no banco para bootstrap
-        User admin = new User();
-        admin.setUserName("admin-e2e");
+        UserAuth admin = new UserAuth();
         admin.setEmail("admin-e2e@auth.com");
         admin.setPassword(passwordEncoder.encode("admin123"));
-        admin.setRole(Role.ADMIN);
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
         admin.setActive(true);
+        
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-e2e");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        
         userRepository.saveAndFlush(admin);
 
         // Login do admin para pegar token
@@ -186,10 +195,10 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(adminLogin)))
                 .andReturn();
-        String adminToken = objectMapper.readValue(adminLoginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).token();
+        String adminToken = objectMapper.readValue(adminLoginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
 
         // 2. Criar usuário normal
-        RegisterRequestDto regRequest = new RegisterRequestDto("user-to-reset", "to-reset@example.com");
+        RegisterRequestDto regRequest = new RegisterRequestDto("to-reset", "to-reset@example.com", Role.USER);
         mockMvc.perform(post("/v1/user/register")
                 .header("Authorization", "Bearer " + adminToken)
                 .contentType(MediaType.APPLICATION_JSON)
@@ -206,7 +215,7 @@ class AuthE2ETest {
                 .andReturn();
 
         Map<String, String> resetResponse = objectMapper.readValue(resetResult.getResponse().getContentAsString(), Map.class);
-        String tempPassword = resetResponse.get("temp_password");
+        String tempPassword = resetResponse.get("tempPassword");
 
         // 4. Usuário tenta logar com a senha temporária
         AuthenticationRequestDto loginRequest = new AuthenticationRequestDto("to-reset@example.com", tempPassword);
@@ -214,10 +223,10 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(true))
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(true))
                 .andReturn();
 
-        String userToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).token();
+        String userToken = objectMapper.readValue(loginResult.getResponse().getContentAsString(), AuthenticationResponseDto.class).session().accessToken();
 
         // 5. Usuário troca a senha definitivamente
         FirstChangePasswordRequestDto changeRequest = new FirstChangePasswordRequestDto("new-definitive-password");
@@ -233,6 +242,154 @@ class AuthE2ETest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(finalLogin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.password_reset_required").value(false));
+                .andExpect(jsonPath("$.session.passwordResetRequired").value(false));
+    }
+
+    @Test
+    @DisplayName("Fluxo de Administração: Listagem -> Desativação -> Tentativa de Login -> Ativação -> Atualização de Perfil")
+    void adminUserManagementFlow() throws Exception {
+        // 1. Bootstrap Admin
+        UserAuth admin = new UserAuth();
+        admin.setEmail("admin-mgmt@auth.com");
+        admin.setPassword(passwordEncoder.encode("admin123"));
+        admin.setRoles(java.util.Set.of(Role.ADMIN));
+        admin.setActive(true);
+        UserData adminData = new UserData();
+        adminData.setUserName("admin-mgmt");
+        adminData.setUser(admin);
+        admin.setUserData(adminData);
+        userRepository.saveAndFlush(admin);
+
+        String adminToken = objectMapper.readValue(
+            mockMvc.perform(post("/v1/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("admin-mgmt@auth.com", "admin123"))))
+                .andReturn().getResponse().getContentAsString(), 
+            AuthenticationResponseDto.class).session().accessToken();
+
+        // 2. Criar usuário para gerenciar
+        UserAuth user = new UserAuth();
+        user.setEmail("to-manage@auth.com");
+        user.setPassword(passwordEncoder.encode("user123"));
+        user.setRoles(java.util.Set.of(Role.USER));
+        user.setActive(true);
+        UserData userData = new UserData();
+        userData.setUserName("to-manage");
+        userData.setUser(user);
+        user.setUserData(userData);
+        userRepository.saveAndFlush(user);
+
+        // 3. Listar usuários (Admin)
+        mockMvc.perform(get("/v1/user")
+                .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data").isArray())
+                .andExpect(jsonPath("$.meta.pagination.totalItems").value(org.hamcrest.Matchers.greaterThanOrEqualTo(2)));
+
+        // 4. Desativar Usuário (Admin)
+        mockMvc.perform(patch("/v1/user/deactivate")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("id", user.getUserId().toString()))
+                .andExpect(status().isNoContent());
+
+        // 5. Tentativa de Login (Usuário Desativado) - Deve falhar (Spring Security cuida disso se configurado, ou o use case)
+        // Nota: O LoginUseCase atual parece não checar active explicitamente, mas o Spring Security AuthenticationManager deve lançar DisabledException
+        mockMvc.perform(post("/v1/user/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("to-manage@auth.com", "user123"))))
+                .andExpect(status().isUnauthorized());
+
+        // 6. Ativar Usuário (Admin)
+        mockMvc.perform(patch("/v1/user/activate")
+                .header("Authorization", "Bearer " + adminToken)
+                .param("id", user.getUserId().toString()))
+                .andExpect(status().isNoContent());
+
+        // 7. Atualizar Perfil (Admin)
+        com.auth.api.dto.auth.UpdateUserProfileRequestDto updateRequest = com.auth.api.dto.auth.UpdateUserProfileRequestDto.builder()
+                .position("Senior Architect")
+                .build();
+
+        mockMvc.perform(patch("/v1/user/profile/" + user.getUserId())
+                .header("Authorization", "Bearer " + adminToken)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.position").value("Senior Architect"));
+    }
+
+    @Test
+    @DisplayName("Fluxo de Perfil: Atualização de campos de metadados (cargo, regime, registro)")
+    void userProfileMetadataUpdateFlow() throws Exception {
+        // 1. Criar usuário
+        UserAuth user = new UserAuth();
+        user.setEmail("profile-update@auth.com");
+        user.setPassword(passwordEncoder.encode("user123"));
+        user.setRoles(java.util.Set.of(Role.USER));
+        user.setActive(true);
+        UserData userData = new UserData();
+        userData.setUserName("profile-update");
+        userData.setRegistration("111111");
+        userData.setUser(user);
+        user.setUserData(userData);
+        userRepository.saveAndFlush(user);
+
+        // 2. Login para pegar token
+        String token = objectMapper.readValue(
+                mockMvc.perform(post("/v1/user/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("profile-update@auth.com",
+                                        "user123"))))
+                        .andReturn().getResponse().getContentAsString(),
+                AuthenticationResponseDto.class).session().accessToken();
+
+        // 3. Atualizar perfil (usando o próprio token) - O endpoint /v1/user/profile/{id} requer ADMIN? 
+        // Verificando ServerSecurityConfig: .requestMatchers(HttpMethod.PATCH, "/v1/user/activate").hasRole(Role.ADMIN.name())
+        // E no UserStatusController: @PatchMapping("/profile/{id}")
+        // Parece que o Admin atualiza perfil de terceiros.
+
+        // Vamos usar um Admin para atualizar o perfil deste usuário
+        UserAuth admin = userRepository.findByEmail("admin-mgmt@auth.com").orElseGet(() -> {
+            UserAuth a = new UserAuth();
+            a.setEmail("admin-mgmt@auth.com");
+            a.setPassword(passwordEncoder.encode("admin123"));
+            a.setRoles(java.util.Set.of(Role.ADMIN));
+            a.setActive(true);
+            UserData ad = new UserData();
+            ad.setUserName("admin-mgmt");
+            ad.setUser(a);
+            a.setUserData(ad);
+            return userRepository.saveAndFlush(a);
+        });
+
+        String adminToken = objectMapper.readValue(
+                mockMvc.perform(post("/v1/user/login")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(new AuthenticationRequestDto("admin-mgmt@auth.com",
+                                        "admin123"))))
+                        .andReturn().getResponse().getContentAsString(),
+                AuthenticationResponseDto.class).session().accessToken();
+
+        com.auth.api.dto.auth.UpdateUserProfileRequestDto updateRequest = com.auth.api.dto.auth.UpdateUserProfileRequestDto.builder()
+                .registration("222222")
+                .position("Tech Lead")
+                .workRegime(com.auth.domain.model.WorkRegime.HYBRID)
+                .build();
+
+        mockMvc.perform(patch("/v1/user/profile/" + user.getUserId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.registration").value("222222"))
+                .andExpect(jsonPath("$.profile.position").value("Tech Lead"))
+                .andExpect(jsonPath("$.profile.workRegime").value("HYBRID"));
+
+        // 4. Validar se o usuário logado vê as mudanças
+        mockMvc.perform(get("/v1/user/profile")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.profile.registration").value("222222"))
+                .andExpect(jsonPath("$.profile.position").value("Tech Lead"));
     }
 }

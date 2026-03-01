@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.application.usecase.ListUsersUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,15 +32,19 @@ public class ListUsersController {
 
     private final ListUsersUseCase listUsersUseCase;
 
+    // NOTE: Rota privada e só para ADMIN
     @GetMapping
     @Operation(summary = "Lista usuários com paginação", description = "Retorna uma lista de usuários cadastrados no formato paginado. Apenas para ADMIN.")
-    public ResponseEntity<@NonNull PaginatedResponseDto<MetadataUserResponseDto>> listUsers(
+    public ResponseEntity<@NonNull PaginatedResponseDto<UserResponseDto>> listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int limit,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) String userName,
+            @RequestParam(required = false) String position,
             HttpServletRequest request
     ) {
         String requestUrl = request.getRequestURL().toString();
-        PaginatedResponseDto<MetadataUserResponseDto> response = listUsersUseCase.execute(page, limit, requestUrl);
+        PaginatedResponseDto<UserResponseDto> response = listUsersUseCase.execute(page, limit, requestUrl, email, userName, position);
         return ResponseEntity.ok(response);
     }
 }

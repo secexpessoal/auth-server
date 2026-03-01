@@ -9,8 +9,7 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.MetadataUserResponseDto;
-import com.auth.api.dto.token.RefreshTokenRequestDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.usecase.LoginUseCase;
 import com.auth.application.usecase.RefreshTokenUseCase;
@@ -67,20 +66,20 @@ class AuthControllerTest {
         AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
         
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .token("fake-jwt")
-                .metadata(MetadataUserResponseDto.builder().username("admin").email("admin@auth.com").build())
+                .session(com.auth.api.dto.auth.UserSessionResponseDto.builder().accessToken("fake-jwt").build())
+                .user(UserResponseDto.builder().email("admin@auth.com").build())
                 .build();
 
         AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
 
-        when(loginUseCase.execute(any())).thenReturn(result);
+        when(loginUseCase.execute(any(), any(), any(), any(), any())).thenReturn(result);
 
         // Act & Assert
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.token").value("fake-jwt"));
+                .andExpect(jsonPath("$.session.accessToken").value("fake-jwt"));
     }
 
     @Test

@@ -1,23 +1,42 @@
 import { Outlet, createRootRoute, createRoute, createRouter, redirect } from "@tanstack/react-router";
-import { AppErrorBoundary } from "./app-error-boundary.component";
+import { AppErrorBoundary } from "./errors/error-boundary.component";
 import { useAuthStore } from "../store/auth.store";
 import { LoginPage } from "../modules/auth/login.page";
 import { ResetPasswordPage } from "../modules/auth/reset-password.page";
+import { ErrorPage } from "./errors/error.page";
 import { UsersPage } from "../modules/users/users.page";
 import toast from "react-hot-toast";
 
 export const rootRoute = createRootRoute({
-  component: () => (
-    <AppErrorBoundary>
-      <Outlet />
-    </AppErrorBoundary>
-  ),
+  validateSearch: (search: Record<string, unknown>): { error_code?: number } => {
+    return {
+      error_code: Number(search.error_code) || undefined,
+    };
+  },
+  component: () => {
+    const { error_code } = rootRoute.useSearch();
+
+    if (error_code) {
+      return <ErrorPage code={error_code} message={error_code === 404 ? "Página não encontrada" : "Ocorreu um erro no servidor"} />;
+    }
+
+    return (
+      <AppErrorBoundary>
+        <Outlet />
+      </AppErrorBoundary>
+    );
+  },
 });
 
 export const loginRoute = createRoute({
   path: "/login",
   component: LoginPage,
   getParentRoute: () => rootRoute,
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    return {
+      redirect: (search.redirect as string) || undefined,
+    };
+  },
   beforeLoad: () => {
     if (useAuthStore.getState().isAuthenticated) {
       throw redirect({ to: "/" });
@@ -79,6 +98,7 @@ export const routeTree = rootRoute.addChildren([loginRoute, protectedLayout.addC
 export const router = createRouter({
   routeTree,
   defaultPreload: "intent",
+  defaultNotFoundComponent: () => <ErrorPage code={404} message="Página não encontrada" />,
 });
 
 // NOTE: Subscrição reativa para gerenciar navegação baseada no estado global (Perfec SPA Architecture)

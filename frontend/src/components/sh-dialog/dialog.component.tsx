@@ -2,7 +2,7 @@ import * as React from "react";
 import { XIcon } from "lucide-react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 
-import { cn } from "@lib/cn.util";
+import { cn } from "@lib/cn/cn.util";
 import { Button } from "@components/sh-button/button.component";
 
 function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {

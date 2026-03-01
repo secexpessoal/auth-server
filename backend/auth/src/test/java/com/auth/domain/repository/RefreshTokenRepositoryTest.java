@@ -9,7 +9,7 @@ package com.auth.domain.repository;
 
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,16 +31,15 @@ class RefreshTokenRepositoryTest {
     private RefreshTokenRepository refreshTokenRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private UserAuthRepository userRepository;
 
     @Test
     @DisplayName("Deve salvar e buscar refresh token")
     void shouldSaveAndFindByToken() {
-        User user = new User();
-        user.setUserName("token-owner");
+        UserAuth user = new UserAuth();
         user.setEmail("owner@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
         RefreshToken token = RefreshToken.builder()
@@ -53,17 +52,16 @@ class RefreshTokenRepositoryTest {
         Optional<RefreshToken> found = refreshTokenRepository.findByToken("my-unique-token");
 
         assertTrue(found.isPresent());
-        assertEquals("token-owner", found.get().getUser().getUsername());
+        assertEquals("owner@example.com", found.get().getUser().getEmail());
     }
 
     @Test
     @DisplayName("Deve deletar tokens por usuário")
     void shouldDeleteByUser() {
-        User user = new User();
-        user.setUserName("deleted-owner");
+        UserAuth user = new UserAuth();
         user.setEmail("deleted@example.com");
         user.setPassword("pass");
-        user.setRole(Role.USER);
+        user.setRoles(java.util.Set.of(Role.USER));
         userRepository.saveAndFlush(user);
 
         RefreshToken token = RefreshToken.builder()

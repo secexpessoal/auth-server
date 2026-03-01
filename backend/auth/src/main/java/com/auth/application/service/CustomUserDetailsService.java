@@ -7,8 +7,7 @@
  */
 package com.auth.application.service;
 
-import com.auth.domain.repository.UserRepository;
-
+import com.auth.domain.repository.UserAuthRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,9 +16,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-    private final UserRepository userRepository;
+    private final UserAuthRepository userRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
+    public CustomUserDetailsService(UserAuthRepository userRepository) {
         this.userRepository = userRepository;
     }
 

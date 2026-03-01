@@ -7,12 +7,12 @@
  */
 package com.auth.infra.config;
 
+import com.auth.domain.model.UserAuth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.Optional;
@@ -35,13 +35,12 @@ public class AuditConfig {
                 return Optional.empty();
             }
 
-            // Mesmo que getUsername() retorne o nome de exibição, 
-            // no AuditorAware costuma-se preferir o identificador único (E-mail).
-            if (authentication.getPrincipal() instanceof com.auth.domain.model.User user) {
-                return Optional.of(user.getEmail());
+            // Mesmo que getUsername() retorne o nome de exibição, no AuditorAware prefere-se o identificador único (E-mail).
+            if (authentication.getPrincipal() instanceof UserAuth user) {
+                return Optional.ofNullable(user.getEmail());
             }
 
-            return Optional.of(authentication.getName());
+            return Optional.ofNullable(authentication.getName());
         };
     }
 }

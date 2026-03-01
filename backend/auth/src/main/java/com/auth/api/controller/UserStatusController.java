@@ -7,14 +7,18 @@
  */
 package com.auth.api.controller;
 
+import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.application.usecase.ActivateUserUseCase;
 import com.auth.application.usecase.DeactivateUserUseCase;
+import com.auth.application.usecase.UpdateUserProfileUseCase;
+import com.auth.application.usecase.UpdateUserRolesUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -28,9 +32,12 @@ import java.util.UUID;
 @Tag(name = "Usuários", description = "Endpoints para gestão de status de contas de usuário")
 public class UserStatusController {
 
-    private final DeactivateUserUseCase deactivateUserUseCase;
     private final ActivateUserUseCase activateUserUseCase;
+    private final DeactivateUserUseCase deactivateUserUseCase;
+    private final UpdateUserProfileUseCase updateUserProfileUseCase;
+    private final UpdateUserRolesUseCase updateUserRolesUseCase;
 
+    // NOTE: Rota privada e só para ADMIN
     @PatchMapping("/deactivate")
     @Operation(summary = "Desativa um usuário", description = "Altera o status do usuário para inativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> deactivateUser(@RequestParam UUID id) {
@@ -38,10 +45,29 @@ public class UserStatusController {
         return ResponseEntity.noContent().build();
     }
 
+    // NOTE: Rota privada e só para ADMIN
     @PatchMapping("/activate")
     @Operation(summary = "Ativa um usuário", description = "Altera o status do usuário para ativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> activateUser(@RequestParam UUID id) {
         activateUserUseCase.execute(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // NOTE: Rota autenticada
+    @PatchMapping("/profile/{id}")
+    @Operation(summary = "Atualiza o perfil do usuário", description = "Permite editar metadados do perfil do usuário. Requer cargo ADMIN.")
+    public ResponseEntity<UserResponseDto> updateProfile(
+            @PathVariable UUID id,
+            @RequestBody UpdateUserProfileRequestDto request) {
+        return ResponseEntity.ok(updateUserProfileUseCase.execute(id, request));
+    }
+
+    // NOTE: Rota privada e só para ADMIN
+    @PatchMapping("/{id}/roles")
+    @Operation(summary = "Atualiza os cargos do usuário", description = "Permite adicionar ou remover cargos do usuário. Requer cargo ADMIN.")
+    public ResponseEntity<UserResponseDto> updateRoles(
+            @PathVariable UUID id,
+            @RequestBody UpdateUserRolesRequestDto request) {
+        return ResponseEntity.ok(updateUserRolesUseCase.execute(id, request));
     }
 }

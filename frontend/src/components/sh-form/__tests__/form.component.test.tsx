@@ -1,54 +1,84 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "../form.component";
-import { Input } from "../../sh-input/input.component";
-import { useForm } from "react-hook-form";
+import { render, screen } from "@testing-library/react";
 
-function TestForm() {
-  const form = useForm({
-    defaultValues: {
-      test: "",
+import { describe, expect, it } from "vitest";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../form.component";
+import type { MinimalFieldApi } from "../form.context";
+
+describe("Form Components", () => {
+  const mockField: MinimalFieldApi = {
+    name: "testField",
+    state: {
+      meta: {
+        errors: [],
+      },
     },
-  });
+  };
 
-  return (
-    <Form {...form}>
-      <FormField
-        control={form.control}
-        name="test"
-        rules={{ required: "Required field" }}
-        render={({ field }) => (
+  const mockFieldError: MinimalFieldApi = {
+    name: "testFieldError",
+    state: {
+      meta: {
+        errors: ["This field is required"],
+      },
+    },
+  };
+
+  it("renders a simple form correctly", () => {
+    render(
+      <Form data-testid="test-form">
+        <FormField field={mockField}>
           <FormItem>
             <FormLabel>Test Label</FormLabel>
             <FormControl>
-              <Input placeholder="Test Input" {...field} />
+              <input placeholder="Test Input" />
             </FormControl>
+            <FormDescription>Test Description</FormDescription>
             <FormMessage />
           </FormItem>
-        )}
-      />
-      <button type="submit" onClick={form.handleSubmit(() => {})}>
-        Submit
-      </button>
-    </Form>
-  );
-}
+        </FormField>
+      </Form>,
+    );
 
-describe("Form", () => {
-  it("renders form elements correctly", () => {
-    render(<TestForm />);
+    expect(screen.getByTestId("test-form")).toBeInTheDocument();
     expect(screen.getByText("Test Label")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Test Input")).toBeInTheDocument();
+    expect(screen.getByText("Test Description")).toBeInTheDocument();
+    expect(screen.queryByText("This field is required")).not.toBeInTheDocument();
   });
 
-  it("shows validation error message", async () => {
-    render(<TestForm />);
-    const submit = screen.getByText("Submit");
+  it("renders with error state correctly", () => {
+    render(
+      <FormField field={mockFieldError}>
+        <FormItem>
+          <FormLabel>Error Label</FormLabel>
+          <FormControl>
+            <input placeholder="Error Input" />
+          </FormControl>
+          <FormDescription>Error Description</FormDescription>
+          <FormMessage />
+        </FormItem>
+      </FormField>,
+    );
 
-    fireEvent.click(submit);
+    const errorMessage = screen.getByText("This field is required");
+    expect(errorMessage).toBeInTheDocument();
 
-    await waitFor(() => {
-      expect(screen.getByText("Required field")).toBeInTheDocument();
-    });
+    const label = screen.getByText("Error Label");
+    expect(label).toHaveAttribute("data-error", "true");
+
+    const control = screen.getByPlaceholderText("Error Input");
+    expect(control).toHaveAttribute("aria-invalid", "true");
+  });
+
+  it("renders custom FormMessage correctly when there is no error", () => {
+    render(
+      <FormField field={mockField}>
+        <FormItem>
+          <FormMessage>Custom Message</FormMessage>
+        </FormItem>
+      </FormField>,
+    );
+
+    expect(screen.getByText("Custom Message")).toBeInTheDocument();
   });
 });

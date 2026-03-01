@@ -23,25 +23,29 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Radix Dialog / Popover require PointerEvent
-if (typeof window !== "undefined" && !window.PointerEvent) {
+if (typeof window !== "undefined") {
   class PointerEvent extends Event {
     pointerId = 1;
     pointerType = "mouse";
     isPrimary = true;
+    button = 0;
     constructor(type: string, params: PointerEventInit = {}) {
       super(type, params);
-      Object.assign(this, params);
+      this.pointerId = params.pointerId ?? 1;
+      this.pointerType = params.pointerType ?? "mouse";
+      this.isPrimary = params.isPrimary ?? true;
+      this.button = params.button ?? 0;
     }
   }
   window.PointerEvent = PointerEvent as unknown as typeof window.PointerEvent;
 }
 
 // Mock ResizeObserver
-window.ResizeObserver = vi.fn().mockImplementation(() => ({
-  observe: vi.fn(),
-  unobserve: vi.fn(),
-  disconnect: vi.fn(),
-}));
+window.ResizeObserver = class ResizeObserver {
+  observe = vi.fn();
+  unobserve = vi.fn();
+  disconnect = vi.fn();
+};
 
 // Mock IntersectionObserver
 window.IntersectionObserver = vi.fn().mockImplementation(() => ({
@@ -52,3 +56,19 @@ window.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock scrollTo
 window.scrollTo = vi.fn();
+
+// Radix UI Select/Popover require pointer capture methods and scrollIntoView
+if (typeof window !== "undefined") {
+  if (!Element.prototype.setPointerCapture) {
+    Element.prototype.setPointerCapture = vi.fn();
+  }
+  if (!Element.prototype.releasePointerCapture) {
+    Element.prototype.releasePointerCapture = vi.fn();
+  }
+  if (!Element.prototype.hasPointerCapture) {
+    Element.prototype.hasPointerCapture = vi.fn(() => false);
+  }
+  if (!Element.prototype.scrollIntoView) {
+    Element.prototype.scrollIntoView = vi.fn();
+  }
+}

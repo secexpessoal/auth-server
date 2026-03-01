@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
 import com.auth.application.usecase.RegisterUseCase;
 import com.auth.domain.model.Role;
@@ -54,8 +54,8 @@ class RegisterControllerTest {
     @DisplayName("POST /v1/user/register - Deve registrar novo usuário")
     void shouldRegisterUser() throws Exception {
         // Arrange
-        RegisterRequestDto request = new RegisterRequestDto("newuser", "new@example.com");
-        when(registerUseCase.execute(any(), eq(Role.USER))).thenReturn(MetadataUserResponseDto.builder().build());
+        RegisterRequestDto request = new RegisterRequestDto("newuser", "new@example.com", Role.USER);
+        when(registerUseCase.execute(any(), eq(Role.USER))).thenReturn(UserResponseDto.builder().build());
 
         // Act & Assert
         mockMvc.perform(post("/v1/user/register")

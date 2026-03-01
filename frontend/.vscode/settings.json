@@ -1,0 +1,27 @@
+{
+  "editor.formatOnSave": true,
+  "prettier.enable": false,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/.git": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.patterns": {
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb",
+    "vite.config.ts": "vitest.config.ts, components.json",
+    "eslint.config.*": ".prettierrc.json",
+    ".env": ".env.*"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}

@@ -9,10 +9,11 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.MetadataUserResponseDto;
+import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.CookieService;
+import com.auth.application.service.RefreshTokenService;
 import com.auth.application.usecase.LoginUseCase;
 import com.auth.application.usecase.RefreshTokenUseCase;
 import com.auth.application.usecase.ValidationUseCase;
@@ -40,17 +41,27 @@ public class AuthController {
     private final CookieService cookieService;
     private final ValidationUseCase validationUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
+    private final RefreshTokenService refreshTokenService;
 
+    // NOTE: Rota publica
     @PostMapping("/login")
     @Operation(summary = "Realiza o login do usuário", description = "Valida as credenciais, retorna JWT no JSON e envia Refresh Token num cookie HttpOnly.")
-    public ResponseEntity<@NonNull AuthenticationResponseDto> login(@Valid @RequestBody AuthenticationRequestDto loginRequest) {
-        AuthenticationResult result = loginUseCase.execute(loginRequest);
+    public ResponseEntity<@NonNull AuthenticationResponseDto> login(
+            @Valid @RequestBody AuthenticationRequestDto loginRequest,
+            @RequestHeader(value = HttpHeaders.ORIGIN, required = false) String origin,
+            @RequestHeader(value = HttpHeaders.REFERER, required = false) String referer,
+            @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent,
+            jakarta.servlet.http.HttpServletRequest request) {
+
+        String ipAddress = request.getRemoteAddr();
+        AuthenticationResult result = loginUseCase.execute(loginRequest, userAgent, ipAddress, origin, referer);
 
         ResponseCookie cookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
 
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
     }
 
+    // NOTE: Rota publica
     @PostMapping("/refresh")
     @Operation(summary = "Renova o token de acesso", description = "Lê o Refresh Token do cookie HttpOnly e retorna um novo Access Token.")
     public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = true) String refreshTokenCookie) {
@@ -62,18 +73,23 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
     }
 
+    // NOTE: Não sei se precisa ser auth, por que ele mata o refresh token
     @PostMapping("/logout")
-    @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador.")
-    public ResponseEntity<@NonNull Void> logout() {
-        ResponseCookie cookie = cookieService.buildLogoutCookie();
+    @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
+    public ResponseEntity<@NonNull Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
+        if (refreshToken != null) {
+            refreshTokenService.deleteByToken(refreshToken);
+        }
 
+        ResponseCookie cookie = cookieService.buildLogoutCookie();
         return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
     }
 
+    // NOTE: Rota privada, usuário precisa mandar o token
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
-    public ResponseEntity<@NonNull MetadataUserResponseDto> validateToken(Authentication authentication) {
-        MetadataUserResponseDto response = validationUseCase.execute(authentication);
+    public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
+        UserResponseDto response = validationUseCase.execute(authentication);
         return ResponseEntity.ok(response);
     }
 }

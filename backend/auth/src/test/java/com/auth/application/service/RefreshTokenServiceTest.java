@@ -8,7 +8,7 @@
 package com.auth.application.service;
 
 import com.auth.domain.model.RefreshToken;
-import com.auth.domain.model.User;
+import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.RefreshTokenRepository;
 import com.auth.infra.exception.custom.BadRequestException;
 import org.junit.jupiter.api.DisplayName;
@@ -35,19 +35,46 @@ class RefreshTokenServiceTest {
     private RefreshTokenService refreshTokenService;
 
     @Test
-    @DisplayName("Deve criar novo refresh token limpando os antigos")
+    @DisplayName("Deve criar novo refresh token sem limpar os antigos de outras origens")
     void shouldCreateToken() {
-        User user = new User();
-        user.setUserName("tester");
+        UserAuth user = new UserAuth();
         user.setEmail("tester@example.com");
         when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
-        RefreshToken created = refreshTokenService.createRefreshToken(user);
+        RefreshToken created = refreshTokenService.createRefreshToken(user, "Postman", "127.0.0.1", "https://app.itau.com.br", "https://app.itau.com.br/pix");
 
         assertNotNull(created);
-        assertNotNull(created.getToken());
-        verify(refreshTokenRepository).deleteByUser(user);
-        verify(refreshTokenRepository).save(any());
+        assertEquals("Postman", created.getUserAgent());
+        assertEquals("127.0.0.1", created.getIpAddress());
+        assertEquals("https://app.itau.com.br", created.getOrigin());
+        assertEquals(1, created.getVersion());
+        verify(refreshTokenRepository, never()).deleteByUser(user);
+    }
+
+    @Test
+    @DisplayName("Deve reaproveitar e incrementar versão se for da mesma origem granular")
+    void shouldReuseTokenForSameOrigin() {
+        UserAuth user = new UserAuth();
+        RefreshToken existing = RefreshToken.builder()
+                .user(user)
+                .userAgent("Postman")
+                .ipAddress("127.0.0.1")
+                .origin("https://app.itau.com.br")
+                .referer("https://app.itau.com.br/pix")
+                .version(1)
+                .token("old-token")
+                .build();
+
+        when(refreshTokenRepository.findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
+                any(), anyString(), anyString(), anyString(), anyString()))
+                .thenReturn(Optional.of(existing));
+        when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+
+        RefreshToken updated = refreshTokenService.createRefreshToken(user, "Postman", "127.0.0.1", "https://app.itau.com.br", "https://app.itau.com.br/pix");
+
+        assertNotEquals("old-token", updated.getToken());
+        assertEquals(2, updated.getVersion());
+        verify(refreshTokenRepository).save(existing);
     }
 
     @Test

@@ -1,40 +1,40 @@
 HELP.md
-.gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!**/src/main/**/bin/
-!**/src/test/**/bin/
+### OS Specific ###
+.DS_Store
+Thumbs.db
+*.swp
 
-### IntelliJ IDEA ###
-.idea
+### IDE - VS Code ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+### IDE - IntelliJ IDEA ###
+.idea/
 *.iws
 *.iml
 *.ipr
 out/
-!**/src/main/**/out/
-!**/src/test/**/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
+### IDE - STS/Eclipse ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
 
-### VS Code ###
-.vscode/
-
-### Code ###
+### Project Specific ###
 *.env
+*.local
+node_modules/
+dist/

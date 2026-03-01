@@ -16,17 +16,27 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário ADMIN corretamente", () => {
     useAuthStore.getState().setAuth(
-      "token_mock_123",
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id-admin",
-        username: "admin_user",
         email: "admin@ok.com",
-        role: "ADMIN",
         active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        roles: ["ROLE_ADMIN"],
+        profile: {
+          username: "admin_user",
+          registration: "123456",
+          position: "Admin",
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
+        },
+        audit: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
+        },
       },
-      false,
     );
 
     const state = useAuthStore.getState();
@@ -37,17 +47,27 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário comum corretamente rejeitando admin", () => {
     useAuthStore.getState().setAuth(
-      "token_mock_123",
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id-user",
-        username: "common_user",
         email: "user@ok.com",
-        role: "USER",
         active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        roles: ["ROLE_USER"],
+        profile: {
+          username: "common_user",
+          registration: "654321",
+          position: "User",
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
+        },
+        audit: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
+        },
       },
-      false,
     );
 
     const state = useAuthStore.getState();
@@ -57,17 +77,27 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve limpar os dados ao executar clearAuth", () => {
     useAuthStore.getState().setAuth(
-      "token_mock_123",
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
       {
         id: "dummy-id",
-        username: "admin_user",
         email: "admin@ok.com",
-        role: "ADMIN",
         active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        roles: ["ROLE_ADMIN"],
+        profile: {
+          username: "admin_user",
+          registration: "123456",
+          position: "Admin",
+          birthDate: null,
+          workRegime: "HYBRID",
+          livesElsewhere: false,
+          inPersonWorkPeriod: null,
+        },
+        audit: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
+        },
       },
-      false,
     );
 
     useAuthStore.getState().clearAuth();

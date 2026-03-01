@@ -7,8 +7,8 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.domain.model.User;
-import com.auth.domain.repository.UserRepository;
+import com.auth.domain.model.UserAuth;
+import com.auth.domain.repository.UserAuthRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,11 +24,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeactivateUserUseCase {
 
-    private final UserRepository userRepository;
+    private final UserAuthRepository userRepository;
 
     @Transactional
     public void execute(UUID userId) {
-        User user = userRepository.findById(userId)
+        UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado com o ID: " + userId));
 
         user.setActive(false);
