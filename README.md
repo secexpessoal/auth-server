@@ -8,6 +8,8 @@ Serviço centralizado de gestão de identidade e autenticação para ecossistema
 
 - **Painel Administrativo (Frontend)**: `/`
 - **Documentação de API (Swagger)**: `/swagger-ui.html`
+- **Saúde do Sistema (Actuator Health)**: `/actuator/health`
+- **Métricas do Sistema (Actuator Metrics)**: `/actuator/metrics`
 
 ---
 
@@ -151,7 +153,28 @@ sequenceDiagram
 
 ---
 
-## 🔗 Guia de Integração para Outros Backends
+## �️ Módulo 5: Painel Administrativo (Frontend)
+
+O frontend foi desenvolvido como um SPA (Single Page Application) moderno, focado em alta performance e experiência do desenvolvedor.
+
+### Tecnologias:
+
+- **Vite + React + TypeScript**: Base do projeto.
+- **Storybook**: Documentação dinâmica e isolada de todos os componentes de UI.
+- **Vitest**: Suíte de testes unitários e de integração de componentes.
+
+### Comandos Úteis:
+
+Localizado no diretório `/frontend`:
+
+- `npm run dev`: Inicia o servidor de desenvolvimento.
+- `npm run build`: Gera o pacote otimizado para produção.
+- **`npm run storybook`**: Abre o ambiente de documentação visual dos componentes.
+- `npm run test`: Executa os testes unitários.
+
+---
+
+## �🔗 Guia de Integração para Outros Backends
 
 Fluxo sugerido para aplicações externas que utilizam o Auth Server como Provedor de Identidade (IdP).
 
@@ -183,6 +206,37 @@ sequenceDiagram
 1. **Não armazene senhas**: Deixe que o Painel Admin deste projeto cuide de toda a gestão de segurança.
 2. **Valide em cada request**: Utilize o endpoint de perfil do Auth Server como uma barreira de segurança (Introspecção de Token).
 3. **Roles Dinâmicas**: Use as roles retornadas pelo Auth Server para controlar o acesso granular às suas próprias rotas.
+
+---
+
+## 🛡️ Mecanismo de Segurança e Tokens
+
+O sistema utiliza uma arquitetura robusta de tokens para garantir segurança e rastreabilidade:
+
+### 1. Dual Token (Access & Refresh)
+
+- **Access Token (JWT)**: Vida curta (15 min), carregado no header `Authorization`. Contém as `roles` e `tokenVersion`.
+- **Refresh Token (Cookie HttpOnly)**: Vida longa (7 dias), persistido no banco e enviado via cookie seguro. Utilizado apenas para renovar o Access Token sem novo login.
+
+### 2. Versionamento e Rotação
+
+- Cada sessão possui uma **versão**. Quando um token é renovado, a versão no banco e no próximo JWT incrementa.
+- Se um token antigo for reutilizado (tentativa de roubo), o sistema detecta a divergência de versão e invalida a sessão.
+
+### 3. Isolamento de Sessão (Fingerprinting)
+
+As sessões são únicas por combinação de:
+
+- **Dispositivo**: `User-Agent`.
+- **Localização/Rede**: `IP Address`.
+- **Origem**: `Origin` e `Referer`.
+
+### 4. Rastreabilidade (Audit/MDC)
+
+Cada log gerado no backend inclui:
+
+- `requestId`: ID único para rastrear uma operação de ponta a ponta.
+- `userEmail`: Identificação do usuário que realizou a ação.
 
 ---
 
