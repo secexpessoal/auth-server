@@ -23,34 +23,60 @@ export type RegisterUserFormData = z.infer<typeof registerUserSchema>;
 
 export type RegisterAdminFormData = z.infer<typeof registerAdminSchema>;
 
-export const updateUserProfileSchema = z.object({
-  username: z.string().optional(),
-  registration: z.string().max(6, "A matrícula deve ter no máximo 6 caracteres").nullable().optional(),
-  position: z.string().nullable().optional(),
-  birthDate: z.string().nullable().optional(),
-  workRegime: z.enum(["HOME_WORK", "OFFICE", "HYBRID"]).optional(),
-  livesElsewhere: z.boolean().optional(),
-  inPersonWorkPeriod: z
-    .object({
-      frequencyCycleWeeks: z.number().int().positive().max(52, "Máximo de 52 semanas"),
-      frequencyWeekMask: z.number().int().min(0).max(127, "Máscara inválida"),
-      frequencyDurationDays: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
-    })
-    .superRefine((data, ctx) => {
-      const hasMask = data.frequencyWeekMask > 0;
-      const hasDuration = !!data.frequencyDurationDays && data.frequencyDurationDays > 0;
+export const updateUserProfileSchema = z
+  .object({
+    username: z.string().optional(),
+    registration: z.string().max(6, "A matrícula deve ter no máximo 6 caracteres").nullable().optional(),
+    position: z.string().nullable().optional(),
+    birthDate: z.string().nullable().optional(),
+    workRegime: z.enum(["HOME_WORK", "OFFICE", "HYBRID"]).nullable().optional(),
+    livesElsewhere: z.boolean().nullable().optional(),
+    inPersonWorkPeriod: z
+      .object({
+        frequencyCycleWeeks: z.number().int().positive().max(52, "Máximo de 52 semanas").nullable().optional(),
+        frequencyWeekMask: z.number().int().min(0).max(127, "Máscara inválida").nullable().optional(),
+        frequencyDurationDays: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
+      })
+      .nullable()
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.workRegime === "HYBRID") {
+      const period = data.inPersonWorkPeriod;
+
+      if (!period) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Configure as regras do modelo híbrido",
+          path: ["inPersonWorkPeriod"],
+        });
+        return;
+      }
+
+      if (period.frequencyCycleWeeks === null || period.frequencyCycleWeeks === undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "Informe o ciclo de semanas",
+          path: ["inPersonWorkPeriod", "frequencyCycleWeeks"],
+        });
+      }
+
+      const mask = period.frequencyWeekMask ?? 0;
+      const duration = period.frequencyDurationDays ?? 0;
+      const hasMask = mask > 0;
+      const hasDuration = duration > 0;
 
       if (!hasMask && !hasDuration) {
         ctx.addIssue({
           code: "custom",
           message: "Selecione ao menos um dia da semana ou informe a duração em dias",
-          path: ["frequencyWeekMask"],
+          path: ["inPersonWorkPeriod", "frequencyWeekMask"],
         });
 
         ctx.addIssue({
           code: "custom",
           message: "Informe a duração ou selecione dias específicos",
-          path: ["frequencyDurationDays"],
+          path: ["inPersonWorkPeriod", "frequencyDurationDays"],
         });
       }
 
@@ -58,26 +84,24 @@ export const updateUserProfileSchema = z.object({
         ctx.addIssue({
           code: "custom",
           message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
-          path: ["frequencyWeekMask"],
+          path: ["inPersonWorkPeriod", "frequencyWeekMask"],
         });
 
         ctx.addIssue({
           code: "custom",
           message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
-          path: ["frequencyDurationDays"],
+          path: ["inPersonWorkPeriod", "frequencyDurationDays"],
         });
       }
 
-      if (data.frequencyDurationDays && data.frequencyDurationDays > 365) {
+      if (duration > 365) {
         ctx.addIssue({
           code: "custom",
           message: "A duração consecutiva não pode ultrapassar 365 dias",
-          path: ["frequencyDurationDays"],
+          path: ["inPersonWorkPeriod", "frequencyDurationDays"],
         });
       }
-    })
-    .nullable()
-    .optional(),
-});
+    }
+  });
 
 export type UpdateUserProfileRequestDto = z.infer<typeof updateUserProfileSchema>;

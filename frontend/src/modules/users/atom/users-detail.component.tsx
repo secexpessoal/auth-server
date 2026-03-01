@@ -22,6 +22,7 @@ import {
   Save,
   Shield,
   ShieldAlert,
+  User,
   UserCheck,
   UserCircle,
   UserX,
@@ -138,7 +139,7 @@ export function UserDetailsModal({
 
             <div className="relative z-10 mb-10 pt-4 px-2">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-2xl mb-6 border border-primary-200/50 shadow-sm">
-                <Eye className="w-6 h-6 text-primary-700" />
+                <User className="w-6 h-6 text-primary-700" />
               </div>
 
               <DialogTitle className="text-3xl font-black tracking-tight text-gray-900 mb-2">Detalhes</DialogTitle>
@@ -372,9 +373,10 @@ export function UserDetailsModal({
                             <Checkbox
                               id="livesElsewhere"
                               checked={field.value || false}
+                              className="w-6 h-6 rounded-[10px] border-2 border-gray-300"
                               onCheckedChange={(checked) => field.onChange(checked === true)}
-                              className="w-6 h-6 rounded-[10px] border-2 border-gray-300 text-indigo-600 focus:ring-indigo-500 data-[state=checked]:border-indigo-600"
                             />
+
                             <Label htmlFor="livesElsewhere" className="text-base font-bold text-gray-800 cursor-pointer ml-2 select-none">
                               Reside fora da cidade principal?
                             </Label>

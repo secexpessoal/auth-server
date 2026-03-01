@@ -9,6 +9,7 @@ package com.auth.infra.security.config;
 
 import com.auth.application.service.CustomUserDetailsService;
 import com.auth.domain.model.Role;
+import com.auth.infra.security.filter.CsrfCookieFilter;
 import com.auth.infra.security.filter.JwtAuthenticationFilter;
 import com.auth.infra.security.filter.PasswordResetFilter;
 import com.auth.infra.security.handler.CustomAccessDeniedHandler;
@@ -21,10 +22,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Configuration
 @RequiredArgsConstructor
@@ -37,10 +39,21 @@ public class ServerSecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+        CsrfTokenRequestAttributeHandler csrftokenrequestattributehandler = new CsrfTokenRequestAttributeHandler();
+
         JwtAuthenticationFilter jwtAuthFilter = new JwtAuthenticationFilter(jwtGeneratorService, userDetailsService);
+        PasswordResetFilter passwordResetFilter = new PasswordResetFilter();
+        CsrfCookieFilter csrfCookieFilter = new CsrfCookieFilter();
+
 
         httpSecurity
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // NOTE: Permite o JS ler o cookie XSRF-TOKEN
+                        .csrfTokenRequestHandler(csrftokenrequestattributehandler)
+
+                        // NOTE: Ignorar endpoints públicos que não exigem proteção CSRF (normalmente login/registro se forem POST)
+                        .ignoringRequestMatchers("/v1/user/login")
+                )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
                         .accessDeniedHandler(accessDeniedHandler)
@@ -72,8 +85,9 @@ public class ServerSecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/**").permitAll()
                             .anyRequest().authenticated();
                 })
+                .addFilterAfter(passwordResetFilter, JwtAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new PasswordResetFilter(), JwtAuthenticationFilter.class)
+                .addFilterAfter(csrfCookieFilter, UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return httpSecurity.build();

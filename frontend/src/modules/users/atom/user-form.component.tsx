@@ -10,14 +10,14 @@ import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react"
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { registerAdminSchema, registerUserSchema } from "./molecule/user.schema";
-import { registerAdminAttempt, registerUserAttempt } from "./services/user.service";
+import { registerAdminSchema, registerUserSchema } from "../molecule/user.schema";
+import { registerAdminAttempt, registerUserAttempt } from "../services/user.service";
 
 type Props = {
   role: "ADMIN" | "USER";
 };
 
-// Unified form data type used by the component (role optional for admin)
+// NOTE: Sö existe para poder fazer o ADMIN ser opcional no role
 type RegisterFormData = {
   username: string;
   email: string;

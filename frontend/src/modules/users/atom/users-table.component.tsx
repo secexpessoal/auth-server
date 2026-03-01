@@ -88,6 +88,7 @@ export function UsersTableComponent() {
     if (temporaryPassword) {
       navigator.clipboard.writeText(temporaryPassword);
       setCopied(true);
+
       toast.success("Senha copiada para a área de transferência!");
       setTimeout(() => setCopied(false), 2000);
     }
