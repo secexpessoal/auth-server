@@ -13,6 +13,7 @@ import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.repository.UserAuthRepository;
+import org.springframework.data.jpa.domain.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -64,10 +65,10 @@ class ListUsersUseCaseTest {
     void deveRetornarListaPaginadaComSucesso() {
         // Arrange
         Page<UserAuth> page = new PageImpl<>(List.of(testUser));
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         // Act
-        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user");
+        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);
 
         // Assert
         assertNotNull(result);
@@ -81,10 +82,10 @@ class ListUsersUseCaseTest {
     void deveIncluirMetadadosELinks() {
         // Arrange
         Page<UserAuth> page = new PageImpl<>(List.of(testUser), PageRequest.of(0, 10), 1);
-        when(userRepository.findAll(any(Pageable.class))).thenReturn(page);
+        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
 
         // Act
-        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user");
+        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);
 
         // Assert
         assertNotNull(result.meta());

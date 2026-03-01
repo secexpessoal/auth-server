@@ -59,7 +59,7 @@ class ListUsersControllerTest {
                 .links(Map.of())
                 .build();
 
-        when(listUsersUseCase.execute(anyInt(), anyInt(), anyString())).thenReturn(response);
+        when(listUsersUseCase.execute(anyInt(), anyInt(), anyString(), any(), any(), any())).thenReturn(response);
 
         mockMvc.perform(get("/v1/user")
                 .param("page", "0")
