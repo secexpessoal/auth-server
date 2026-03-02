@@ -1,0 +1,58 @@
+> Task :auth:compileJava UP-TO-DATE
+> Task :auth:processResources UP-TO-DATE
+> Task :auth:classes UP-TO-DATE
+> Task :auth:compileTestJava UP-TO-DATE
+> Task :auth:processTestResources UP-TO-DATE
+> Task :auth:testClasses UP-TO-DATE
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+
+> Task :auth:test
+
+AuthE2ETest > Fluxo de Administra├º├úo: Listagem -> Desativa├º├úo -> Tentativa de Login -> Ativa├º├úo -> Atualiza├º├úo de Perfil FAILED
+    java.lang.AssertionError at AuthE2ETest.java:293
+
+AuthE2ETest > Fluxo de Perfil: Atualiza├º├úo de campos de metadados (cargo, regime, registro) FAILED
+    java.lang.AssertionError at AuthE2ETest.java:383
+
+AuthE2ETest > Fluxo de Seguran├ºa: Admin Reset -> Login -> First Change FAILED
+    java.lang.AssertionError at AuthE2ETest.java:206
+
+AuthE2ETest > Fluxo Completo: Registro -> Login com Senha Tempor├íria -> Troca Senha -> Login Final -> Profile -> Refresh -> Profile FAILED
+    java.lang.AssertionError at AuthE2ETest.java:104
+
+2026-03-02T03:51:27.859-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.864-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-02T03:51:27.865-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-03-02T03:51:27.870-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.871-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-03-02T03:51:27.871-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-03-02T03:51:27.875-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.877-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-03-02T03:51:27.877-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-03-02T03:51:27.882-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.882-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-03-02T03:51:27.883-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+2026-03-02T03:51:27.887-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.888-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+2026-03-02T03:51:27.889-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+2026-03-02T03:51:27.892-03:00  INFO 26016 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:51:27.893-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-03-02T03:51:27.894-03:00  INFO 26016 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+
+> Task :auth:test
+
+67 tests completed, 4 failed
+
+> Task :auth:test FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':auth:test'.
+> There were failing tests. See the report at: file:///C:/Users/vinicius/Desktop/spring-jwt-auth/backend/auth/build/reports/tests/test/index.html
+
+* Try:
+> Run with --scan to get full insights from a Build Scan (powered by Develocity).
+
+BUILD FAILED in 24s
+5 actionable tasks: 1 executed, 4 up-to-date

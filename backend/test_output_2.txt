@@ -1,0 +1,30 @@
+> Task :auth:compileJava
+> Task :auth:processResources UP-TO-DATE
+> Task :auth:classes
+> Task :auth:compileTestJava UP-TO-DATE
+> Task :auth:processTestResources UP-TO-DATE
+> Task :auth:testClasses UP-TO-DATE
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-03-02T03:52:30.873-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.878-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-03-02T03:52:30.879-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+2026-03-02T03:52:30.882-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.883-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-03-02T03:52:30.884-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+2026-03-02T03:52:30.887-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.888-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown initiated...
+2026-03-02T03:52:30.888-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Shutdown completed.
+2026-03-02T03:52:30.891-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.893-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown initiated...
+2026-03-02T03:52:30.893-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Shutdown completed.
+2026-03-02T03:52:30.897-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.898-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown initiated...
+2026-03-02T03:52:30.899-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Shutdown completed.
+2026-03-02T03:52:30.902-03:00  INFO 13000 --- [auth] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-02T03:52:30.903-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown initiated...
+2026-03-02T03:52:30.903-03:00  INFO 13000 --- [auth] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-6 - Shutdown completed.
+> Task :auth:test
+
+BUILD SUCCESSFUL in 21s
+5 actionable tasks: 2 executed, 3 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.0/userguide/configuration_cache_enabling.html

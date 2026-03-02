@@ -61,8 +61,8 @@ public class ServerSecurityConfig {
                         .csrfTokenRequestHandler(csrftokenrequestattributehandler)
                         .requireCsrfProtectionMatcher(new CsrfProtectionMatcher())
 
-                        // NOTE: Ignorar endpoints públicos que não exigem proteção CSRF (normalmente login/registro se forem POST)
-                        .ignoringRequestMatchers("/v1/user/login", "/v1/user/refresh")
+                        // NOTE: Ignorar endpoints públicos que não exigem proteção CSRF
+                        .ignoringRequestMatchers("/v1/user/login", "/v1/user/refresh", "/v1/user/logout")
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
