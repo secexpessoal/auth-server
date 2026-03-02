@@ -22,6 +22,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.core.AuthenticationException;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -70,17 +73,26 @@ public class HttpExceptionHandler {
     /**
      * Trata falhas de autenticação (Usuário/Senha incorretos).
      */
-    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
-    public ResponseEntity<DataObjectError> handleBadCredentials(org.springframework.security.authentication.BadCredentialsException exception) {
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<DataObjectError> handleBadCredentials(BadCredentialsException exception) {
         log.info("Tentativa de login com credenciais inválidas.");
         return buildErrorResponse("Usuário ou senha inválidos", HttpStatus.UNAUTHORIZED);
     }
 
     /**
+     * Trata erro de usuário não encontrado.
+     */
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<DataObjectError> handleUsernameNotFound(UsernameNotFoundException exception) {
+        log.info("Usuário não encontrado: {}", exception.getMessage());
+        return buildErrorResponse(exception.getMessage(), HttpStatus.UNAUTHORIZED);
+    }
+
+    /**
      * Trata falhas genéricas de autenticação no nível de Controller.
      */
-    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
-    public ResponseEntity<DataObjectError> handleAuthenticationException(org.springframework.security.core.AuthenticationException exception) {
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<DataObjectError> handleAuthenticationException(AuthenticationException exception) {
         log.error("Falha de autenticação: {}", exception.getMessage());
         return buildErrorResponse("Acesso não autorizado ou sessão expirada.", HttpStatus.UNAUTHORIZED);
     }
