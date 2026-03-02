@@ -32,10 +32,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
-@Document(collection = "users")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collection = "users")
 public class UserAuth implements UserDetails {
 
     @Id

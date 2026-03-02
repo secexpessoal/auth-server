@@ -22,10 +22,10 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@Document(collection = "refresh_tokens")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collection = "refresh_tokens")
 public class RefreshToken {
 
     @Id

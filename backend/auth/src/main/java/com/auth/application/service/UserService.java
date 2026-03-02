@@ -12,6 +12,7 @@ import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class UserService {
     private final UserAuthRepository userRepository;
+    private final UserDataRepository userDataRepository;
     private final PasswordEncoder passwordEncoder;
 
     /**
@@ -49,10 +51,16 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(tempPassword));
         user.getRoles().add(role);
         user.setPasswordResetRequired(true);
+        
+        // Save user first to generate its ID and make it available for UserData
+        user = userRepository.save(user);
 
         UserData userData = new UserData();
         userData.setUserName(request.userName());
         userData.setUser(user);
+        
+        userData = userDataRepository.save(userData);
+        
         user.setUserData(userData);
 
         return userRepository.save(user);

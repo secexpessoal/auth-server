@@ -24,9 +24,9 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
-    @Document(collection = "user_profiles")
 @NoArgsConstructor
 @AllArgsConstructor
+@Document(collection = "user_profiles")
 public class UserData {
 
     @Id
