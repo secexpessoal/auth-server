@@ -17,6 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -53,11 +54,9 @@ class RegisterControllerTest {
     @Test
     @DisplayName("POST /v1/user/register - Deve registrar novo usuário")
     void shouldRegisterUser() throws Exception {
-        // Arrange
         RegisterRequestDto request = new RegisterRequestDto("newuser", "new@example.com", Role.USER);
         when(registerUseCase.execute(any(), eq(Role.USER))).thenReturn(UserResponseDto.builder().build());
 
-        // Act & Assert
         mockMvc.perform(post("/v1/user/register")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

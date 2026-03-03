@@ -7,16 +7,19 @@
  */
 package com.auth.domain.model;
 
-import com.auth.infra.config.jpa.GeneratedUuidV7;
+import com.auth.infra.security.service.UuidV7Service;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.jspecify.annotations.NonNull;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,52 +32,39 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Data
-@Entity
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "users", schema = "auth")
+@Document(collection = "users")
 public class UserAuth implements UserDetails {
 
     @Id
-    @GeneratedUuidV7
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID userId;
+    private UUID userId = UuidV7Service.randomV7();
 
     @Email
-    @Column(name = "email", unique = true, nullable = false, length = 100)
+    @Indexed(unique = true)
+    @Field("email")
     private String email;
 
     @JsonIgnore
-    @Column(name = "password", nullable = false)
+    @Field("password")
     private String password;
 
-    @Column(name = "role")
-    @Enumerated(EnumType.STRING)
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_roles", schema = "auth", joinColumns = @JoinColumn(name = "user_id"))
+    @Field("role")
     private Set<Role> roles = new HashSet<>();
 
-    @Column(name = "is_active")
+    @Field("is_active")
     private Boolean active = true;
 
-    @Column(name = "is_password_reset_required")
+    @Field("is_password_reset_required")
     private Boolean passwordResetRequired = false;
 
-    @Column(name = "token_version")
+    @Field("token_version")
     private Integer tokenVersion = 0;
 
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    @PrimaryKeyJoinColumn
+    @DocumentReference(lazy = true)
     private UserData userData;
 
-    /**
-     * Retorna o identificador do usuário para o Spring Security.
-     * Prioriza o userName definido no perfil (UserData), funcionando como fallback para o e-mail.
-     *
-     * @return O nome de usuário do perfil ou o e-mail se o perfil não estiver carregado.
-     */
     @NonNull
     @Override
     public String getUsername() {
@@ -109,23 +99,11 @@ public class UserAuth implements UserDetails {
     public Instant getCreatedAt() {
         if (userId == null) return null;
         long timestamp = userId.getMostSignificantBits() >>> 16;
+        if (timestamp == 0) return Instant.now();
         return Instant.ofEpochMilli(timestamp);
     }
 
     public Integer getTokenVersion() {
         return tokenVersion == null ? 0 : tokenVersion;
-    }
-
-    /**
-     * Sincroniza a governança com a tabela de perfil.
-     * Garante que mudanças em dados de autenticação (senha, roles, status) sejam 
-     * refletidas no log de auditoria centralizado do UserData.
-     */
-    @PreUpdate
-    @PrePersist
-    public void syncGovernance() {
-        if (this.userData != null) {
-            this.userData.touch();
-        }
     }
 }

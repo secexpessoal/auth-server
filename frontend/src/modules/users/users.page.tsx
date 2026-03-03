@@ -1,4 +1,4 @@
-import { LogOut, Users, Shield } from "lucide-react";
+import { LogOut, Users, Shield, BookOpen } from "lucide-react";
 import { useAuthStore } from "../../store/auth.store";
 import { logoutAttempt } from "../auth/services/auth.service";
 import { Button } from "../../components/sh-button/button.component";
@@ -34,6 +34,15 @@ export function UsersPage() {
               <Shield className="w-3 h-3 text-emerald-500" /> Administrador
             </p>
           </div>
+
+          <Button
+            variant="outline"
+            onClick={() => (window.location.href = "/swagger-ui.html")} 
+            className="h-10 border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100"
+          >
+            API Docs
+            <BookOpen className="w-4 h-4 ml-2" />
+          </Button>
 
           <Button
             variant="outline"

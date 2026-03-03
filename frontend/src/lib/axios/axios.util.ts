@@ -103,6 +103,18 @@ axiosClient.interceptors.response.use(
       toast.error(getErrorMessage(error, "Você não tem permissão para realizar esta ação."));
     }
 
+    if (status && status >= 400 && status !== 401 && status !== 403) {
+      // Se a chamada falhou com 400+ (ex: 404, 500) e queremos fallback global na SPA.
+      // toast.error já é acionado em muitos lugares, mas se a rota não existe (404) ou se
+      // a API inteira caiu (500), podemos redirecionar para a tela de erro usando o window/router
+      // se tivermos acesso a ele.
+      if (status >= 500 || status === 404) {
+        const searchParams = new URLSearchParams();
+        searchParams.set("error_code", status.toString());
+        window.location.href = `/?${searchParams.toString()}`;
+      }
+    }
+
     return Promise.reject(error);
   },
 );

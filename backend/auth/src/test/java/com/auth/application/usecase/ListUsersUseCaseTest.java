@@ -12,8 +12,6 @@ import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
-import com.auth.domain.repository.UserAuthRepository;
-import org.springframework.data.jpa.domain.Specification;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,10 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 
 import java.util.List;
 import java.util.Set;
@@ -32,13 +28,14 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ListUsersUseCaseTest {
 
     @Mock
-    private UserAuthRepository userRepository;
+    private MongoTemplate mongoTemplate;
 
     @InjectMocks
     private ListUsersUseCase listUsersUseCase;
@@ -64,8 +61,8 @@ class ListUsersUseCaseTest {
     @DisplayName("Deve retornar uma lista paginada de usuários com sucesso")
     void deveRetornarListaPaginadaComSucesso() {
         // Arrange
-        Page<UserAuth> page = new PageImpl<>(List.of(testUser));
-        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(mongoTemplate.count(any(Query.class), eq(UserAuth.class))).thenReturn(1L);
+        when(mongoTemplate.find(any(Query.class), eq(UserAuth.class))).thenReturn(List.of(testUser));
 
         // Act
         PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);
@@ -81,8 +78,8 @@ class ListUsersUseCaseTest {
     @DisplayName("Deve incluir metadados de paginação e links na resposta")
     void deveIncluirMetadadosELinks() {
         // Arrange
-        Page<UserAuth> page = new PageImpl<>(List.of(testUser), PageRequest.of(0, 10), 1);
-        when(userRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(page);
+        when(mongoTemplate.count(any(Query.class), eq(UserAuth.class))).thenReturn(1L);
+        when(mongoTemplate.find(any(Query.class), eq(UserAuth.class))).thenReturn(List.of(testUser));
 
         // Act
         PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);

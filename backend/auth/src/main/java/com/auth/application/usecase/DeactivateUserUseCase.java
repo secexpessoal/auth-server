@@ -13,7 +13,7 @@ import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.UUID;
 
@@ -26,7 +26,7 @@ public class DeactivateUserUseCase {
 
     private final UserAuthRepository userRepository;
 
-    @Transactional
+
     public void execute(UUID userId) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado com o ID: " + userId));

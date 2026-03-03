@@ -25,6 +25,10 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.core.AuthenticationException;
+import org.slf4j.MDC;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -61,11 +65,18 @@ public class HttpExceptionHandler {
         });
 
         log.warn("Erro de validação em {} campos: {}", errors.size(), errors);
+        
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String traceId = MDC.get("requestId");
+        
         DataObjectError error = DataObjectError.builder()
-                .message("Erro de validação nos campos informados")
-                .code(HttpStatus.BAD_REQUEST.value())
                 .timestamp(new Date())
-                .details(errors)
+                .status(HttpStatus.BAD_REQUEST.value())
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .code("VALIDATION_ERROR")
+                .message("Erro de validação nos campos informados: " + errors.toString())
+                .path(request.getRequestURI())
+                .traceId(traceId)
                 .build();
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
@@ -161,10 +172,23 @@ public class HttpExceptionHandler {
     }
 
     private ResponseEntity<DataObjectError> buildErrorResponse(String message, HttpStatus status) {
+        HttpServletRequest request = null;
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            if (attributes != null) request = attributes.getRequest();
+        } catch (Exception ignored) {}
+
+        String path = request != null ? request.getRequestURI() : "Unknown path";
+        String traceId = MDC.get("requestId");
+
         DataObjectError error = DataObjectError.builder()
-                .message(message)
-                .code(status.value())
                 .timestamp(new Date())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code(status.name())
+                .message(message)
+                .path(path)
+                .traceId(traceId)
                 .build();
         return new ResponseEntity<>(error, status);
     }

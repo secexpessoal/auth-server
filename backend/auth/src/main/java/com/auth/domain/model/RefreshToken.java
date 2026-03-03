@@ -7,52 +7,54 @@
  */
 package com.auth.domain.model;
 
-import com.auth.infra.config.jpa.GeneratedUuidV7;
-import jakarta.persistence.*;
+import com.auth.infra.security.service.UuidV7Service;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@Entity
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "refresh_tokens", schema = "auth")
+@Document(collection = "refresh_tokens")
 public class RefreshToken {
 
     @Id
-    @GeneratedUuidV7
-    @Column(name = "id", updatable = false, nullable = false)
-    private UUID tokenId;
+    @Builder.Default
+    private UUID tokenId = UuidV7Service.randomV7();
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @DocumentReference
     private UserAuth user;
 
-    @Column(name = "token", nullable = false, unique = true)
+    @Indexed(unique = true)
+    @Field("token")
     private String token;
 
-    @Column(name = "user_agent")
+    @Field("user_agent")
     private String userAgent;
 
-    @Column(name = "ip_address")
+    @Field("ip_address")
     private String ipAddress;
 
-    @Column(name = "origin")
+    @Field("origin")
     private String origin;
 
-    @Column(name = "referer")
+    @Field("referer")
     private String referer;
 
-    @Column(name = "version")
+    @Field("version")
     @Builder.Default
     private Integer version = 0;
 
-    @Column(name = "expires_at", nullable = false)
+    @Field("expires_at")
     private Instant expiryDate;
 }

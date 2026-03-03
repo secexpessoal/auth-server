@@ -11,11 +11,12 @@ import com.auth.api.dto.auth.*;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,8 +26,9 @@ import java.util.stream.Collectors;
 public class UpdateUserProfileUseCase {
 
     private final UserAuthRepository userRepository;
+    private final UserDataRepository userDataRepository;
 
-    @Transactional
+
     public UserResponseDto execute(UUID userId, UpdateUserProfileRequestDto request) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
@@ -59,6 +61,8 @@ public class UpdateUserProfileUseCase {
             data.setFrequencyDurationDays(duration);
         }
 
+        data.touch();
+        userDataRepository.save(data);
         userRepository.save(user);
 
         // Build Response

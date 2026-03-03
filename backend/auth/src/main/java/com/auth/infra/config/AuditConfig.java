@@ -11,7 +11,7 @@ import com.auth.domain.model.UserAuth;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.data.mongodb.config.EnableMongoAuditing;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -22,7 +22,7 @@ import java.util.Optional;
  * Captura o usuário logado para preencher campos como @LastModifiedBy.
  */
 @Configuration
-@EnableJpaAuditing(auditorAwareRef = "auditorProvider")
+@EnableMongoAuditing(auditorAwareRef = "auditorProvider")
 public class AuditConfig {
 
     @Bean

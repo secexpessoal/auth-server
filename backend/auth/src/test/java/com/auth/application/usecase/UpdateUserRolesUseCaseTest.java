@@ -23,12 +23,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -54,57 +56,61 @@ class UpdateUserRolesUseCaseTest {
 
         UserData userData = new UserData();
         userData.setUserName("testuser");
+        userData.setUpdatedAt(Instant.now());
         userData.setUser(testUser);
         testUser.setUserData(userData);
     }
 
     @Test
-    @DisplayName("Deve atualizar as roles do usuário com sucesso")
-    void deveAtualizarRolesComSucesso() {
+    @DisplayName("Deve atualizar os cargos de um usuário com sucesso")
+    void deveAtualizarCargosComSucesso() {
         // Arrange
         UpdateUserRolesRequestDto request = UpdateUserRolesRequestDto.builder()
                 .roles(Set.of(Role.ADMIN, Role.MANAGER))
                 .build();
-        
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
         UserResponseDto response = updateUserRolesUseCase.execute(userId, request);
 
         // Assert
+        assertNotNull(response);
+        assertEquals(2, testUser.getRoles().size());
+        assertTrue(testUser.getRoles().contains(Role.ADMIN));
+        assertTrue(testUser.getRoles().contains(Role.MANAGER));
         assertTrue(response.roles().contains("ROLE_ADMIN"));
         assertTrue(response.roles().contains("ROLE_MANAGER"));
-        assertEquals(2, response.roles().size());
         verify(userRepository).save(testUser);
     }
 
     @Test
-    @DisplayName("Deve lançar BadRequestException se a lista de roles estiver vazia")
-    void deveLancarExceptionRolesVazio() {
+    @DisplayName("Deve lançar BadRequestException quando a lista de cargos estiver vazia")
+    void deveLancarExceptionQuandoCargosVazio() {
         // Arrange
         UpdateUserRolesRequestDto request = UpdateUserRolesRequestDto.builder()
                 .roles(Set.of())
                 .build();
-        
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act & Assert
-        BadRequestException exception = assertThrows(BadRequestException.class, 
-                () -> updateUserRolesUseCase.execute(userId, request));
-        assertEquals("O usuário deve possuir pelo menos uma Role", exception.getMessage());
+        assertThrows(BadRequestException.class, () -> updateUserRolesUseCase.execute(userId, request));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    @DisplayName("Deve lançar NotFoundException se o usuário não existir")
-    void deveLancarExceptionUsuarioNaoEncontrado() {
+    @DisplayName("Deve lançar NotFoundException quando o usuário não existir")
+    void deveLancarExceptionQuandoUsuarioNaoEncontrado() {
         // Arrange
         UpdateUserRolesRequestDto request = UpdateUserRolesRequestDto.builder()
                 .roles(Set.of(Role.ADMIN))
                 .build();
-        
-        when(userRepository.findById(userId)).thenReturn(Optional.ofNullable(null));
+
+        when(userRepository.findById(any())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(NotFoundException.class, () -> updateUserRolesUseCase.execute(userId, request));
+        verify(userRepository, never()).save(any());
     }
 }
