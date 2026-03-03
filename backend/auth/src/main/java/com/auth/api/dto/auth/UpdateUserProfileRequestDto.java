@@ -21,13 +21,13 @@ public record UpdateUserProfileRequestDto(
         @JsonProperty("username")
         String username,
 
-        @Size(min = 5, max = 6)
         @JsonProperty("position")
         String position,
 
         @JsonProperty("birthDate")
         Instant birthDate,
 
+        @Size(min = 5, max = 6)
         @JsonProperty("registration")
         String registration,
 
