@@ -15,6 +15,7 @@ import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.model.WorkRegime;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,9 @@ class UpdateUserProfileUseCaseTest {
 
     @Mock
     private UserAuthRepository userRepository;
+
+    @Mock
+    private UserDataRepository userDataRepository;
 
     @InjectMocks
     private UpdateUserProfileUseCase updateUserProfileUseCase;
@@ -80,6 +84,7 @@ class UpdateUserProfileUseCaseTest {
         assertEquals("newuser", response.profile().username());
         assertEquals("Developer", response.profile().position());
         assertEquals(WorkRegime.HYBRID, response.profile().workRegime());
+        verify(userDataRepository).save(testUser.getUserData());
         verify(userRepository).save(testUser);
     }
 
@@ -105,6 +110,8 @@ class UpdateUserProfileUseCaseTest {
         // Assert
         assertNull(response.profile().inPersonWorkPeriod().frequencyDurationDays());
         assertEquals(31, response.profile().inPersonWorkPeriod().frequencyWeekMask());
+        verify(userDataRepository).save(testUser.getUserData());
+        verify(userRepository).save(testUser);
     }
 
     @Test

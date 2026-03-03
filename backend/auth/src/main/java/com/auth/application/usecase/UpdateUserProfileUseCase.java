@@ -11,6 +11,7 @@ import com.auth.api.dto.auth.*;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 public class UpdateUserProfileUseCase {
 
     private final UserAuthRepository userRepository;
+    private final UserDataRepository userDataRepository;
 
 
     public UserResponseDto execute(UUID userId, UpdateUserProfileRequestDto request) {
@@ -59,6 +61,8 @@ public class UpdateUserProfileUseCase {
             data.setFrequencyDurationDays(duration);
         }
 
+        data.touch();
+        userDataRepository.save(data);
         userRepository.save(user);
 
         // Build Response
