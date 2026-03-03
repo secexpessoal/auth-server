@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 import org.jspecify.annotations.NonNull;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -35,7 +36,17 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
-        DataObjectError error = DataObjectError.builder().message("Você não tem permissão para acessar este recurso.").code(HttpStatus.FORBIDDEN.value()).timestamp(new Date()).build();
+        String traceId = MDC.get("requestId");
+
+        DataObjectError error = DataObjectError.builder()
+                .timestamp(new Date())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .code("FORBIDDEN")
+                .message("Você não tem permissão para acessar este recurso.")
+                .path(request.getRequestURI())
+                .traceId(traceId)
+                .build();
         response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 }

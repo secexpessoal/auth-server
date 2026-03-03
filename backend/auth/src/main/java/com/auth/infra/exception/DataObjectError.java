@@ -16,9 +16,12 @@ import java.util.Map;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record DataObjectError(
-        String message,
         Date timestamp,
-        Integer code,
-        Map<String, String> details
+        Integer status,
+        String error,
+        String code,
+        String message,
+        String path,
+        String traceId
 ) {
 }

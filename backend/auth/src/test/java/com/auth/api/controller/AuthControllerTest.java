@@ -93,6 +93,7 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.details").exists());
+                .andExpect(jsonPath("$.message").exists())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
     }
 }

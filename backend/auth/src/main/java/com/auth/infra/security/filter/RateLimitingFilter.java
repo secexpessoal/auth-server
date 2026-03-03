@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,13 +46,13 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (enabled && (path.startsWith("/v1/user/login") || path.startsWith("/v1/user/register") || path.startsWith("/v1/password/reset"))) {
+        if (enabled) {
             String ip = getClientIP(request);
             Bucket bucket = resolveBucket(ip);
 
             if (!bucket.tryConsume(1)) {
                 log.warn("Rate limit excedido para o IP: {} na rota: {}", ip, path);
-                sendRateLimitErrorResponse(response);
+                sendRateLimitErrorResponse(request, response);
                 return;
             }
         }
@@ -64,18 +65,30 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     }
 
     private Bucket createNewBucket(String ip) {
-        Bandwidth limit = Bandwidth.builder().capacity(10).refillGreedy(10, Duration.ofMinutes(1)).build();
+        Bandwidth limit = Bandwidth.builder().capacity(100).refillGreedy(100, Duration.ofMinutes(1)).build();
         return Bucket.builder().addLimit(limit).build();
     }
 
-    private void sendRateLimitErrorResponse(HttpServletResponse response) throws IOException {
+    private void sendRateLimitErrorResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String uri = request.getRequestURI();
+        boolean isApiRoute = uri != null && uri.startsWith("/v1/");
+
+        if (!isApiRoute) {
+            response.sendRedirect("/?error_code=429");
+            return;
+        }
+
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
         DataObjectError error = DataObjectError.builder()
-                .message("Muitas tentativas de requisição. Por favor, aguarde alguns instantes e tente novamente.")
-                .code(HttpStatus.TOO_MANY_REQUESTS.value())
                 .timestamp(new Date())
+                .status(HttpStatus.TOO_MANY_REQUESTS.value())
+                .error(HttpStatus.TOO_MANY_REQUESTS.getReasonPhrase())
+                .code(HttpStatus.TOO_MANY_REQUESTS.name())
+                .message("Muitas tentativas de requisição. Por favor, aguarde alguns instantes e tente novamente.")
+                .path(request.getRequestURI())
+                .traceId(MDC.get("traceId"))
                 .build();
         response.getWriter().write(objectMapper.writeValueAsString(error));
     }
