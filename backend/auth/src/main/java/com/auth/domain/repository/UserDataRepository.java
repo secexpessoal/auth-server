@@ -8,11 +8,11 @@
 package com.auth.domain.repository;
 
 import com.auth.domain.model.UserData;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
 
 @Repository
-public interface UserDataRepository extends JpaRepository<UserData, UUID> {
+public interface UserDataRepository extends MongoRepository<UserData, UUID> {
 }

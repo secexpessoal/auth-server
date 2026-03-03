@@ -71,14 +71,14 @@ public class ServerSecurityConfig {
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh").permitAll()
                             .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/activate", "/v1/user/deactivate").hasRole(Role.ADMIN.name())
-                            .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/change", "/v1/user/profile/**", "/v1/password/first-change").authenticated()
 
                             // NOTE: Swagger
-                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                             // NOTE: Roteamento SPA: permitir todas as solicitações GET que não sejam endpoints de API (assets, html, rotas SPA)
                             .requestMatchers(HttpMethod.GET, "/**").permitAll()

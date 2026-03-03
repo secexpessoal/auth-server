@@ -7,80 +7,73 @@
  */
 package com.auth.domain.model;
 
-import jakarta.persistence.*;
+import com.auth.infra.security.service.UuidV7Service;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.DocumentReference;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 import java.util.UUID;
 
 @Data
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "user_profiles", schema = "auth")
+@Document(collection = "user_profiles")
 public class UserData {
 
     @Id
-    @Column(name = "user_id")
-    private UUID userId;
+    private UUID userId = UuidV7Service.randomV7();
 
-    @MapsId
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    @DocumentReference(lazy = true)
     private UserAuth user;
 
-    @Column(name = "name", nullable = false, length = 255)
+    @Field("name")
     private String userName;
 
-    @Column(name = "registration", length = 6)
     @Size(min = 5, max = 6)
+    @Field("registration")
     private String registration;
 
-    @Column(name = "position", length = 255)
+    @Field("position")
     private String position;
 
-    @Column(name = "birth_date")
+    @Field("birth_date")
     private Instant birthDate;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "work_regime")
+    @Field("work_regime")
     private WorkRegime workRegime;
 
-    @Column(name = "is_living_elsewhere")
+    @Field("is_living_elsewhere")
     private Boolean livesElsewhere;
 
     @Max(52)
-    @Column(name = "frequency_cycle_weeks")
+    @Field("frequency_cycle_weeks")
     private Integer frequencyCycleWeeks;
 
     @Max(127)
-    @Column(name = "frequency_week_mask")
+    @Field("frequency_week_mask")
     private Integer frequencyWeekMask;
 
     @Max(365)
-    @Column(name = "frequency_duration_days")
+    @Field("frequency_duration_days")
     private Integer frequencyDurationDays;
 
     @LastModifiedDate
-    @Column(name = "updated_at")
+    @Field("updated_at")
     private Instant updatedAt;
 
     @LastModifiedBy
-    @Column(name = "updated_by")
+    @Field("updated_by")
     private String updatedBy;
 
-    /**
-     * Força a atualização dos metadados de auditoria.
-     * Útil para sincronizar a governança quando dados em outras tabelas (como UserAuth) mudam.
-     */
     public void touch() {
         this.updatedAt = Instant.now();
     }

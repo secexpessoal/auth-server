@@ -11,6 +11,7 @@ import com.auth.api.dto.auth.RegisterRequestDto;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +35,9 @@ class UserServiceTest {
     private UserAuthRepository userRepository;
 
     @Mock
+    private UserDataRepository userDataRepository;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -46,6 +50,7 @@ class UserServiceTest {
         when(userRepository.findByEmail("john@example.com")).thenReturn(Optional.empty());
         when(passwordEncoder.encode("pass123")).thenReturn("hashed");
         when(userRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
+        when(userDataRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         UserAuth saved = userService.userRegister(request, Role.USER, "pass123");
 
@@ -53,7 +58,7 @@ class UserServiceTest {
         assertEquals("john@example.com", saved.getEmail());
         assertEquals("john@example.com", saved.getEmail());
         assertEquals("hashed", saved.getPassword());
-        verify(userRepository).save(any());
+        verify(userRepository, times(2)).save(any());
     }
 
     @Test

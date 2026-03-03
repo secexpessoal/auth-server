@@ -3,17 +3,20 @@ import { Input } from "@components/sh-input/input.component";
 import { Label } from "@components/sh-label/label.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
 import { useAuthStore } from "@store/auth.store";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { Navigate } from "@tanstack/react-router";
-import { KeyRound, Loader2, ShieldCheck } from "lucide-react";
+import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { firstChangeSchema, type FirstChangeFormData } from "./molecule/auth.schema";
 import { firstChangePasswordAttempt } from "./services/auth.service";
 
 export function ResetPasswordPage() {
   const { isAuthenticated, passwordResetRequired, user } = useAuthStore();
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: FirstChangeFormData) => firstChangePasswordAttempt(data.password),
@@ -42,7 +45,6 @@ export function ResetPasswordPage() {
     mutation.mutate(values);
   };
 
-  // Protected Route Logic: If not authenticated or reset not required, redirect home
   if (!isAuthenticated) return <Navigate to="/login" />;
   if (!passwordResetRequired) return <Navigate to="/" />;
 
@@ -71,13 +73,24 @@ export function ResetPasswordPage() {
                   Nova Senha
                 </Label>
 
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  {...register("password")}
-                  className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    placeholder="••••••••"
+                    {...register("password")}
+                    type={showPassword ? "text" : "password"}
+                    className="pr-16 h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
+                  />
+
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowPassword((value) => !value)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
 
                 {errors.password && (
                   <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.password.message}</p>
@@ -89,13 +102,23 @@ export function ResetPasswordPage() {
                   Confirmar Nova Senha
                 </Label>
 
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  {...register("confirmPassword")}
-                  className="h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...register("confirmPassword")}
+                    className="pr-16 h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
+                  />
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
 
                 {errors.confirmPassword && (
                   <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.confirmPassword.message}</p>

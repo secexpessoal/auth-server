@@ -30,36 +30,27 @@ dependencies {
     implementation(libs.spring.boot.starter.restclient)
     implementation(libs.spring.boot.starter.actuator)
     developmentOnly(libs.spring.boot.devtools)
-    
+
     // Security
     implementation(libs.spring.boot.starter.security)
     implementation(libs.jjwt.api)
     runtimeOnly(libs.jjwt.impl)
     runtimeOnly(libs.jjwt.jackson)
     implementation(libs.bucket4j.core)
-    
+
     // Database & Persistence
-    implementation(libs.spring.boot.starter.data.jpa)
-    implementation(libs.spring.boot.starter.flyway)
-    implementation(libs.flyway.database.postgresql)
-    runtimeOnly(libs.postgresql)
-    runtimeOnly(libs.h2)
-    implementation(libs.spring.boot.h2console)
-    
+    implementation(libs.spring.boot.starter.data.mongodb)
+
     // Documentation
     implementation(libs.springdoc.openapi)
-    
+
     // Utils
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
-    
+
     // Testing
     testImplementation(libs.spring.boot.starter.test)
-    testImplementation(libs.spring.boot.test.autoconfigure)
-    testImplementation(libs.spring.boot.starter.data.jpa) // Adicionado para DataJpaTest
     testImplementation(libs.spring.boot.starter.security.test)
-    testImplementation(libs.testcontainers.postgresql)
-    testImplementation(libs.testcontainers.junit.jupiter)
 }
 
 tasks.withType<Test> {

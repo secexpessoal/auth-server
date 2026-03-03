@@ -20,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -62,9 +63,8 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /v1/user/login - Deve retornar 200 e tokens")
     void shouldReturnOkOnLogin() throws Exception {
-        // Arrange
         AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
-        
+
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(com.auth.api.dto.auth.UserSessionResponseDto.builder().accessToken("fake-jwt").build())
                 .user(UserResponseDto.builder().email("admin@auth.com").build())
@@ -74,7 +74,6 @@ class AuthControllerTest {
 
         when(loginUseCase.execute(any(), any(), any(), any(), any())).thenReturn(result);
 
-        // Act & Assert
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
@@ -85,10 +84,8 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /v1/user/login - Deve retornar 400 se campos estiverem inválidos")
     void shouldReturnBadRequestOnInvalidLogin() throws Exception {
-        // Arrange (E-mail inválido)
         AuthenticationRequestDto request = new AuthenticationRequestDto("invalid-email", "");
 
-        // Act & Assert
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))

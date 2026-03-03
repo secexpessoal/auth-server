@@ -12,12 +12,16 @@ import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.api.dto.common.PaginationMetaDto;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.UserAuthRepository;
-import com.auth.domain.repository.specification.UserSpecification;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.domain.PageImpl;
+import java.util.UUID;
+import com.auth.domain.model.UserData;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,11 +37,36 @@ public class ListUsersUseCase {
 
     private final UserAuthRepository userRepository;
 
+    private final MongoTemplate mongoTemplate;
+
     public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl, String email, String userName, String position) {
         Pageable pageable = PageRequest.of(page, limit);
-        Specification<UserAuth> spec = UserSpecification.filterBy(email, userName, position);
         
-        Page<UserAuth> usersPage = userRepository.findAll(spec, pageable);
+        List<UUID> matchingUserIds = null;
+        if ((userName != null && !userName.isBlank()) || (position != null && !position.isBlank())) {
+            Query dataQuery = new Query();
+            if (userName != null && !userName.isBlank()) dataQuery.addCriteria(Criteria.where("name").regex(userName, "i"));
+            if (position != null && !position.isBlank()) dataQuery.addCriteria(Criteria.where("position").regex(position, "i"));
+            List<UserData> userDatas = mongoTemplate.find(dataQuery, UserData.class);
+            matchingUserIds = userDatas.stream().map(UserData::getUserId).toList();
+            if (matchingUserIds.isEmpty()) {
+                return buildEmptyResponse(page, limit);
+            }
+        }
+
+        Query query = new Query();
+        if (email != null && !email.isBlank()) {
+            query.addCriteria(Criteria.where("email").regex(email, "i"));
+        }
+        if (matchingUserIds != null) {
+            query.addCriteria(Criteria.where("_id").in(matchingUserIds));
+        }
+
+        long total = mongoTemplate.count(Query.of(query), UserAuth.class);
+        query.with(pageable);
+        List<UserAuth> users = mongoTemplate.find(query, UserAuth.class);
+        
+        Page<UserAuth> usersPage = new PageImpl<>(users, pageable, total);
 
         List<UserResponseDto> data = usersPage.getContent().stream()
                 .map(user -> {
@@ -93,6 +122,22 @@ public class ListUsersUseCase {
                 .data(data)
                 .meta(Map.of("pagination", paginationMeta))
                 .links(Map.of("next", nextLink, "prev", prevLink))
+                .build();
+    }
+
+    private PaginatedResponseDto<UserResponseDto> buildEmptyResponse(int page, int limit) {
+        PaginationMetaDto paginationMeta = PaginationMetaDto.builder()
+                .page(page)
+                .limit(limit)
+                .totalItems(0L)
+                .totalPages(0)
+                .hasNext(false)
+                .hasPrevious(false)
+                .build();
+        return PaginatedResponseDto.<UserResponseDto>builder()
+                .data(List.of())
+                .meta(Map.of("pagination", paginationMeta))
+                .links(Map.of("next", "", "prev", ""))
                 .build();
     }
 }

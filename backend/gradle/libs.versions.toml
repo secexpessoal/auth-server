@@ -10,10 +10,9 @@ bucket4j = "8.10.1"
 # Spring Boot Starters
 spring-boot-starter-webmvc = { group = "org.springframework.boot", name = "spring-boot-starter-webmvc" }
 spring-boot-starter-security = { group = "org.springframework.boot", name = "spring-boot-starter-security" }
-spring-boot-starter-data-jpa = { group = "org.springframework.boot", name = "spring-boot-starter-data-jpa" }
+spring-boot-starter-data-mongodb = { group = "org.springframework.boot", name = "spring-boot-starter-data-mongodb" }
 spring-boot-starter-validation = { group = "org.springframework.boot", name = "spring-boot-starter-validation" }
 spring-boot-starter-restclient = { group = "org.springframework.boot", name = "spring-boot-starter-restclient" }
-spring-boot-starter-flyway = { group = "org.springframework.boot", name = "spring-boot-starter-flyway" }
 spring-boot-starter-actuator = { group = "org.springframework.boot", name = "spring-boot-starter-actuator" }
 spring-boot-devtools = { group = "org.springframework.boot", name = "spring-boot-devtools" }
 
@@ -24,12 +23,6 @@ jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref =
 bucket4j-core = { group = "com.bucket4j", name = "bucket4j-core", version.ref = "bucket4j" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
-# Database
-postgresql = { group = "org.postgresql", name = "postgresql" }
-h2 = { group = "com.h2database", name = "h2" }
-flyway-database-postgresql = { group = "org.flywaydb", name = "flyway-database-postgresql" }
-spring-boot-h2console = { group = "org.springframework.boot", name = "spring-boot-h2console" }
-
 # Documentation
 springdoc-openapi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 
@@ -37,8 +30,6 @@ springdoc-openapi = { group = "org.springdoc", name = "springdoc-openapi-starter
 spring-boot-starter-test = { group = "org.springframework.boot", name = "spring-boot-starter-test" }
 spring-boot-test-autoconfigure = { group = "org.springframework.boot", name = "spring-boot-test-autoconfigure" }
 spring-boot-starter-security-test = { group = "org.springframework.boot", name = "spring-boot-starter-security-test" }
-testcontainers-postgresql = { group = "org.testcontainers", name = "testcontainers-postgresql" }
-testcontainers-junit-jupiter = { group = "org.testcontainers", name = "testcontainers-junit-jupiter" }
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }

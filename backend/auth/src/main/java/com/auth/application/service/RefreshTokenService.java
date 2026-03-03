@@ -15,7 +15,7 @@ import com.auth.infra.exception.custom.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.time.Instant;
 import java.util.UUID;
@@ -28,7 +28,7 @@ public class RefreshTokenService {
     @Value("${security.jwt.refresh-expiration-time:604800000}") // Default: 7 dias em ms
     private long refreshTokenExpiration;
 
-    @Transactional
+
     public RefreshToken createRefreshToken(UserAuth user, String userAgent, String ipAddress, String origin, String referer) {
         // NOTE: Agora buscamos se já existe um token para esta mesma ORIGEM GRANULAR (UA + IP + Origin + Referer)
         // Se existir, atualizamos o token, a expiração e INCREMENTAMOS a versão daquela sessão específica
@@ -63,12 +63,12 @@ public class RefreshTokenService {
                 .orElseThrow(() -> new BadRequestException(ErrorCode.UNAUTHORIZED, "Refresh token inválido ou não encontrado."));
     }
 
-    @Transactional
+
     public void deleteByToken(String token) {
         refreshTokenRepository.deleteByToken(token);
     }
 
-    @Transactional
+
     public void deleteByUser(UserAuth user) {
         refreshTokenRepository.deleteByUser(user);
     }

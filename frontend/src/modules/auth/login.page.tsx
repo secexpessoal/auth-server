@@ -2,17 +2,19 @@ import { Button } from "@components/sh-button/button.component";
 import { Input } from "@components/sh-input/input.component";
 import { Label } from "@components/sh-label/label.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { Loader2, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
 import toast from "react-hot-toast";
 import { loginSchema, type LoginFormData } from "./molecule/auth.schema";
 import { loginAttempt } from "./services/auth.service";
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
@@ -72,7 +74,6 @@ export function LoginPage() {
 
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-
               <Input id="email" type="email" className="pl-10" placeholder="admin@exemplo.com" {...register("email")} />
             </div>
 
@@ -86,7 +87,22 @@ export function LoginPage() {
 
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <Input id="password" type="password" className="pl-10" placeholder="••••••••" {...register("password")} />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                className="pl-10 pr-16"
+                placeholder="••••••••"
+                {...register("password")}
+              />
+
+              <button
+                type="button"
+                tabIndex={-1}
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
             </div>
 
             {errors.password && <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{errors.password.message}</p>}
