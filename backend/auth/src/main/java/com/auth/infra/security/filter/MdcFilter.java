@@ -31,7 +31,9 @@ public class MdcFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
         try {
             // NOTE: Adiciona um ID único para cada request para facilitar o rastreamento nos logs
-            MDC.put(REQUEST_ID_KEY, UUID.randomUUID().toString());
+            String traceId = UUID.randomUUID().toString();
+            MDC.put(REQUEST_ID_KEY, traceId);
+            response.setHeader("X-Trace-Id", traceId);
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.isAuthenticated()) {
@@ -40,7 +42,7 @@ public class MdcFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } finally {
-            // IMPORTANTE: Limpar o MDC no final da request para não vazar dados para outras threads
+            // NOTE: IMPORTANTE: Limpar o MDC no final da request para não vazar dados para outras threads
             MDC.clear();
         }
     }

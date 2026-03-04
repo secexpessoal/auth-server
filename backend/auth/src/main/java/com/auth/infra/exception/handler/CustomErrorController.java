@@ -10,6 +10,7 @@ package com.auth.infra.exception.handler;
 import com.auth.infra.exception.DataObjectError;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.MDC;
 import org.springframework.boot.webmvc.error.ErrorController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,20 +38,27 @@ public class CustomErrorController implements ErrorController {
             if (httpStatus == null) httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
         }
 
-        // NOTE: Se NÃO for uma rota de API (Interface/Browser), redirecionamos para a raiz com parâmetros para que a SPA exiba a ErrorPage.
-        if (uri == null || !uri.startsWith("/v1/")) {
-            String redirectUrl = "/?error_code=" + httpStatus.value();
-            return ResponseEntity.status(HttpStatus.FOUND).header("Location", redirectUrl).build();
-        }
+        // NOTE: Todos os erros não mapeados que chegam aqui (como 404 estritos do boot) retornam JSON.
+        // A SPA passará a ter um fallback dedicado (SpaForwardController)
 
-        // NOTE: Para rotas de API, retornamos JSON estruturado
         String displayMessage = switch (httpStatus) {
             case BAD_REQUEST -> "A requisição enviada é inválida ou malformada";
             case NOT_FOUND -> "O recurso solicitado não foi encontrado";
             default -> "Ocorreu um erro ao processar sua solicitação";
         };
 
-        DataObjectError error = DataObjectError.builder().message(displayMessage).code(httpStatus.value()).timestamp(new Date()).build();
+        String traceId = MDC.get("requestId");
+
+        DataObjectError error = DataObjectError.builder()
+                .timestamp(new Date())
+                .status(httpStatus.value())
+                .error(httpStatus.getReasonPhrase())
+                .code(httpStatus.name())
+                .message(displayMessage)
+                .path(uri != null ? uri : "Unknown path")
+                .traceId(traceId)
+                .build();
+
         return new ResponseEntity<>(error, httpStatus);
     }
 }
