@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import { axiosClient } from "@lib/axios/axios.util";
-import { loginAttempt, logoutAttempt } from "../services/auth.service";
+import { loginAttempt, logoutAttempt } from "@modules/auth/services/auth.service";
 
 // Mock axios
 vi.mock("@lib/axios/axios.util", () => ({

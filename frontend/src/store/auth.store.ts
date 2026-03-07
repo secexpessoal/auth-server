@@ -1,6 +1,6 @@
-  import { create } from "zustand";
+import { create } from "zustand";
 import { persist, createJSONStorage, subscribeWithSelector } from "zustand/middleware";
-import type { UserResponseDto, UserSessionResponseDto } from "../modules/auth/molecule/auth.types";
+import type { UserResponseDto, UserSessionResponseDto } from "@modules/auth/molecule/auth.types";
 import axios from "axios";
 
 type AuthState = {

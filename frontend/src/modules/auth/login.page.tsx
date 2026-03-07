@@ -1,6 +1,7 @@
 import { Button } from "@components/sh-button/button.component";
-import { Input } from "@components/sh-input/input.component";
-import { Label } from "@components/sh-label/label.component";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@components/sh-input-group/input-group.component";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@components/sh-form/form.component";
+import { Field, FieldContent } from "@components/sh-field/field.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -21,13 +22,13 @@ export function LoginPage() {
     onSuccess: (data) => {
       if (data.session.passwordResetRequired) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
-        navigate({ to: "/reset-password" });
+        void navigate({ to: "/reset-password" });
       } else {
         if (data.user.roles.includes("ROLE_ADMIN")) {
           toast.success(`Bem-vindo, ${data.user.profile.username}!`);
         }
 
-        navigate({ to: "/" });
+        void navigate({ to: "/" });
       }
     },
     onError: (error) => {
@@ -35,11 +36,7 @@ export function LoginPage() {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<LoginFormData>({
+  const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -66,53 +63,74 @@ export function LoginPage() {
           <p className="text-gray-500 mt-2 text-sm">Faça login para gerenciar o sistema</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-1">
-            <Label htmlFor="email" className="ml-1">
-              E-mail
-            </Label>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <Field>
+                    <FormLabel>E-mail</FormLabel>
+                    <FieldContent>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupAddon>
+                            <InputGroupText>
+                              <Mail />
+                            </InputGroupText>
+                          </InputGroupAddon>
+                          <InputGroupInput {...field} type="email" placeholder="admin@exemplo.com" />
+                        </InputGroup>
+                      </FormControl>
+                    </FieldContent>
+                    <FormMessage />
+                  </Field>
+                </FormItem>
+              )}
+            />
 
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <Input id="email" type="email" className="pl-10" placeholder="admin@exemplo.com" {...register("email")} />
-            </div>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <Field>
+                    <FormLabel>Senha</FormLabel>
+                    <FieldContent>
+                      <FormControl>
+                        <InputGroup>
+                          <InputGroupAddon>
+                            <InputGroupText>
+                              <Lock />
+                            </InputGroupText>
+                          </InputGroupAddon>
+                          <InputGroupInput {...field} type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                          <InputGroupAddon align="inline-end">
+                            <button
+                              type="button"
+                              tabIndex={-1}
+                              onClick={() => setShowPassword((value) => !value)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                          </InputGroupAddon>
+                        </InputGroup>
+                      </FormControl>
+                    </FieldContent>
+                    <FormMessage />
+                  </Field>
+                </FormItem>
+              )}
+            />
 
-            {errors.email && <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{errors.email.message}</p>}
-          </div>
-
-          <div className="space-y-1">
-            <Label htmlFor="password" className="ml-1">
-              Senha
-            </Label>
-
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                className="pl-10 pr-16"
-                placeholder="••••••••"
-                {...register("password")}
-              />
-
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-
-            {errors.password && <p className="mt-1.5 text-xs text-red-500 animate-in fade-in">{errors.password.message}</p>}
-          </div>
-
-          <Button type="submit" className="w-full h-12 text-lg shadow-primary-500/25" disabled={loginMutation.isPending}>
-            {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Entrar
-          </Button>
-        </form>
+            <Button type="submit" className="w-full h-12 text-lg shadow-primary-500/25" disabled={loginMutation.isPending}>
+              {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Entrar
+            </Button>
+          </form>
+        </Form>
       </div>
     </div>
   );

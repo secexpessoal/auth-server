@@ -8,7 +8,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../pagination.component";
+} from "@components/sh-pagination/pagination.component";
 
 describe("Pagination", () => {
   it("renders correctly", () => {
@@ -16,13 +16,15 @@ describe("Pagination", () => {
       <Pagination>
         <PaginationContent>
           <PaginationItem>
-            <PaginationPrevious href="#" />
+            <PaginationPrevious href="#" size="default" />
           </PaginationItem>
           <PaginationItem>
-            <PaginationLink href="#">1</PaginationLink>
+            <PaginationLink href="#" size="default">
+              1
+            </PaginationLink>
           </PaginationItem>
           <PaginationItem>
-            <PaginationLink href="#" isActive>
+            <PaginationLink href="#" size="default" isActive>
               2
             </PaginationLink>
           </PaginationItem>
@@ -30,7 +32,7 @@ describe("Pagination", () => {
             <PaginationEllipsis data-testid="ellipsis" />
           </PaginationItem>
           <PaginationItem>
-            <PaginationNext href="#" />
+            <PaginationNext href="#" size="default" />
           </PaginationItem>
         </PaginationContent>
       </Pagination>,
@@ -46,7 +48,7 @@ describe("Pagination", () => {
 
   it("marks the active link correctly", () => {
     render(
-      <PaginationLink href="#" isActive>
+      <PaginationLink href="#" size="default" isActive>
         Active
       </PaginationLink>,
     );

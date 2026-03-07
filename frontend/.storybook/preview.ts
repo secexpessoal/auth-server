@@ -1,4 +1,5 @@
 import type { Preview } from "@storybook/react-vite";
+// @ts-expect-error - tsc struggles with relative CSS imports in .storybook configuration
 import "../src/index.css";
 
 const preview: Preview = {

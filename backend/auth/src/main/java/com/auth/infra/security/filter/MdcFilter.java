@@ -7,6 +7,7 @@
  */
 package com.auth.infra.security.filter;
 
+import com.auth.infra.util.RequestUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.UUID;
 
-import static com.auth.infra.config.MdcConfig.EMAIL_KEY;
-import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
+import static com.auth.infra.config.MdcConfig.*;
 
 @Component
 public class MdcFilter extends OncePerRequestFilter {
@@ -34,6 +34,9 @@ public class MdcFilter extends OncePerRequestFilter {
             String traceId = UUID.randomUUID().toString();
             MDC.put(REQUEST_ID_KEY, traceId);
             response.setHeader("X-Trace-Id", traceId);
+
+            // NOTE: Adiciona o IP do cliente no MDC
+            MDC.put(IP_KEY, RequestUtil.getClientIP(request));
 
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null && authentication.isAuthenticated()) {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { Label } from "../sh-label/label.component";
+import { Label } from "@components/sh-label/label.component";
 import { Checkbox } from "./checkbox.component";
 
 const meta: Meta<typeof Checkbox> = {

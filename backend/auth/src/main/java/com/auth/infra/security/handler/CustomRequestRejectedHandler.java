@@ -7,6 +7,7 @@
  */
 package com.auth.infra.security.handler;
 
+import com.auth.infra.util.RequestUtil;
 import com.auth.infra.exception.DataObjectError;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +34,7 @@ public class CustomRequestRejectedHandler implements RequestRejectedHandler {
 
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response, RequestRejectedException requestRejectedException) throws IOException {
-        String ip = getClientIP(request);
+        String ip = RequestUtil.getClientIP(request);
         String uri = request.getRequestURI();
 
         // NOTE: Loga de forma limpa, sem expor o stack trace para o stdout/file e evitar overhead e lentidão por spam
@@ -60,19 +61,11 @@ public class CustomRequestRejectedHandler implements RequestRejectedHandler {
                 .error("Bad Request")
                 .code("MALFORMED_URL")
                 .message("A requisição HTTP enviada é inválida ou possui caracteres bloqueados.")
-                .path(uri != null ? uri : "Unknown path")
+                .path(uri)
                 .traceId(traceId)
                 .build();
 
         response.getWriter().write(objectMapper.writeValueAsString(error));
         response.getWriter().flush();
-    }
-
-    private String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty()) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0];
     }
 }

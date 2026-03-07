@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useAuthStore } from "../../store/auth.store";
+import { useAuthStore } from "@store/auth.store";
 
 vi.mock("react-hot-toast", () => ({
   default: {

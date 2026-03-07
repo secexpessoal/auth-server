@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./dialog.component";
-import { Button } from "../sh-button/button.component";
+import { Button } from "@components/sh-button/button.component";
 
 const meta: Meta<typeof Dialog> = {
   title: "Components/Dialog",

@@ -17,6 +17,7 @@ import com.auth.application.service.RefreshTokenService;
 import com.auth.application.usecase.LoginUseCase;
 import com.auth.application.usecase.RefreshTokenUseCase;
 import com.auth.application.usecase.ValidationUseCase;
+import com.auth.infra.util.RequestUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -53,7 +54,7 @@ public class AuthController {
             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent,
             jakarta.servlet.http.HttpServletRequest request) {
 
-        String ipAddress = request.getRemoteAddr();
+        String ipAddress = RequestUtil.getClientIP(request);
         AuthenticationResult result = loginUseCase.execute(loginRequest, userAgent, ipAddress, origin, referer);
 
         ResponseCookie cookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
