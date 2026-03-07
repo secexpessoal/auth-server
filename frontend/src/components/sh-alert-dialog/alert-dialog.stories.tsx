@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "./alert-dialog.component";
-import { Button } from "../sh-button/button.component";
+import { Button } from "@components/sh-button/button.component";
 
 const meta: Meta<typeof AlertDialog> = {
   title: "Components/AlertDialog",
@@ -33,8 +33,12 @@ export const Default: StoryObj<typeof AlertDialog> = {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
+          <AlertDialogCancel variant="outline" size="default">
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction variant="default" size="default">
+            Continue
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

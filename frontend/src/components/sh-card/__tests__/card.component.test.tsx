@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../card.component";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@components/sh-card/card.component";
 
 describe("Card", () => {
   it("renders card structure correctly", () => {

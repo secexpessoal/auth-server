@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { queryClient } from "../query.util";
+import { queryClient } from "@lib/query/query.util";
 import { QueryClient } from "@tanstack/react-query";
 
 describe("query.util", () => {

@@ -1,9 +1,9 @@
-import axios, { AxiosError } from "axios";
-import type { InternalAxiosRequestConfig } from "axios";
-import { useAuthStore } from "../../store/auth.store";
+import axios from "axios";
+import type { InternalAxiosRequestConfig, AxiosError } from "axios";
+import { useAuthStore } from "@store/auth.store";
 import toast from "react-hot-toast";
-import { getErrorMessage } from "../api-error/api-error.util";
-import type { DataObjectError, UserResponseDto, UserSessionResponseDto } from "../../modules/auth/molecule/auth.types";
+import { getErrorMessage } from "@lib/api-error/api-error.util";
+import type { DataObjectError, UserResponseDto, UserSessionResponseDto } from "@modules/auth/molecule/auth.types";
 
 export const axiosClient = axios.create({
   baseURL: "",

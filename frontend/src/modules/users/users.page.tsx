@@ -1,7 +1,7 @@
 import { LogOut, Users, Shield, BookOpen } from "lucide-react";
-import { useAuthStore } from "../../store/auth.store";
-import { logoutAttempt } from "../auth/services/auth.service";
-import { Button } from "../../components/sh-button/button.component";
+import { useAuthStore } from "@store/auth.store";
+import { logoutAttempt } from "@modules/auth/services/auth.service";
+import { Button } from "@components/sh-button/button.component";
 import { CreateUserDialog } from "./atom/user-form.component";
 import { UsersTableComponent } from "./atom/users-table.component";
 
@@ -37,7 +37,7 @@ export function UsersPage() {
 
           <Button
             variant="outline"
-            onClick={() => (window.location.href = "/swagger-ui.html")} 
+            onClick={() => (window.location.href = "/swagger-ui.html")}
             className="h-10 border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100"
           >
             API Docs

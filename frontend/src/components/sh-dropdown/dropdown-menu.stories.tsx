@@ -8,7 +8,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./dropdown-menu.component";
-import { Button } from "../sh-button/button.component";
+import { Button } from "@components/sh-button/button.component";
 
 const meta: Meta<typeof DropdownMenu> = {
   title: "Components/DropdownMenu",

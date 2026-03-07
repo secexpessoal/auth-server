@@ -26,24 +26,28 @@ export const Default: Story = {
     <Pagination>
       <PaginationContent>
         <PaginationItem>
-          <PaginationPrevious href="#" />
+          <PaginationPrevious href="#" size="default" />
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#">1</PaginationLink>
+          <PaginationLink href="#" size="default">
+            1
+          </PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#" isActive>
+          <PaginationLink href="#" size="default" isActive>
             2
           </PaginationLink>
         </PaginationItem>
         <PaginationItem>
-          <PaginationLink href="#">3</PaginationLink>
+          <PaginationLink href="#" size="default">
+            3
+          </PaginationLink>
         </PaginationItem>
         <PaginationItem>
           <PaginationEllipsis />
         </PaginationItem>
         <PaginationItem>
-          <PaginationNext href="#" />
+          <PaginationNext href="#" size="default" />
         </PaginationItem>
       </PaginationContent>
     </Pagination>

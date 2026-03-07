@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
-import { Popover, PopoverContent, PopoverTrigger } from "../popover.component";
+import { Popover, PopoverContent, PopoverTrigger } from "@components/sh-popover/popover.component";
 
 describe("Popover", () => {
   it("renders trigger and shows content on click", async () => {

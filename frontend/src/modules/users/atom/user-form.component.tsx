@@ -10,8 +10,8 @@ import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react"
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { registerAdminSchema, registerUserSchema } from "../molecule/user.schema";
-import { registerAdminAttempt, registerUserAttempt } from "../services/user.service";
+import { registerAdminSchema, registerUserSchema } from "@modules/users/molecule/user.schema";
+import { registerAdminAttempt, registerUserAttempt } from "@modules/users/services/user.service";
 
 type Props = {
   role: "ADMIN" | "USER";
@@ -54,7 +54,7 @@ export function CreateUserDialog({ role }: Props) {
     mutationFn: isAdmin ? registerAdminAttempt : registerUserAttempt,
     onSuccess: (data) => {
       toast.success(`${isAdmin ? "Administrador" : "Usuário"} cadastrado com sucesso!`);
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
 
       if (data?.tempPassword) {
         setGeneratedPassword(data.tempPassword);
@@ -117,7 +117,7 @@ export function CreateUserDialog({ role }: Props) {
                 size="icon"
                 variant="ghost"
                 onClick={() => {
-                  navigator.clipboard.writeText(generatedPassword);
+                  void navigator.clipboard.writeText(generatedPassword);
                   toast.success("Senha copiada para a área de transferência!");
                 }}
               >

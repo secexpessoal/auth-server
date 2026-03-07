@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getErrorMessage, type DataObjectError } from "../api-error.util";
+import { getErrorMessage, type DataObjectError } from "@lib/api-error/api-error.util";
 import { AxiosError, AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
 
 describe("API Error Mapper Utility", () => {

@@ -1,10 +1,10 @@
 import { Outlet, createRootRoute, createRoute, createRouter, redirect } from "@tanstack/react-router";
 import { AppErrorBoundary } from "./errors/error-boundary.component";
-import { useAuthStore } from "../store/auth.store";
-import { LoginPage } from "../modules/auth/login.page";
-import { ResetPasswordPage } from "../modules/auth/reset-password.page";
+import { useAuthStore } from "@store/auth.store";
+import { LoginPage } from "@modules/auth/login.page";
+import { ResetPasswordPage } from "@modules/auth/reset-password.page";
 import { ErrorPage } from "./errors/error.page";
-import { UsersPage } from "../modules/users/users.page";
+import { UsersPage } from "@modules/users/users.page";
 import toast from "react-hot-toast";
 
 export const rootRoute = createRootRoute({
@@ -115,17 +115,17 @@ useAuthStore.subscribe(
     const hasPersistentToken = !!sessionStorage.getItem("auth-storage");
 
     if (!isAuthenticated && !hasPersistentToken && path !== "/login") {
-      router.navigate({ to: "/login" });
+      void router.navigate({ to: "/login" });
       return;
     }
 
     if (isAuthenticated && passwordResetRequired && path !== "/reset-password") {
-      router.navigate({ to: "/reset-password" });
+      void router.navigate({ to: "/reset-password" });
       return;
     }
 
     // Se o estado mudar mas continuarmos na mesma rota, forçamos o Router a revalidar as guardas
-    router.invalidate();
+    void router.invalidate();
   },
 );
 

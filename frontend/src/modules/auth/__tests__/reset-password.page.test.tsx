@@ -1,13 +1,14 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { ResetPasswordPage } from "../reset-password.page";
+import { ResetPasswordPage } from "@modules/auth/reset-password.page";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@store/auth.store";
+import type * as Router from "@tanstack/react-router";
 
 // Mocks
 vi.mock("@tanstack/react-router", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-router")>();
+  const actual = await importOriginal<typeof Router>();
   return {
     ...actual,
     useNavigate: vi.fn(),

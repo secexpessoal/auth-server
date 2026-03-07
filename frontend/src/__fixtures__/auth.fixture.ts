@@ -1,4 +1,4 @@
-import type { AuthenticationResponseDto, UserResponseDto } from "../modules/auth/molecule/auth.types";
+import type { AuthenticationResponseDto, UserResponseDto } from "@modules/auth/molecule/auth.types";
 
 export const mockAdminUser: UserResponseDto = {
   id: "019c9cf6-ff7d-7cd0-9050-fc0a6d4c3689",

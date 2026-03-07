@@ -21,13 +21,13 @@ export function LoginPage() {
     onSuccess: (data) => {
       if (data.session.passwordResetRequired) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
-        navigate({ to: "/reset-password" });
+        void navigate({ to: "/reset-password" });
       } else {
         if (data.user.roles.includes("ROLE_ADMIN")) {
           toast.success(`Bem-vindo, ${data.user.profile.username}!`);
         }
 
-        navigate({ to: "/" });
+        void navigate({ to: "/" });
       }
     },
     onError: (error) => {

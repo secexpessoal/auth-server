@@ -1,6 +1,6 @@
-import { axiosClient } from "../../../lib/axios/axios.util";
-import type { AuthenticationRequestDto, AuthenticationResponseDto, UserResponseDto } from "../molecule/auth.types";
-import { useAuthStore } from "../../../store/auth.store";
+import { axiosClient } from "@lib/axios/axios.util";
+import type { AuthenticationRequestDto, AuthenticationResponseDto, UserResponseDto } from "@modules/auth/molecule/auth.types";
+import { useAuthStore } from "@store/auth.store";
 
 export async function loginAttempt(payload: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
   const { data } = await axiosClient.post<AuthenticationResponseDto>("/v1/user/login", payload);

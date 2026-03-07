@@ -32,9 +32,9 @@ import {
 import { useEffect, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
-import type { UserResponseDto } from "../../auth/molecule/auth.types";
-import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "../molecule/user.schema";
-import { updateUserRoles } from "../services/user.service";
+import type { UserResponseDto } from "@modules/auth/molecule/auth.types";
+import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@modules/users/molecule/user.schema";
+import { updateUserRoles } from "@modules/users/services/user.service";
 // import { Badge } from "@components/sh-badge/badge.component";
 
 export function UserDetailsModal({
@@ -586,7 +586,7 @@ export function UserDetailsModal({
                   </div>
                 ) : null}
               </TabsContent>
-              
+
               {/* --- GOVERNANCE SECTION --- */}
               <TabsContent value="governance" className="m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="flex items-center gap-4 border-b border-gray-100 pb-6 mb-8">

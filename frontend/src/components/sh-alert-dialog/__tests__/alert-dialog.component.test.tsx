@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../alert-dialog.component";
+} from "@components/sh-alert-dialog/alert-dialog.component";
 
 describe("AlertDialog", () => {
   it("opens and displays content correctly", async () => {
@@ -23,8 +23,12 @@ describe("AlertDialog", () => {
             <AlertDialogDescription>Message</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction>Confirm</AlertDialogAction>
+            <AlertDialogCancel variant="outline" size="default">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction variant="default" size="default">
+              Confirm
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>,
@@ -45,7 +49,9 @@ describe("AlertDialog", () => {
         <AlertDialogContent>
           <AlertDialogTitle>Confirm?</AlertDialogTitle>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel variant="outline" size="default">
+              Cancel
+            </AlertDialogCancel>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>,
