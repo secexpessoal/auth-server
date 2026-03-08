@@ -91,7 +91,7 @@ public class ServerSecurityConfig {
                 .headers(headers -> {
                     headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
                     headers.contentSecurityPolicy(csp -> csp.policyDirectives(
-                            "default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self'; frame-ancestors 'none'; upgrade-insecure-requests;"));
+                            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests;"));
                     headers.referrerPolicy(referrer -> referrer
                             .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
                     headers.permissionsPolicyHeader(permissions -> permissions
