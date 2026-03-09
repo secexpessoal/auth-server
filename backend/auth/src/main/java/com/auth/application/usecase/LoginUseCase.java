@@ -47,7 +47,7 @@ public class LoginUseCase {
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao recuperar dados do usuário autenticado");
         }
 
-        log.info("Usuário {} autenticado com sucesso. Roles: {}", user.getEmail(), user.getRoles());
+        log.info("Usuário {} autenticado com sucesso via IP {}. Roles: {}", user.getEmail(), ipAddress, user.getRoles());
 
         String jwt = jwtService.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, userAgent, ipAddress, origin, referer);
@@ -81,7 +81,7 @@ public class LoginUseCase {
         UserResponseDto userDto = UserResponseDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(it -> "ROLE_" + it.getRole()).collect(Collectors.toSet()))
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)

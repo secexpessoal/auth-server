@@ -1,6 +1,7 @@
 import { Button } from "@components/sh-button/button.component";
-import { Input } from "@components/sh-input/input.component";
-import { Label } from "@components/sh-label/label.component";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@components/sh-input-group/input-group.component";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@components/sh-form/form.component";
+import { Field, FieldContent } from "@components/sh-field/field.component";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
 import { useAuthStore } from "@store/auth.store";
 import { useState } from "react";
@@ -28,11 +29,7 @@ export function ResetPasswordPage() {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isValid, isSubmitting },
-  } = useForm<FirstChangeFormData>({
+  const form = useForm<FirstChangeFormData>({
     resolver: zodResolver(firstChangeSchema),
     mode: "onChange",
     defaultValues: {
@@ -67,74 +64,81 @@ export function ResetPasswordPage() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2 group">
-                <Label htmlFor="password" className="ml-1 transition-colors group-focus-within:text-primary-600">
-                  Nova Senha
-                </Label>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Field>
+                        <FormLabel>Nova Senha</FormLabel>
+                        <FieldContent>
+                          <FormControl>
+                            <InputGroup>
+                              <InputGroupInput {...field} type={showPassword ? "text" : "password"} placeholder="••••••••" />
+                              <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                  type="button"
+                                  onClick={() => setShowPassword((value) => !value)}
+                                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </FormControl>
+                        </FieldContent>
+                        <FormMessage />
+                      </Field>
+                    </FormItem>
+                  )}
+                />
 
-                <div className="relative">
-                  <Input
-                    id="password"
-                    placeholder="••••••••"
-                    {...register("password")}
-                    type={showPassword ? "text" : "password"}
-                    className="pr-16 h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                  />
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <Field>
+                        <FormLabel>Confirmar Nova Senha</FormLabel>
+                        <FieldContent>
+                          <FormControl>
+                            <InputGroup>
+                              <InputGroupInput {...field} type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" />
+                              <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                  type="button"
+                                  onClick={() => setShowConfirmPassword((v) => !v)}
+                                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                                >
+                                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                            </InputGroup>
+                          </FormControl>
+                        </FieldContent>
+                        <FormMessage />
+                      </Field>
+                    </FormItem>
+                  )}
+                />
 
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    onClick={() => setShowPassword((value) => !value)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary-200 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:hover:scale-100"
+                  disabled={!form.formState.isValid || form.formState.isSubmitting || mutation.isPending}
+                >
+                  {form.formState.isSubmitting || mutation.isPending ? (
+                    <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                  ) : (
+                    <ShieldCheck className="w-5 h-5 mr-2" />
+                  )}
 
-                {errors.password && (
-                  <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.password.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2 group">
-                <Label htmlFor="confirmPassword" className="ml-1 transition-colors group-focus-within:text-primary-600">
-                  Confirmar Nova Senha
-                </Label>
-
-                <div className="relative">
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    {...register("confirmPassword")}
-                    className="pr-16 h-12 rounded-xl transition-all duration-300 focus:ring-4 focus:ring-primary-100"
-                  />
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    onClick={() => setShowConfirmPassword((v) => !v)}
-                    className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-
-                {errors.confirmPassword && (
-                  <p className="text-xs font-medium text-red-500 ml-1 animate-in fade-in slide-in-from-top-1">{errors.confirmPassword.message}</p>
-                )}
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-12 rounded-xl text-lg font-bold shadow-lg shadow-primary-200 transition-all duration-300 hover:scale-[1.02] active:scale-95 disabled:hover:scale-100"
-                disabled={!isValid || isSubmitting || mutation.isPending}
-              >
-                {isSubmitting || mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin mr-2" /> : <ShieldCheck className="w-5 h-5 mr-2" />}
-
-                {isSubmitting || mutation.isPending ? "Atualizando..." : "Atualizar e Sair"}
-              </Button>
-            </form>
+                  {form.formState.isSubmitting || mutation.isPending ? "Atualizando..." : "Atualizar e Sair"}
+                </Button>
+              </form>
+            </Form>
           </div>
 
           <div className="p-6 bg-gray-50 border-t border-gray-100 text-center">

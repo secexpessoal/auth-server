@@ -1,23 +1,22 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
-import path from "path";
+import path from "node:path";
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react() as any, tailwindcss() as any],
   resolve: {
     alias: {
-      "@lib": path.resolve(__dirname, "./src/lib"),
-      "@app": path.resolve(__dirname, "./src/app"),
-      "@store": path.resolve(__dirname, "./src/store"),
-      "@assets": path.resolve(__dirname, "./src/assets"),
-      "@modules": path.resolve(__dirname, "./src/modules"),
-      "@components": path.resolve(__dirname, "./src/components"),
+      "@lib": path.resolve(import.meta.dirname, "./src/lib"),
+      "@app": path.resolve(import.meta.dirname, "./src/app"),
+      "@store": path.resolve(import.meta.dirname, "./src/store"),
+      "@assets": path.resolve(import.meta.dirname, "./src/assets"),
+      "@modules": path.resolve(import.meta.dirname, "./src/modules"),
+      "@components": path.resolve(import.meta.dirname, "./src/components"),
 
-       // NOTE: Testes
-      "@tests": path.resolve(__dirname, "./src/__tests__"),
-      "@fixtures": path.resolve(__dirname, "./src/__fixtures__"),
+      // NOTE: Testes
+      "@tests": path.resolve(import.meta.dirname, "./src/__tests__"),
+      "@fixtures": path.resolve(import.meta.dirname, "./src/__fixtures__"),
     },
   },
   server: {

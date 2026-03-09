@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { MoveLeft, AlertCircle, Home, ShieldAlert, Ghost } from "lucide-react";
-import { Button } from "../../components/sh-button/button.component";
+import { Button } from "@components/sh-button/button.component";
 
 interface ErrorPageProps {
   code?: number;

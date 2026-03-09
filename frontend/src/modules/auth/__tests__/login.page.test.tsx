@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { LoginPage } from "../login.page";
+import { LoginPage } from "@modules/auth/login.page";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 

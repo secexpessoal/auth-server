@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Label } from "../label.component";
+import { Label } from "@components/sh-label/label.component";
 
 describe("Label", () => {
   it("renders correctly", () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn } from "../cn.util";
+import { cn } from "@lib/cn/cn.util";
 
 describe("cn utility", () => {
   it("should merge tailwind classes correctly", () => {

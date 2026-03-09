@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Separator } from "../separator.component";
+import { Separator } from "@components/sh-separator/separator.component";
 
 describe("Separator", () => {
   it("renders correctly as a non-decorative separator", () => {

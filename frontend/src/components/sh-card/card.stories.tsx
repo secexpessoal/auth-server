@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "./card.component";
-import { Button } from "../sh-button/button.component";
+import { Button } from "@components/sh-button/button.component";
 
 const meta: Meta<typeof Card> = {
   title: "Components/Card",
@@ -18,7 +18,7 @@ export const Default: Story = {
         <CardTitle>Card Title</CardTitle>
         <CardDescription>Card Description goes here.</CardDescription>
       </CardHeader>
-      <CardContent> 
+      <CardContent>
         <p>This is the card content. You can put anything here.</p>
       </CardContent>
       <CardFooter>

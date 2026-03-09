@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { Spinner } from "../spinner.component";
+import { Spinner } from "@components/sh-spinner/spinner.component";
 
 describe("Spinner", () => {
   it("renders correctly", () => {

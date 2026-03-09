@@ -1,6 +1,14 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../dialog.component";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@components/sh-dialog/dialog.component";
 
 describe("Dialog", () => {
   it("opens and displays content correctly", async () => {

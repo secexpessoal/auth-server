@@ -9,11 +9,7 @@ package com.auth.infra.security.config;
 
 import com.auth.application.service.CustomUserDetailsService;
 import com.auth.domain.model.Role;
-import com.auth.infra.security.filter.CsrfCookieFilter;
-import com.auth.infra.security.filter.JwtAuthenticationFilter;
-import com.auth.infra.security.filter.MdcFilter;
-import com.auth.infra.security.filter.PasswordResetFilter;
-import com.auth.infra.security.filter.RateLimitingFilter;
+import com.auth.infra.security.filter.*;
 import com.auth.infra.security.handler.CustomAccessDeniedHandler;
 import com.auth.infra.security.handler.CustomAuthenticationEntryPoint;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -30,6 +26,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.CrossOriginEmbedderPolicyHeaderWriter.CrossOriginEmbedderPolicy;
+import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy;
+import org.springframework.security.web.header.writers.CrossOriginResourcePolicyHeaderWriter.CrossOriginResourcePolicy;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import java.util.Set;
@@ -78,7 +78,7 @@ public class ServerSecurityConfig {
                             .requestMatchers("/v1/password/change", "/v1/user/profile/**", "/v1/password/first-change").authenticated()
 
                             // NOTE: Swagger
-                                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
                             // NOTE: Roteamento SPA: permitir todas as solicitações GET que não sejam endpoints de API (assets, html, rotas SPA)
                             .requestMatchers(HttpMethod.GET, "/**").permitAll()
@@ -87,7 +87,22 @@ public class ServerSecurityConfig {
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(passwordResetFilter, JwtAuthenticationFilter.class)
                 .addFilterAfter(csrfCookieFilter, JwtAuthenticationFilter.class)
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .headers(headers -> {
+                    headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
+                    headers.contentSecurityPolicy(csp -> csp.policyDirectives(
+                            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests;"));
+                    headers.referrerPolicy(referrer -> referrer
+                            .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
+                    headers.permissionsPolicyHeader(permissions -> permissions
+                            .policy("camera=(), geolocation=(), microphone=(), payment=()"));
+                    headers.crossOriginOpenerPolicy(coop -> coop
+                            .policy(CrossOriginOpenerPolicy.SAME_ORIGIN));
+                    headers.crossOriginEmbedderPolicy(coep -> coep
+                            .policy(CrossOriginEmbedderPolicy.REQUIRE_CORP));
+                    headers.crossOriginResourcePolicy(corp -> corp
+                            .policy(CrossOriginResourcePolicy.SAME_ORIGIN));
+                });
 
         return httpSecurity.build();
     }

@@ -8,7 +8,7 @@
 package com.auth.infra.security.filter;
 
 import com.auth.infra.exception.DataObjectError;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.auth.infra.util.RequestUtil;
 import io.github.bucket4j.Bandwidth;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.FilterChain;
@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -47,7 +48,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         if (enabled) {
-            String ip = getClientIP(request);
+            String ip = RequestUtil.getClientIP(request);
             Bucket bucket = resolveBucket(ip);
 
             if (!bucket.tryConsume(1)) {
@@ -91,14 +92,5 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 .traceId(MDC.get("traceId"))
                 .build();
         response.getWriter().write(objectMapper.writeValueAsString(error));
-    }
-
-    private String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty()) {
-            return request.getRemoteAddr();
-        }
-
-        return xfHeader.split(",")[0];
     }
 }

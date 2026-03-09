@@ -1,17 +1,18 @@
 import { Button } from "@components/sh-button/button.component";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@components/sh-dialog/dialog.component";
 import { Input } from "@components/sh-input/input.component";
-import { Label } from "@components/sh-label/label.component";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@components/sh-form/form.component";
+import { Field, FieldContent } from "@components/sh-field/field.component";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@components/sh-select/select.component";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { getErrorMessage } from "@lib/api-error/api-error.util";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { registerAdminSchema, registerUserSchema } from "../molecule/user.schema";
-import { registerAdminAttempt, registerUserAttempt } from "../services/user.service";
+import { registerAdminSchema, registerUserSchema } from "@modules/users/molecule/user.schema";
+import { registerAdminAttempt, registerUserAttempt } from "@modules/users/services/user.service";
 
 type Props = {
   role: "ADMIN" | "USER";
@@ -30,13 +31,7 @@ export function CreateUserDialog({ role }: Props) {
   const queryClient = useQueryClient();
   const isAdmin = role === "ADMIN";
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-    reset,
-  } = useForm<RegisterFormData>({
+  const form = useForm<RegisterFormData>({
     resolver: zodResolver(isAdmin ? registerAdminSchema : registerUserSchema),
     mode: "onChange",
     defaultValues: isAdmin ? { username: "", email: "" } : { username: "", email: "", role: "USER" },
@@ -45,7 +40,7 @@ export function CreateUserDialog({ role }: Props) {
   const handleOpenChange = (newOpen: boolean) => {
     if (!newOpen) {
       setGeneratedPassword(null);
-      reset();
+      form.reset();
     }
     setOpen(newOpen);
   };
@@ -54,7 +49,7 @@ export function CreateUserDialog({ role }: Props) {
     mutationFn: isAdmin ? registerAdminAttempt : registerUserAttempt,
     onSuccess: (data) => {
       toast.success(`${isAdmin ? "Administrador" : "Usuário"} cadastrado com sucesso!`);
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
 
       if (data?.tempPassword) {
         setGeneratedPassword(data.tempPassword);
@@ -117,7 +112,7 @@ export function CreateUserDialog({ role }: Props) {
                 size="icon"
                 variant="ghost"
                 onClick={() => {
-                  navigator.clipboard.writeText(generatedPassword);
+                  void navigator.clipboard.writeText(generatedPassword);
                   toast.success("Senha copiada para a área de transferência!");
                 }}
               >
@@ -131,73 +126,88 @@ export function CreateUserDialog({ role }: Props) {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="username" className="ml-1">
-                Nome de Usuário
-              </Label>
-
-              <Input
-                id="username"
-                type="text"
-                {...register("username")}
-                placeholder="ex: admin_master"
-                className={errors.username ? "border-red-500 focus-visible:ring-red-500" : ""}
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <Field>
+                      <FormLabel>Nome de Usuário</FormLabel>
+                      <FieldContent>
+                        <FormControl>
+                          <Input {...field} type="text" placeholder="ex: admin_master" />
+                        </FormControl>
+                      </FieldContent>
+                      <FormMessage />
+                    </Field>
+                  </FormItem>
+                )}
               />
-              {errors.username && <p className="text-xs text-red-500 mt-1">{errors.username.message}</p>}
-            </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="ml-1">
-                E-mail
-              </Label>
-
-              <Input
-                id="email"
-                type="email"
-                placeholder="usuario@exemplo.com"
-                {...register("email")}
-                className={errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <Field>
+                      <FormLabel>E-mail</FormLabel>
+                      <FieldContent>
+                        <FormControl>
+                          <Input {...field} type="email" placeholder="usuario@exemplo.com" />
+                        </FormControl>
+                      </FieldContent>
+                      <FormMessage />
+                    </Field>
+                  </FormItem>
+                )}
               />
-              {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>}
-            </div>
 
-            {!isAdmin && (
-              <div className="space-y-1.5">
-                <Label htmlFor="role" className="ml-1">
-                  Cargo
-                </Label>
-
-                <Controller
+              {!isAdmin && (
+                <FormField
+                  control={form.control}
                   name="role"
-                  control={control}
                   render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value || "USER"}>
-                      <SelectTrigger className={errors.role ? "border-red-500 focus-visible:ring-red-500" : ""}>
-                        <SelectValue placeholder="Selecione um cargo..." />
-                      </SelectTrigger>
+                    <FormItem>
+                      <Field>
+                        <FormLabel>Cargo</FormLabel>
+                        <FieldContent>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value || "USER"}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Selecione um cargo..." />
+                              </SelectTrigger>
 
-                      <SelectContent>
-                        <SelectItem value="USER">Usuário</SelectItem>
-                        <SelectItem value="MANAGER">Gerenciador</SelectItem>
-                      </SelectContent>
-                    </Select>
+                              <SelectContent>
+                                <SelectItem value="USER">Usuário</SelectItem>
+                                <SelectItem value="MANAGER">Gerenciador</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                        </FieldContent>
+                        <FormMessage />
+                      </Field>
+                    </FormItem>
                   )}
                 />
-                {errors.role && <p className="text-xs text-red-500 mt-1">{errors.role.message}</p>}
-              </div>
-            )}
+              )}
 
-            <div className="pt-4 flex justify-end gap-2">
-              <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={registerMutation.isPending} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
-                {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Salvar {isAdmin ? "Administrador" : "Usuário"}
-              </Button>
-            </div>
-          </form>
+              <div className="pt-4 flex justify-end gap-2">
+                <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={registerMutation.isPending}
+                  className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                >
+                  {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Salvar {isAdmin ? "Administrador" : "Usuário"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         )}
       </DialogContent>
     </Dialog>

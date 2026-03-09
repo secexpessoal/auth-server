@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CreateUserDialog } from "../atom/user-form.component";
+import { CreateUserDialog } from "@modules/users/atom/user-form.component";
 
 // Mocks
 vi.mock("../services/user.service", () => ({

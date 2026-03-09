@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../table.component";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/sh-table/table.component";
 
 describe("Table", () => {
   it("renders table structure correctly", () => {

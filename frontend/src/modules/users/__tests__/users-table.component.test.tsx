@@ -1,7 +1,8 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { UsersTableComponent } from "../atom/users-table.component";
+import { UsersTableComponent } from "@modules/users/atom/users-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import type * as Query from "@tanstack/react-query";
 
 // Mock ResizeObserver for Radix UI components
 class ResizeObserverMock {
@@ -13,7 +14,7 @@ global.ResizeObserver = ResizeObserverMock as typeof globalThis.ResizeObserver;
 
 // Mocks
 vi.mock("@tanstack/react-query", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tanstack/react-query")>();
+  const actual = await importOriginal<typeof Query>();
   return {
     ...actual,
     useQuery: vi.fn(),

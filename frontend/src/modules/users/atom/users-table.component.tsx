@@ -1,6 +1,6 @@
 import { Button } from "@components/sh-button/button.component";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@components/sh-dialog/dialog.component";
-import { Input } from "@components/sh-input/input.component";
+import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@components/sh-input-group/input-group.component";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@components/sh-pagination/pagination.component";
 import { Spinner } from "@components/sh-spinner/spinner.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/sh-table/table.component";
@@ -11,9 +11,15 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Copy, Eye, Info, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import type { UserResponseDto } from "../../auth/molecule/auth.types";
-import { type UpdateUserProfileRequestDto } from "../molecule/user.schema";
-import { activateUserAttempt, deactivateUserAttempt, getUsersList, resetPasswordAttempt, updateUserProfile } from "../services/user.service";
+import type { UserResponseDto } from "@modules/auth/molecule/auth.types";
+import { type UpdateUserProfileRequestDto } from "@modules/users/molecule/user.schema";
+import {
+  activateUserAttempt,
+  deactivateUserAttempt,
+  getUsersList,
+  resetPasswordAttempt,
+  updateUserProfile,
+} from "@modules/users/services/user.service";
 import { UserDetailsModal } from "./users-detail.component";
 
 export function UsersTableComponent() {
@@ -60,7 +66,7 @@ export function UsersTableComponent() {
     mutationFn: (userId: string) => deactivateUserAttempt(userId),
     onSuccess: () => {
       toast.success("Usuário desativado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Erro ao desativar usuário."));
@@ -71,7 +77,7 @@ export function UsersTableComponent() {
     mutationFn: (userId: string) => activateUserAttempt(userId),
     onSuccess: () => {
       toast.success("Usuário ativado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Erro ao ativar usuário."));
@@ -82,7 +88,7 @@ export function UsersTableComponent() {
     mutationFn: ({ userId, payload }: { userId: string; payload: UpdateUserProfileRequestDto }) => updateUserProfile(userId, payload),
     onSuccess: () => {
       toast.success("Perfil atualizado com sucesso!");
-      queryClient.invalidateQueries({ queryKey: ["users"] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
       setDetailsModalOpen(false);
     },
     onError: (error) => {
@@ -97,7 +103,7 @@ export function UsersTableComponent() {
 
   const copyToClipboard = () => {
     if (temporaryPassword) {
-      navigator.clipboard.writeText(temporaryPassword);
+      void navigator.clipboard.writeText(temporaryPassword);
       setCopied(true);
 
       toast.success("Senha copiada para a área de transferência!");
@@ -127,7 +133,7 @@ export function UsersTableComponent() {
           {getErrorMessage(error, "Não foi possível buscar a lista de usuários no momento.")}
         </p>
 
-        <Button onClick={() => refetch()} variant="outline">
+        <Button onClick={() => void refetch()} variant="outline">
           Tentar Novamente
         </Button>
       </div>
@@ -142,23 +148,26 @@ export function UsersTableComponent() {
       <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
           <h2 className="font-semibold text-gray-900 whitespace-nowrap hidden lg:block">Usuários Cadastrados</h2>
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
-
-            <Input
+          <InputGroup className="w-full max-w-md h-10">
+            <InputGroupAddon>
+              <InputGroupText>
+                <Search className="w-4 h-4" />
+              </InputGroupText>
+            </InputGroupAddon>
+            <InputGroupInput
               placeholder="Buscar por nome, e-mail ou cargo..."
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
                 setPage(0); // Reset page when searching
               }}
-              className="pl-10 h-10 bg-gray-50/50 border-gray-100 focus:bg-white transition-all rounded-xl"
+              className="h-10 bg-gray-50/50 border-gray-100 focus:bg-white transition-all rounded-xl"
             />
-          </div>
+          </InputGroup>
         </div>
         <div className="flex items-center gap-3 justify-end">
           {isRefetching && <Spinner className="w-4 h-4 text-gray-400" />}
-          <Button variant="ghost" size="icon" onClick={() => refetch()} className="h-8 w-8 text-gray-400">
+          <Button variant="ghost" size="icon" onClick={() => void refetch()} className="h-8 w-8 text-gray-400">
             <RefreshCw className="w-4 h-4" />
           </Button>
           <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{pagination?.totalItems || 0} usuários</span>
@@ -280,12 +289,15 @@ export function UsersTableComponent() {
                 <PaginationPrevious
                   onClick={() => setPage((prev) => Math.max(0, prev - 1))}
                   className={!pagination.hasPrevious ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  size="default"
                 />
               </PaginationItem>
+
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setPage((prev) => prev + 1)}
                   className={!pagination.hasNext ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                  size="default"
                 />
               </PaginationItem>
             </PaginationContent>
@@ -312,7 +324,7 @@ export function UsersTableComponent() {
           setDetailsModalOpen(false);
         }}
         onUpdateRoles={() => {
-          queryClient.invalidateQueries({ queryKey: ["users"] });
+          void queryClient.invalidateQueries({ queryKey: ["users"] });
         }}
         isPending={updateProfileMutation.isPending || resetMutation.isPending || deactivateMutation.isPending || activateMutation.isPending}
       />
