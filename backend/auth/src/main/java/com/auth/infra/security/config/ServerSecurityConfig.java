@@ -26,7 +26,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
-import org.springframework.security.web.header.writers.CrossOriginEmbedderPolicyHeaderWriter.CrossOriginEmbedderPolicy;
 import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy;
 import org.springframework.security.web.header.writers.CrossOriginResourcePolicyHeaderWriter.CrossOriginResourcePolicy;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
@@ -91,15 +90,13 @@ public class ServerSecurityConfig {
                 .headers(headers -> {
                     headers.httpStrictTransportSecurity(hsts -> hsts.includeSubDomains(true).maxAgeInSeconds(31536000));
                     headers.contentSecurityPolicy(csp -> csp.policyDirectives(
-                            "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests;"));
+                            "default-src 'self'; script-src 'self' 'unsafe-inline' chrome-extension: moz-extension:; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'; upgrade-insecure-requests;"));
                     headers.referrerPolicy(referrer -> referrer
                             .policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN));
                     headers.permissionsPolicyHeader(permissions -> permissions
                             .policy("camera=(), geolocation=(), microphone=(), payment=()"));
                     headers.crossOriginOpenerPolicy(coop -> coop
                             .policy(CrossOriginOpenerPolicy.SAME_ORIGIN));
-                    headers.crossOriginEmbedderPolicy(coep -> coep
-                            .policy(CrossOriginEmbedderPolicy.REQUIRE_CORP));
                     headers.crossOriginResourcePolicy(corp -> corp
                             .policy(CrossOriginResourcePolicy.SAME_ORIGIN));
                 });
