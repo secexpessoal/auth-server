@@ -49,6 +49,16 @@ public class PasswordController {
         return ResponseEntity.ok(Map.of("status", "Senha de primeiro acesso atualizada com sucesso"));
     }
 
+    // NOTE: Rota pública para recuperação de senha
+    @Operation(summary = "Reset de senha pelo próprio usuário", description = "Verifica o e-mail e envia uma senha temporária via Resend.")
+    @PostMapping("/user-reset")
+    public ResponseEntity<@NonNull Map<String, String>> resetByUser(@Valid @RequestBody ResetPasswordRequestDto request) {
+        passwordUseCase.resetByUser(request);
+        return ResponseEntity.ok(Map.of(
+                "status", "Se o e-mail existir em nossa base, uma nova senha foi enviada"
+        ));
+    }
+
     // NOTE: Rota privada e só para ADMIN
     @Operation(summary = "Reset administrativo de senha", description = "Gera uma senha temporária para um usuário. Requer cargo ADMIN.")
     @PostMapping("/admin-reset")

@@ -61,7 +61,7 @@ public class ServerSecurityConfig {
                         .requireCsrfProtectionMatcher(new CsrfProtectionMatcher())
 
                         // NOTE: Ignorar endpoints públicos que não exigem proteção CSRF
-                        .ignoringRequestMatchers("/v1/user/login", "/v1/user/refresh", "/v1/user/logout")
+                        .ignoringRequestMatchers("/v1/user/login", "/v1/user/refresh", "/v1/user/logout", "/v1/password/user-reset")
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
@@ -69,9 +69,9 @@ public class ServerSecurityConfig {
                 )
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
+                            .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh", "/v1/password/user-reset").permitAll()
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
-                            .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh").permitAll()
                             .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/activate", "/v1/user/deactivate").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/change", "/v1/user/profile/**", "/v1/password/first-change").authenticated()
@@ -111,10 +111,14 @@ public class ServerSecurityConfig {
 
     private static class CsrfProtectionMatcher implements RequestMatcher {
         private final Set<String> allowedMethods = Set.of("GET", "HEAD", "TRACE", "OPTIONS");
+        private final Set<String> publicRoutes = Set.of("/v1/user/login", "/v1/user/refresh", "/v1/user/logout", "/v1/password/user-reset");
 
         @Override
         public boolean matches(HttpServletRequest request) {
             if (allowedMethods.contains(request.getMethod())) return false;
+
+            String path = request.getRequestURI();
+            if (publicRoutes.contains(path)) return false;
 
             String authHeader = request.getHeader("Authorization");
             return authHeader == null || !authHeader.startsWith("Bearer ");

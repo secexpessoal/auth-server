@@ -53,7 +53,10 @@ axiosClient.interceptors.response.use(
     }
 
     if (status === 401) {
-      const isAuthEndpoint = originalRequest?.url?.includes("/login") || originalRequest?.url?.includes("/refresh");
+      const isAuthEndpoint = 
+        originalRequest?.url?.includes("/login") || 
+        originalRequest?.url?.includes("/refresh") || 
+        originalRequest?.url?.includes("/user-reset");
 
       if (isAuthEndpoint || originalRequest?._retry) {
         useAuthStore.getState().clearAuth();

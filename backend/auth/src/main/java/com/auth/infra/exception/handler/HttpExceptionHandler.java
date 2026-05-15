@@ -135,7 +135,7 @@ public class HttpExceptionHandler {
     @ExceptionHandler(MissingRequestCookieException.class)
     public ResponseEntity<@NonNull DataObjectError> handleMissingCookie(MissingRequestCookieException exception) {
         log.warn("Cookie obrigatório ausente: {}", exception.getCookieName());
-        return buildErrorResponse("Sessão inválida ou expirada. Faça login novamente.", HttpStatus.UNAUTHORIZED);
+        return buildErrorResponse("Sessão inválida ou cookie de autenticação ausente. Por favor, faça login novamente.", HttpStatus.BAD_REQUEST);
     }
 
     /**

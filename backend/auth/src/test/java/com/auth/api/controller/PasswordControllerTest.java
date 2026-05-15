@@ -14,7 +14,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -27,6 +26,8 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -48,7 +49,9 @@ class PasswordControllerTest {
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .build();
     }
 
     @Test
@@ -59,10 +62,24 @@ class PasswordControllerTest {
         when(passwordUseCase.resetByAdmin(any())).thenReturn("new-temp-pass");
 
         mockMvc.perform(post("/v1/password/admin-reset")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tempPassword").value("new-temp-pass"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 200 ao solicitar reset pelo próprio usuário")
+    void deveRetornar200AoSolicitarResetUsuario() throws Exception {
+        Map<String, String> request = Map.of("email", "user@example.com");
+
+        // NOTE: user-reset NÃO deve exigir CSRF agora que adicionamos ao CsrfProtectionMatcher
+        mockMvc.perform(post("/v1/password/user-reset")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("Se o e-mail existir em nossa base, uma nova senha foi enviada"));
     }
 
     @Test
@@ -72,6 +89,7 @@ class PasswordControllerTest {
         Map<String, String> request = Map.of("newPassword", "new-secure-password");
 
         mockMvc.perform(post("/v1/password/first-change")
+                .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())

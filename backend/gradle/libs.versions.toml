@@ -5,6 +5,7 @@ jjwt = "0.12.6"
 lombok = "1.18.42"
 springdoc = "2.8.5"
 bucket4j = "8.10.1"
+resend = "3.1.0"
 
 [libraries]
 # Spring Boot Starters
@@ -22,6 +23,7 @@ jjwt-impl = { group = "io.jsonwebtoken", name = "jjwt-impl", version.ref = "jjwt
 jjwt-jackson = { group = "io.jsonwebtoken", name = "jjwt-jackson", version.ref = "jjwt" }
 bucket4j-core = { group = "com.bucket4j", name = "bucket4j-core", version.ref = "bucket4j" }
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+resend-java = { group = "com.resend", name = "resend-java", version.ref = "resend" }
 
 # Documentation
 springdoc-openapi = { group = "org.springdoc", name = "springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }

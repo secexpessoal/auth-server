@@ -47,6 +47,7 @@ dependencies {
     // Utils
     compileOnly(libs.lombok)
     annotationProcessor(libs.lombok)
+    implementation(libs.resend.java)
 
     // Testing
     testImplementation(libs.spring.boot.starter.test)

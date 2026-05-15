@@ -80,18 +80,18 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 relative overflow-hidden">
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
-      <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-blue-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-purple-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/20 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob"></div>
+      <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-primary/15 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-2000"></div>
+      <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-70 animate-blob animation-delay-4000"></div>
 
-      <div className="w-full max-w-md bg-white/70 backdrop-blur-xl border border-white/50 shadow-2xl rounded-3xl p-8 relative z-10">
+      <div className="w-full max-w-md bg-card/70 backdrop-blur-xl border border-border/50 shadow-2xl rounded-3xl p-8 relative z-10">
         <div className="text-center mb-10">
-          <div className="mx-auto bg-primary-100 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner mb-4">
-            <LogIn className="w-8 h-8 text-primary-600" />
+          <div className="mx-auto bg-primary/15 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner mb-4">
+            <LogIn className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Painel Admin</h1>
-          <p className="text-gray-500 mt-2 text-sm">Faça login para gerenciar o sistema</p>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">Painel Admin</h1>
+          <p className="text-muted-foreground mt-2 text-sm">Faça login para gerenciar o sistema</p>
         </div>
 
         <Form {...form}>

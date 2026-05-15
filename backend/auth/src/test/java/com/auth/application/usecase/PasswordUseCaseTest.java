@@ -10,11 +10,14 @@ package com.auth.application.usecase;
 import com.auth.api.dto.password.ChangePasswordRequestDto;
 import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
+import com.auth.application.service.EmailService;
 import com.auth.application.service.PasswordGeneratorService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.UserAuthRepository;
+import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
+import com.auth.infra.exception.custom.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,8 @@ class PasswordUseCaseTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private PasswordGeneratorService passwordGeneratorService;
+    @Mock
+    private EmailService emailService;
 
     @InjectMocks
     private PasswordUseCase passwordUseCase;
@@ -105,5 +110,38 @@ class PasswordUseCaseTest {
         assertTrue(testUser.isPasswordResetRequired());
         assertEquals("encoded-temp-password", testUser.getPassword());
         verify(userRepository).save(testUser);
+    }
+
+    @Test
+    @DisplayName("Deve realizar reset solicitado pelo usuário e enviar e-mail")
+    void shouldPerformUserResetAndSendEmail() {
+        // Arrange
+        String mockTempPass = "UserTemp123!";
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("test@example.com");
+        when(userService.userIsPresent("test@example.com")).thenReturn(testUser);
+        when(passwordGeneratorService.generateTemporaryPassword()).thenReturn(mockTempPass);
+        when(passwordEncoder.encode(mockTempPass)).thenReturn("encoded-user-temp-password");
+
+        // Act
+        passwordUseCase.resetByUser(request);
+
+        // Assert
+        assertTrue(testUser.isPasswordResetRequired());
+        assertEquals("encoded-user-temp-password", testUser.getPassword());
+        verify(userRepository).save(testUser);
+        verify(emailService).sendResetPasswordEmail("test@example.com", testUser.getUsername(), mockTempPass);
+    }
+
+    @Test
+    @DisplayName("Deve falhar silenciosamente se o e-mail não existir no reset do usuário")
+    void shouldFailSilentlyWhenEmailNotFoundInUserReset() {
+        // Arrange
+        ResetPasswordRequestDto request = new ResetPasswordRequestDto("nonexistent@example.com");
+        when(userService.userIsPresent("nonexistent@example.com")).thenThrow(new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!"));
+
+        // Act & Assert
+        assertDoesNotThrow(() -> passwordUseCase.resetByUser(request));
+        verify(userRepository, never()).save(any());
+        verify(emailService, never()).sendResetPasswordEmail(any(), any(), any());
     }
 }

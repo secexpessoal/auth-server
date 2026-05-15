@@ -34,5 +34,20 @@ describe("LoginPage", () => {
     expect(screen.getByText(/painel admin/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/admin@exemplo.com/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /entrar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /esqueceu sua senha\?/i })).toBeInTheDocument();
+  });
+
+  it("opens forgot password dialog when clicking the link", async () => {
+    const { userEvent } = await import("@testing-library/user-event");
+    const user = userEvent.setup();
+
+    render(<LoginPage />);
+
+    const forgotPasswordBtn = screen.getByRole("button", { name: /esqueceu sua senha\?/i });
+    await user.click(forgotPasswordBtn);
+
+    expect(screen.getByText(/recuperar senha/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/exemplo@empresa.com/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /enviar nova senha/i })).toBeInTheDocument();
   });
 });

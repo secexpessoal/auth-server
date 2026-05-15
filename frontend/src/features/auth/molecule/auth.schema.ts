@@ -31,3 +31,9 @@ export const changePasswordSchema = z
   });
 
 export type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
+export const resetPasswordSchema = z.object({
+  email: z.string().email("E-mail inválido").nonempty("O e-mail é obrigatório"),
+});
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;

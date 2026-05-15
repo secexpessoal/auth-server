@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperação de Senha</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Inter', Arial, sans-serif; background-color: #f4f7f9; color: #1a1a1a;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%"
+       style="max-width: 600px; margin: 20px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #e1e8ed;">
+    <!-- Header -->
+    <tr>
+        <td align="center" style="padding: 30px 20px; background-color: #003366; color: #ffffff;">
+            <img src="data:image/png;base64,{{logoBase64}}" alt="TCM Logo" style="max-width: 150px; display: block; margin-bottom: 10px;">
+            <h1 style="margin: 0; font-size: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Serviço de Autenticação</h1>
+        </td>
+    </tr>
+
+    <!-- Content -->
+    <tr>
+        <td style="padding: 40px 30px;">
+            <h2 style="margin: 0 0 20px 0; font-size: 18px; color: #003366;">Olá, {{username}}</h2>
+            <p style="margin: 0 0 20px 0; line-height: 1.6; color: #4a5568;">Recebemos uma solicitação para redefinir sua senha no sistema <strong>SIAAP</strong>.
+                Abaixo está sua nova senha temporária:</p>
+
+            <div style="background-color: #f8fafc; border: 1px dashed #cbd5e0; padding: 20px; text-align: center; border-radius: 6px; margin-bottom: 25px;">
+                <span style="display: block; font-size: 12px; color: #718096; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Senha Temporária</span>
+                <strong style="font-size: 28px; color: #2d3748; letter-spacing: 2px; font-family: monospace;">{{tempPassword}}</strong>
+            </div>
+
+            <p style="margin: 0 0 20px 0; line-height: 1.6; color: #4a5568;">Por razões de segurança, recomendamos que você altere esta senha
+                imediatamente após realizar o seu próximo login.</p>
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td style="padding: 20px 30px; background-color: #f8fafc; border-top: 1px solid #e1e8ed; text-align: center; font-size: 12px; color: #718096;">
+            <p style="margin: 0 0 10px 0;">Este é um e-mail automático, por favor não responda.</p>
+            <p style="margin: 0;">&copy; 2026 <strong>Tribunal de Contas do Município</strong>. Todos os direitos reservados.</p>
+        </td>
+    </tr>
+</table>
+
+<!-- Fine print -->
+<table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; margin: 0 auto;">
+    <tr>
+        <td style="padding: 20px; text-align: center; font-size: 11px; color: #a0aec0;">
+            Se você não solicitou esta redefinição, por favor ignore este e-mail ou entre em contato com o suporte técnico.
+        </td>
+    </tr>
+</table>
+</body>
+</html>

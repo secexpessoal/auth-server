@@ -27,6 +27,10 @@ export async function changePasswordAttempt(payload: { oldPassword: string; newP
   await axiosClient.post("/v1/password/change", payload);
 }
 
+export async function resetPasswordAttempt(email: string): Promise<void> {
+  await axiosClient.post("/v1/password/user-reset", { email });
+}
+
 export async function getProfile(): Promise<UserResponseDto> {
   const { data } = await axiosClient.get<UserResponseDto>("/v1/user/profile");
   return data;
