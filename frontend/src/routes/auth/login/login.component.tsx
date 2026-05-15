@@ -1,25 +1,19 @@
-import { Button } from "@lib/components/sh-button/button.component";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@lib/components/sh-input-group/input-group.component";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
-import { Field, FieldContent } from "@lib/components/sh-field/field.component";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@lib/components/sh-dialog/dialog.component";
-import { getErrorMessage } from "@lib/utils/api-error.util";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@components/sh-dialog/dialog.component";
+import { Field, FieldContent } from "@components/sh-field/field.component";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@components/sh-form/form.component";
+import { InputGroup, InputGroupAddon, InputGroupText, InputGroupInput } from "@components/sh-input-group/input-group.component";
+import { Button } from "@components/sh-button/button.component";
+import type { LoginFormData, ResetPasswordFormData } from "@features/auth/molecule/auth.schema";
+import { loginSchema, resetPasswordSchema } from "@features/auth/molecule/auth.schema";
+import { loginAttempt, resetPasswordAttempt } from "@features/auth/services/auth.service";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { getErrorMessage } from "@lib/api-error/api-error.util";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { loginSchema, resetPasswordSchema, type LoginFormData, type ResetPasswordFormData } from "../auth.schema";
-import { loginAttempt, resetPasswordAttempt } from "../services/auth.service";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -111,7 +105,12 @@ export function LoginPage() {
                               <Mail />
                             </InputGroupText>
                           </InputGroupAddon>
-                          <InputGroupInput {...field} type="email" placeholder="admin@exemplo.com" disabled={isResetDialogOpen || loginMutation.isPending} />
+                          <InputGroupInput
+                            {...field}
+                            type="email"
+                            placeholder="admin@exemplo.com"
+                            disabled={isResetDialogOpen || loginMutation.isPending}
+                          />
                         </InputGroup>
                       </FormControl>
                     </FieldContent>
@@ -175,11 +174,7 @@ export function LoginPage() {
               </div>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full h-12 text-lg shadow-primary/25"
-              disabled={isResetDialogOpen || loginMutation.isPending}
-            >
+            <Button type="submit" className="w-full h-12 text-lg shadow-primary/25" disabled={isResetDialogOpen || loginMutation.isPending}>
               {loginMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Entrar
             </Button>
