@@ -8,11 +8,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@lib": path.resolve(import.meta.dirname, "./src/lib"),
-      "@app": path.resolve(import.meta.dirname, "./src/app"),
-      "@store": path.resolve(import.meta.dirname, "./src/store"),
+      "@routes": path.resolve(import.meta.dirname, "./src/routes"),
       "@assets": path.resolve(import.meta.dirname, "./src/assets"),
-      "@features": path.resolve(import.meta.dirname, "./src/features"),
-      "@components": path.resolve(import.meta.dirname, "./src/components"),
 
       // NOTE: Testes
       "@fixtures": path.resolve(import.meta.dirname, "./fixtures"),
