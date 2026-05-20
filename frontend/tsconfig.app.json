@@ -26,12 +26,9 @@
     /* Path Aliases */
     "baseUrl": ".",
     "paths": {
-      "@app/*": ["./src/app/*"],
       "@lib/*": ["./src/lib/*"],
-      "@store/*": ["./src/store/*"],
-      "@fixtures/*": ["./fixtures/*"],
-      "@features/*": ["./src/features/*"],
-      "@components/*": ["./src/components/*"]
+      "@routes/*": ["./src/routes/*"],
+      "@fixtures/*": ["./fixtures/*"]
     }
   },
   "include": ["src", "fixtures"]

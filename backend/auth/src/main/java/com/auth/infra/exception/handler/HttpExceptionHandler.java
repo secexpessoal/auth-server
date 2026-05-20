@@ -175,11 +175,12 @@ public class HttpExceptionHandler {
     }
 
     /**
-     * Fallback para qualquer exceção não tratada especificamente (Erro 500).
+     * Fallback para qualquer erro ou exceção não tratada especificamente (Erro 500).
+     * Captura Throwable para incluir Errors (como StackOverflowError) além de Exceptions.
      */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<@NonNull DataObjectError> handleGenericException(Exception exception) {
-        log.error("ERRO NÃO TRATADO: ", exception); // Loga o stacktrace completo no servidor
+    @ExceptionHandler(Throwable.class)
+    public ResponseEntity<@NonNull DataObjectError> handleGenericError(Throwable throwable) {
+        log.error("ERRO NÃO TRATADO: ", throwable); // Loga o stacktrace completo no servidor
         return buildErrorResponse("Ocorreu um erro interno no servidor", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
