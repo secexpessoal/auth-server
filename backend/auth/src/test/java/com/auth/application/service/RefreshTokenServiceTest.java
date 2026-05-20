@@ -19,10 +19,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -67,7 +69,7 @@ class RefreshTokenServiceTest {
 
         when(refreshTokenRepository.findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
                 any(), anyString(), anyString(), anyString(), anyString()))
-                .thenReturn(Optional.of(existing));
+                .thenReturn(List.of(existing));
         when(refreshTokenRepository.save(any())).thenAnswer(i -> i.getArguments()[0]);
 
         RefreshToken updated = refreshTokenService.createRefreshToken(user, "Postman", "127.0.0.1", "https://app.itau.com.br", "https://app.itau.com.br/pix");

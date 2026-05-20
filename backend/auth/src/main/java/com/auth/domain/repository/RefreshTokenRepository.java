@@ -12,6 +12,8 @@ import com.auth.domain.model.UserAuth;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,8 +25,8 @@ public interface RefreshTokenRepository extends MongoRepository<RefreshToken, UU
 
     void deleteByToken(String token);
 
-    Optional<RefreshToken> findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
+    List<RefreshToken> findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
             UserAuth user, String userAgent, String ipAddress, String origin, String referer);
 
-    void deleteByExpiryDateBefore(java.time.Instant now);
+    void deleteByExpiryDateBefore(Instant now);
 }

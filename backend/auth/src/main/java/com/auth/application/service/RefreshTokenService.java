@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 
 
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,10 +32,22 @@ public class RefreshTokenService {
 
 
     public RefreshToken createRefreshToken(UserAuth user, String userAgent, String ipAddress, String origin, String referer) {
-        // NOTE: Agora buscamos se já existe um token para esta mesma ORIGEM GRANULAR (UA + IP + Origin + Referer)
-        // Se existir, atualizamos o token, a expiração e INCREMENTAMOS a versão daquela sessão específica
-        RefreshToken refreshToken = refreshTokenRepository
-                .findByUserAndUserAgentAndIpAddressAndOriginAndReferer(user, userAgent, ipAddress, origin, referer)
+        List<RefreshToken> existingTokens = refreshTokenRepository
+                .findByUserAndUserAgentAndIpAddressAndOriginAndReferer(user, userAgent, ipAddress, origin, referer);
+
+        if (existingTokens.size() > 1) {
+            existingTokens.sort(Comparator.comparing(RefreshToken::getExpiryDate).reversed());
+            List<RefreshToken> toDelete = existingTokens.subList(1, existingTokens.size());
+            refreshTokenRepository.deleteAll(toDelete);
+            
+            // Mantém apenas o mais recente na lista para reaproveitamento
+            RefreshToken newest = existingTokens.get(0);
+            existingTokens.clear();
+            existingTokens.add(newest);
+        }
+
+        RefreshToken refreshToken = existingTokens.stream()
+                .findFirst()
                 .orElseGet(() -> RefreshToken.builder()
                         .user(user)
                         .userAgent(userAgent)

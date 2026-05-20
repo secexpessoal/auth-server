@@ -25,7 +25,7 @@ public record UserProfileResponseDto(
         @JsonProperty("position")
         String position,
 
-        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "UTC")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX", timezone = "America/Sao_Paulo")
         @JsonProperty("birthDate")
         Instant birthDate,
 
