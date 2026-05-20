@@ -12,7 +12,9 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -32,6 +34,8 @@ public class UserData {
     @Id
     private UUID userId = UuidV7Service.randomV7();
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @DocumentReference(lazy = true)
     private UserAuth user;
 

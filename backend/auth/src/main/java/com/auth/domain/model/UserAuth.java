@@ -12,8 +12,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.jspecify.annotations.NonNull;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -62,6 +64,8 @@ public class UserAuth implements UserDetails {
     @Field("token_version")
     private Integer tokenVersion = 0;
 
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @DocumentReference(lazy = true)
     private UserData userData;
 
