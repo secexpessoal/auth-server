@@ -34,9 +34,11 @@ COPY --from=backend-build /app/auth/build/libs/auth-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 
 ENTRYPOINT ["java", \
-            "-XX:+UseZGC", \
-            "-XX:+ZGenerational", \
-            "-XX:+UseStringDeduplication", \
+            "-XX:+UseG1GC", \
             "-XX:MaxRAMPercentage=75.0", \
-            "-XX:+AlwaysPreTouch", \
+            "-XX:G1PeriodicGCInterval=10000", \
+            "-XX:+UseStringDeduplication", \
+            "-XX:MinHeapFreeRatio=10", \
+            "-XX:MaxHeapFreeRatio=20", \
+            "-XX:+ExitOnOutOfMemoryError", \
             "-jar", "app.jar"]
