@@ -28,14 +28,15 @@ RUN ./gradlew :auth:bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine-3.23
 
-ARG APP_PORT
 ARG DOMAIN
+ARG APP_PORT
+ARG SERVICE_NAME=tests_auth
 
 LABEL traefik.enable="true"
 LABEL traefik.http.routers.auth-server.rule="Host(`${DOMAIN}`)"
 LABEL traefik.http.routers.auth-server.entrypoints="web"
 LABEL traefik.http.services.auth-server.loadbalancer.server.port="${APP_PORT}"
-LABEL traefik.http.middlewares.auth-forward.forwardauth.address="http://${DOMAIN}/v1/auth/verify"
+LABEL traefik.http.middlewares.auth-forward.forwardauth.address="http://${SERVICE_NAME}/v1/auth/verify"
 LABEL traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader="true"
 LABEL traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders="Authorization"
 
