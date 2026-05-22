@@ -34,7 +34,8 @@ ARG SERVICE_NAME=tests_auth
 
 LABEL traefik.enable="true"
 LABEL traefik.http.routers.auth-server.rule="Host(`${DOMAIN}`)"
-LABEL traefik.http.routers.auth-server.entrypoints="web"
+# ⬇️ A LINHA ABAIXO FOI CORRIGIDA DE "web" PARA "http" ⬇️
+LABEL traefik.http.routers.auth-server.entrypoints="http"
 LABEL traefik.http.services.auth-server.loadbalancer.server.port="${APP_PORT}"
 LABEL traefik.http.middlewares.auth-forward.forwardauth.address="http://${SERVICE_NAME}/v1/auth/verify"
 LABEL traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader="true"
