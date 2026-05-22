@@ -197,7 +197,7 @@ export function CreateUserDialog({ role }: Props) {
                 <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={registerMutation.isPending} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+                <Button type="submit" disabled={registerMutation.isPending} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : ""}>
                   {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Salvar {isAdmin ? "Administrador" : "Usuário"}
                 </Button>

@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   };
 });
 
-vi.mock("@lib/query.util", () => ({
+vi.mock("@lib/infra/query/query.util", () => ({
   queryClient: {
     invalidateQueries: vi.fn(),
   },
@@ -106,9 +106,8 @@ describe("UsersTableComponent", () => {
     fireEvent.click(detailsButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Detalhes")).toBeInTheDocument();
-      // Test the redesigned header content or new labels
-      expect(screen.getByText(/Perfil de acesso de/i)).toBeInTheDocument();
+      expect(screen.getByText("Gerenciar Usuário")).toBeInTheDocument();
+      expect(screen.getByText(/Configurações avançadas para/i)).toBeInTheDocument();
     });
   });
 
@@ -119,12 +118,12 @@ describe("UsersTableComponent", () => {
 
     await waitFor(() => {
       // Tab triggers
-      expect(screen.getByRole("tab", { name: /Informações do Perfil/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Perfil do Colaborador/i })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /Regime & Localização/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /Governança/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Segurança & Acessos/i })).toBeInTheDocument();
 
       // Current active tab content
-      expect(screen.getByRole("heading", { name: /Informações do Perfil/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Informações Pessoais/i })).toBeInTheDocument();
     });
   });
 
@@ -133,7 +132,7 @@ describe("UsersTableComponent", () => {
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Persistir Alterações/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Persistir Dados/i })).toBeInTheDocument();
     });
   });
 
@@ -170,7 +169,7 @@ describe("UsersTableComponent", () => {
     await waitFor(
       () => {
         // The DatePicker trigger is a button that shows the placeholder or formatted date
-        expect(screen.getByText(/Selecione a data/i)).toBeInTheDocument();
+        expect(screen.getByText(/Selecionar data/i)).toBeInTheDocument();
       },
       { timeout: 3000 },
     );

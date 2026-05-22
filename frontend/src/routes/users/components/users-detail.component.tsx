@@ -130,62 +130,57 @@ export function UserDetailsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-full sm:max-w-7xl h-[65vh] p-0 border-none shadow-2xl bg-white overflow-hidden flex flex-col sm:flex-row rounded-3xl"
+        className="w-full sm:max-w-7xl h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
         showCloseButton
       >
         <Tabs orientation="vertical" defaultValue="profile" className="flex flex-col md:flex-row h-full w-full items-stretch">
           {/* LEFT SIDEBAR */}
-          <div className="w-full md:w-[280px] bg-gray-50/80 border-r border-gray-100 px-5 py-8 flex flex-col shrink-0 relative overflow-hidden h-full">
-            <div className="absolute bottom-0 right-0 p-8 opacity-[0.03] pointer-events-none transform translate-x-12 translate-y-12">
-              <Eye className="w-64 h-64" />
-            </div>
-
-            <div className="relative z-10 mb-10 pt-4 px-2">
-              <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-100 rounded-2xl mb-6 border border-primary-200/50 shadow-sm">
-                <User className="w-6 h-6 text-primary-700" />
+          <div className="w-full md:w-[320px] bg-black/5 dark:bg-white/5 border-r border-white/10 px-6 py-10 flex flex-col shrink-0 relative overflow-hidden h-full">
+            <div className="relative z-10 mb-12">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-card shadow-neumorph-convex rounded-2xl mb-8 border border-white/40">
+                <User className="w-8 h-8 text-primary" />
               </div>
 
-              <DialogTitle className="text-3xl font-black tracking-tight text-gray-900 mb-2">Detalhes</DialogTitle>
-
-              <DialogDescription className="text-gray-500 text-sm font-medium">
-                Perfil de acesso de <br />
-                <span className="text-primary-600 font-bold border-b border-primary-200/50 pb-0.5">{user.email}</span>.
+              <DialogTitle className="text-3xl font-black tracking-tight text-foreground mb-3">Gerenciar Usuário</DialogTitle>
+              <DialogDescription className="text-muted-foreground text-sm font-medium leading-relaxed">
+                Configurações avançadas para <br />
+                <span className="text-primary font-bold">{user.email}</span>
               </DialogDescription>
             </div>
 
             <div className="relative z-10 flex-1 overflow-y-auto w-full pr-2">
-              <TabsList className="flex flex-col h-auto w-full bg-transparent p-0 gap-2 justify-start items-start">
+              <TabsList className="flex flex-col h-auto w-full bg-transparent p-0 gap-3 justify-start items-start">
                 <TabsTrigger
                   value="profile"
-                  className="w-full justify-start h-12 px-4 rounded-xl text-sm font-bold transition-all text-gray-500 hover:text-gray-900 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-primary-700 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-primary-100/50 group"
+                  className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
                 >
-                  <UserCircle className="w-5 h-5 mr-3 opacity-60 group-data-[state=active]:opacity-100 group-data-[state=active]:text-primary-600 transition-all" />
-                  Informações do Perfil
+                  <UserCircle className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
+                  Perfil do Colaborador
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="regime"
-                  className="w-full justify-start h-12 px-4 rounded-xl text-sm font-bold transition-all text-gray-500 hover:text-gray-900 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-indigo-700 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-indigo-100/50 group"
+                  className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
                 >
-                  <MapPin className="w-5 h-5 mr-3 opacity-60 group-data-[state=active]:opacity-100 group-data-[state=active]:text-indigo-600 transition-all" />
+                  <MapPin className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
                   Regime & Localização
                 </TabsTrigger>
 
                 <TabsTrigger
                   value="governance"
-                  className="w-full justify-start h-12 px-4 rounded-xl text-sm font-bold transition-all text-gray-500 hover:text-gray-900 hover:bg-white data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm border border-transparent data-[state=active]:border-amber-100/50 group"
+                  className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
                 >
-                  <Shield className="w-5 h-5 mr-3 opacity-60 group-data-[state=active]:opacity-100 group-data-[state=active]:text-amber-600 transition-all" />
-                  Status & Governança
+                  <Shield className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
+                  Segurança & Acessos
                 </TabsTrigger>
               </TabsList>
             </div>
 
-            <div className="mt-auto px-2 pt-6">
+            <div className="mt-auto pt-8">
               <Button
                 type="button"
                 variant="destructive"
-                className="w-full h-12 rounded-xl font-bold transition-colors"
+                className="w-full h-12 rounded-md font-black text-xs uppercase tracking-widest shadow-neumorph-convex active:shadow-neumorph-pressed"
                 onClick={() => onOpenChange(false)}
               >
                 Fechar Janela
@@ -195,21 +190,20 @@ export function UserDetailsModal({
 
           {/* RIGHT CONTENT AREA */}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col h-full overflow-hidden bg-white relative max-w-full">
-              <div className="flex-1 overflow-y-auto px-8 py-10 md:px-12 md:py-12 relative w-full">
-                <TabsContent value="profile" className="m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center gap-4 border-b border-gray-100 pb-6 mb-10">
-                    <div className="w-12 h-12 rounded-2xl bg-primary-50 flex items-center justify-center">
-                      <UserCircle className="w-6 h-6 text-primary-600" />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative max-w-full">
+              <div className="flex-1 overflow-y-auto px-10 py-12 md:px-16 md:py-16 relative w-full">
+                <TabsContent value="profile" className="m-0 space-y-10 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="flex items-center gap-6 border-b border-white/5 pb-8 mb-12">
+                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                      <UserCircle className="w-7 h-7 text-primary" />
                     </div>
-
                     <div>
-                      <h3 className="text-2xl font-black text-gray-900 tracking-tight">Informações do Perfil</h3>
-                      <p className="text-sm text-gray-500 font-medium">Dados pessoais e profissionais do usuário.</p>
+                      <h3 className="text-2xl font-black text-foreground tracking-tight">Informações Pessoais</h3>
+                      <p className="text-sm text-muted-foreground font-medium">Dados de identificação e registro corporativo.</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
                     <div className="sm:col-span-2">
                       <FormField
                         control={form.control}
@@ -217,16 +211,14 @@ export function UserDetailsModal({
                         render={({ field }) => (
                           <FormItem>
                             <Field>
-                              <FormLabel>Nome de Usuário</FormLabel>
+                              <FormLabel className="font-bold ml-1">Nome Completo</FormLabel>
                               <FieldContent>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     value={field.value || ""}
-                                    className={cn(
-                                      "h-14 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-bold text-gray-800 px-5",
-                                    )}
-                                    placeholder="Adicione um nome de usuário"
+                                    className="bg-black/5 dark:bg-white/5 border-white/10"
+                                    placeholder="Nome do colaborador"
                                   />
                                 </FormControl>
                               </FieldContent>
@@ -237,23 +229,21 @@ export function UserDetailsModal({
                       />
                     </div>
 
-                    <div className="sm:col-span-1 border-t border-gray-100 pt-6">
+                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
                       <FormField
                         control={form.control}
                         name="registration"
                         render={({ field }) => (
                           <FormItem>
                             <Field>
-                              <FormLabel>Matrícula</FormLabel>
+                              <FormLabel className="font-bold ml-1">Matrícula</FormLabel>
                               <FieldContent>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     value={field.value || ""}
                                     maxLength={6}
-                                    className={cn(
-                                      "h-14 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-bold text-gray-800 px-5",
-                                    )}
+                                    className="bg-black/5 dark:bg-white/5 border-white/10 font-mono tracking-widest"
                                     placeholder="000000"
                                   />
                                 </FormControl>
@@ -265,23 +255,21 @@ export function UserDetailsModal({
                       />
                     </div>
 
-                    <div className="sm:col-span-1 border-t border-gray-100 pt-6">
+                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
                       <FormField
                         control={form.control}
                         name="position"
                         render={({ field }) => (
                           <FormItem>
                             <Field>
-                              <FormLabel>Cargo / Posição</FormLabel>
+                              <FormLabel className="font-bold ml-1">Cargo Atual</FormLabel>
                               <FieldContent>
                                 <FormControl>
                                   <Input
                                     {...field}
                                     value={field.value || ""}
-                                    className={cn(
-                                      "h-14 rounded-2xl bg-gray-50/50 border-gray-100 focus:bg-white transition-all text-base font-bold text-gray-800 px-5",
-                                    )}
-                                    placeholder="Posição profissional"
+                                    className="bg-black/5 dark:bg-white/5 border-white/10"
+                                    placeholder="Ex: Desenvolvedor Senior"
                                   />
                                 </FormControl>
                               </FieldContent>
@@ -295,63 +283,57 @@ export function UserDetailsModal({
                 </TabsContent>
 
                 {/* --- REGIME SECTION --- */}
-                <TabsContent value="regime" className="m-0 space-y-6 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  {/* GENERAL SETTINGS CARD */}
-                  <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] space-y-8 relative overflow-hidden">
-                    <div className="flex items-center gap-4 border-b border-gray-100 pb-6">
-                      <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
-                        <MapPin className="w-6 h-6 text-indigo-600" />
+                <TabsContent value="regime" className="m-0 space-y-10 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 sm:p-10 shadow-neumorph-pressed space-y-10 relative overflow-hidden">
+                    <div className="flex items-center gap-6 border-b border-white/10 pb-8">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                        <MapPin className="w-7 h-7 text-primary" />
                       </div>
-
                       <div>
-                        <h3 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">Regime & Localização</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 font-medium">Configurações gerais e modelo de trabalho.</p>
+                        <h3 className="text-2xl font-black text-foreground tracking-tight">Modelo de Trabalho</h3>
+                        <p className="text-sm text-muted-foreground font-medium">Localização e regime de contratação.</p>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
                       <FormField
                         control={form.control}
                         name="birthDate"
                         render={({ field }) => (
                           <FormItem>
                             <Field>
-                              <FormLabel>Data de Nascimento</FormLabel>
+                              <FormLabel className="font-bold ml-1">Data de Nascimento</FormLabel>
                               <FieldContent>
                                 <FormControl>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <Button
-                                        variant="ghost"
+                                        variant="outline"
                                         className={cn(
-                                          "w-full h-14 justify-start text-left font-bold rounded-2xl bg-gray-50/50 border border-gray-100 hover:bg-white transition-all px-5 text-base text-gray-800",
+                                          "w-full h-12 justify-start text-left font-bold rounded-md border-white/10 bg-black/5 dark:bg-white/5 px-4",
                                           !field.value && "text-muted-foreground",
                                         )}
                                       >
-                                        <CalendarIcon className="mr-3 h-5 w-5 text-gray-400" />
+                                        <CalendarIcon className="mr-3 h-4 w-4 opacity-50" />
                                         {field.value && typeof field.value === "string" ? (
-                                          format(parseISO(field.value), "PPP", {
+                                          format(parseISO(field.value), "dd 'de' MMMM 'de' yyyy", {
                                             locale: ptBR,
                                           })
                                         ) : (
-                                          <span>Selecione a data</span>
+                                          <span>Selecionar data</span>
                                         )}
                                       </Button>
                                     </PopoverTrigger>
-
-                                    <PopoverContent className="w-auto p-0 rounded-2xl border-gray-100 shadow-2xl" align="start">
+                                    <PopoverContent className="w-auto p-0 rounded-md border-white/20 shadow-2xl bg-card" align="start">
                                       <Calendar
                                         autoFocus
                                         mode="single"
                                         locale={ptBR}
-                                        className="rounded-2xl"
                                         captionLayout="dropdown"
                                         startMonth={new Date(1900, 0)}
-                                        endMonth={new Date(new Date().getFullYear(), 11)}
+                                        endMonth={new Date()}
                                         onSelect={(date) => field.onChange(date?.toISOString())}
-                                        disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                                         selected={field.value && typeof field.value === "string" ? parseISO(field.value) : undefined}
-                                        defaultMonth={field.value && typeof field.value === "string" ? parseISO(field.value) : undefined}
                                       />
                                     </PopoverContent>
                                   </Popover>
@@ -369,26 +351,17 @@ export function UserDetailsModal({
                         render={({ field }) => (
                           <FormItem>
                             <Field>
-                              <FormLabel>Regime de Trabalho</FormLabel>
+                              <FormLabel className="font-bold ml-1">Regime Contratual</FormLabel>
                               <FieldContent>
                                 <FormControl>
                                   <Select onValueChange={field.onChange} value={field.value || ""}>
-                                    <SelectTrigger className="w-full h-14 min-h-[56px] rounded-2xl bg-gray-50/50 border border-gray-100 px-5 text-base font-bold text-gray-800 focus:ring-indigo-500/20 transition-all">
-                                      <SelectValue placeholder="Selecione o regime" />
+                                    <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                      <SelectValue placeholder="Selecione..." />
                                     </SelectTrigger>
-
-                                    <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                      <SelectItem value="HOME_WORK" className="rounded-xl py-3 cursor-pointer font-medium">
-                                        Remoto (Home Office)
-                                      </SelectItem>
-
-                                      <SelectItem value="OFFICE" className="rounded-xl py-3 cursor-pointer font-medium">
-                                        Presencial (Escritório)
-                                      </SelectItem>
-
-                                      <SelectItem value="HYBRID" className="rounded-xl py-3 cursor-pointer font-medium">
-                                        Híbrido
-                                      </SelectItem>
+                                    <SelectContent className="bg-card border-white/20 shadow-2xl">
+                                      <SelectItem value="HOME_WORK" className="font-bold">Home Office</SelectItem>
+                                      <SelectItem value="OFFICE" className="font-bold">Presencial</SelectItem>
+                                      <SelectItem value="HYBRID" className="font-bold">Híbrido</SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormControl>
@@ -407,19 +380,19 @@ export function UserDetailsModal({
                             <FormItem>
                               <Field
                                 orientation="horizontal"
-                                className="p-6 bg-gray-50/50 rounded-2xl border border-gray-100 shadow-sm transition-all hover:border-gray-200"
+                                className="p-6 bg-black/5 dark:bg-white/5 rounded-2xl border border-white/10"
                               >
                                 <FieldContent className="flex-row items-center gap-4">
                                   <FormControl>
                                     <Checkbox
                                       id="livesElsewhere"
                                       checked={field.value || false}
-                                      className="w-6 h-6 rounded-[10px] border-2 border-gray-300"
+                                      className="w-6 h-6 rounded-lg"
                                       onCheckedChange={(checked) => field.onChange(checked === true)}
                                     />
                                   </FormControl>
-                                  <FormLabel htmlFor="livesElsewhere" className="text-base font-bold text-gray-800 cursor-pointer select-none">
-                                    Reside fora da cidade principal?
+                                  <FormLabel htmlFor="livesElsewhere" className="text-sm font-bold text-foreground cursor-pointer select-none">
+                                    Reside fora da sede da empresa?
                                   </FormLabel>
                                 </FieldContent>
                                 <FormMessage />
@@ -431,405 +404,275 @@ export function UserDetailsModal({
                     </div>
                   </div>
 
-                  {/* HYBRID RULES CARD */}
-                  {workRegime === "HYBRID" ? (
-                    <div className="bg-[#f8f9fe] border border-indigo-100/60 rounded-3xl p-6 sm:p-8 shadow-[0_8px_30px_-4px_rgba(79,70,229,0.05)] space-y-8 animate-in fade-in zoom-in-95 duration-300 relative overflow-hidden mt-6">
-                      <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-100/40 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none" />
-
-                      <div className="relative z-10 flex items-center gap-4 border-b border-indigo-100/50 pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-white border border-indigo-50 shadow-sm flex items-center justify-center shrink-0">
-                          <MapPin className="w-5 h-5 text-indigo-600" />
+                  {workRegime === "HYBRID" && (
+                    <div className="bg-primary/5 border border-primary/20 rounded-[2.5rem] p-8 sm:p-10 shadow-neumorph space-y-8 animate-in zoom-in-95 duration-300">
+                      <div className="flex items-center gap-4 border-b border-primary/10 pb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-card border border-white/20 shadow-neumorph-convex flex items-center justify-center">
+                          <Activity className="w-6 h-6 text-primary" />
                         </div>
-
-                        <div>
-                          <span className="text-xl sm:text-2xl font-black text-indigo-950 mb-1 block tracking-tight">Regras do Modelo Híbrido</span>
-                          <p className="text-xs sm:text-sm text-indigo-700/70 font-medium">
-                            Configure a frequência exigida no escritório para este colaborador.
-                          </p>
-                        </div>
+                        <h3 className="text-xl font-black text-foreground">Configurações Híbridas</h3>
                       </div>
 
-                      <div className="flex flex-col gap-8 relative z-10">
-                        {/* TOP CONTROLS */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                          <FormField
-                            control={form.control}
-                            name="inPersonWorkPeriod.frequencyCycleWeeks"
-                            render={({ field }) => (
-                              <FormItem>
-                                <Field>
-                                  <FormLabel>Repetir a cada (Semanas)</FormLabel>
-                                  <FieldContent>
-                                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                      <FormControl>
-                                        <Input
-                                          {...field}
-                                          type="number"
-                                          min={1}
-                                          max={52}
-                                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
-                                          value={field.value || ""}
-                                          className={cn(
-                                            "h-12 w-full sm:w-28 rounded-xl bg-indigo-50/50 border-indigo-100 focus:bg-white transition-all text-lg font-bold px-4 text-center text-indigo-900",
-                                          )}
-                                        />
-                                      </FormControl>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-10">
+                        <FormField
+                          control={form.control}
+                          name="inPersonWorkPeriod.frequencyCycleWeeks"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold">Ciclo de Repetição (Semanas)</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type="number"
+                                      min={1}
+                                      onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
+                                      className="bg-card border-white/10 font-black text-center text-lg"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
 
-                                      <div className="text-sm font-bold text-indigo-700 bg-indigo-50/80 px-4 py-3 rounded-xl border border-indigo-100/50 flex-1 w-full sm:w-auto flex items-center justify-center sm:justify-start">
-                                        {(() => {
-                                          const value = frequencyCycleWeeks;
-                                          if (typeof value !== "number" || isNaN(value)) return "semanas";
-                                          if (value === 52) return "≈ 12 meses";
-                                          if (value < 4) return value === 1 ? "semana" : "semanas";
-
-                                          const months = Math.floor(value / 4);
-                                          const weeks = value % 4;
-                                          const monthText = months === 1 ? "1 mês" : `${months} meses`;
-
-                                          if (weeks === 0) return `≈ ${monthText}`;
-
-                                          const weekText = weeks === 1 ? "1 semana" : `${weeks} semanas`;
-                                          return `≈ ${monthText} e ${weekText}`;
-                                        })()}
-                                      </div>
-                                    </div>
-                                  </FieldContent>
-                                  <FormMessage />
-                                </Field>
-                              </FormItem>
-                            )}
-                          />
-
-                          <div className="space-y-4">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block transition-colors">
-                              Modo de Frequência
-                            </span>
-                            <div className="flex flex-col sm:flex-row bg-gray-50/80 p-1.5 rounded-xl border border-gray-100 w-full sm:w-fit shadow-inner gap-1">
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => {
-                                  setHybridMode("specific");
-                                }}
-                                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${hybridMode === "specific" ? "bg-white text-indigo-700 shadow-sm border border-gray-100 hover:bg-white hover:text-indigo-800" : "text-gray-500 hover:text-gray-700 hover:bg-white/50"}`}
-                              >
-                                Dias Específicos
-                              </Button>
-
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={() => {
-                                  setHybridMode("consecutive");
-                                }}
-                                className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${hybridMode === "consecutive" ? "bg-white text-indigo-700 shadow-sm border border-gray-100 hover:bg-white hover:text-indigo-800" : "text-gray-500 hover:text-gray-700 hover:bg-white/50"}`}
-                              >
-                                Dias Consecutivos
-                              </Button>
-                            </div>
+                        <div className="space-y-4">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 block ml-1">Modo de Escala</span>
+                          <div className="flex bg-black/5 dark:bg-white/5 p-1.5 rounded-2xl border border-white/5 gap-1.5">
+                            <Button
+                              type="button"
+                              variant={hybridMode === "specific" ? "default" : "ghost"}
+                              onClick={() => setHybridMode("specific")}
+                              className="flex-1 rounded-md font-bold h-10 text-xs"
+                            >
+                              Específicos
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={hybridMode === "consecutive" ? "default" : "ghost"}
+                              onClick={() => setHybridMode("consecutive")}
+                              className="flex-1 rounded-md font-bold h-10 text-xs"
+                            >
+                              Consecutivos
+                            </Button>
                           </div>
                         </div>
 
-                        {/* BOTTOM DYNAMIC SETTINGS */}
-                        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-indigo-100 shadow-[0_4px_20px_-4px_rgba(79,70,229,0.05)] w-full">
-                          <div className={hybridMode === "specific" ? "block animate-in fade-in zoom-in-95 duration-200" : "hidden"}>
+                        <div className="sm:col-span-2">
+                          {hybridMode === "specific" ? (
                             <FormField
                               control={form.control}
                               name="inPersonWorkPeriod.frequencyWeekMask"
                               render={({ field }) => (
                                 <FormItem>
                                   <Field>
-                                    <FormLabel>Dias Selecionados</FormLabel>
+                                    <FormLabel className="font-bold ml-1">Dias da Semana Presenciais</FormLabel>
                                     <FieldContent>
-                                      <FormControl>
-                                        <div className="flex flex-wrap gap-2">
-                                          {(() => {
-                                            const mask = typeof field.value === "number" ? field.value : 0;
-                                            const DAYS = [
-                                              { id: "mon", label: "Seg", val: 1 },
-                                              { id: "tue", label: "Ter", val: 2 },
-                                              { id: "wed", label: "Qua", val: 4 },
-                                              { id: "thu", label: "Qui", val: 8 },
-                                              { id: "fri", label: "Sex", val: 16 },
-                                              { id: "sat", label: "Sáb", val: 32 },
-                                              { id: "sun", label: "Dom", val: 64 },
-                                            ];
-
-                                            return DAYS.map((day) => {
-                                              const isChecked = (mask & day.val) === day.val;
-                                              return (
-                                                <Button
-                                                  key={day.id}
-                                                  type="button"
-                                                  variant="outline"
-                                                  onClick={() => field.onChange(isChecked ? mask & ~day.val : mask | day.val)}
-                                                  className={cn(
-                                                    "w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center text-xs sm:text-sm font-black transition-all duration-300 p-0",
-                                                    isChecked
-                                                      ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/30 border-0 hover:bg-indigo-700 hover:text-white"
-                                                      : "bg-white border-2 border-gray-200 text-gray-400 hover:border-indigo-200 hover:text-indigo-600 hover:bg-indigo-50/50",
-                                                  )}
-                                                >
-                                                  {day.label}
-                                                </Button>
-                                              );
-                                            });
-                                          })()}
-                                        </div>
-                                      </FormControl>
+                                      <div className="flex flex-wrap gap-2.5">
+                                        {[
+                                          { label: "S", val: 1 }, { label: "T", val: 2 }, { label: "Q", val: 4 },
+                                          { label: "Q", val: 8 }, { label: "S", val: 16 }, { label: "S", val: 32 }, { label: "D", val: 64 }
+                                        ].map((day, idx) => {
+                                          const mask = field.value || 0;
+                                          const isSelected = (mask & day.val) === day.val;
+                                          return (
+                                            <Button
+                                              key={idx}
+                                              type="button"
+                                              variant={isSelected ? "default" : "outline"}
+                                              className="w-12 h-12 rounded-md font-black"
+                                              onClick={() => field.onChange(isSelected ? mask & ~day.val : mask | day.val)}
+                                            >
+                                              {day.label}
+                                            </Button>
+                                          );
+                                        })}
+                                      </div>
                                     </FieldContent>
-                                    <FormMessage />
                                   </Field>
                                 </FormItem>
                               )}
                             />
-                          </div>
-
-                          <div className={hybridMode === "consecutive" ? "block animate-in fade-in zoom-in-95 duration-200" : "hidden"}>
+                          ) : (
                             <FormField
                               control={form.control}
                               name="inPersonWorkPeriod.frequencyDurationDays"
                               render={({ field }) => (
                                 <FormItem>
                                   <Field>
-                                    <FormLabel>Duração Consecutiva (Dias)</FormLabel>
+                                    <FormLabel className="font-bold ml-1">Dias Consecutivos no Escritório</FormLabel>
                                     <FieldContent>
-                                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                                        <FormControl>
-                                          <Input
-                                            type="number"
-                                            min={1}
-                                            value={field.value || ""}
-                                            onChange={(event) => field.onChange(event.target.value ? parseInt(event.target.value) : null)}
-                                            className={cn(
-                                              "h-12 w-full sm:w-28 rounded-xl bg-white border-2 border-gray-200 focus:border-indigo-500 focus:bg-indigo-50/20 transition-all text-lg font-bold px-4 shadow-sm text-center text-indigo-900",
-                                            )}
-                                          />
-                                        </FormControl>
-                                        <div className="text-sm font-bold text-gray-500 bg-gray-50/80 px-4 py-3 rounded-xl border border-gray-100 flex-1 w-full sm:w-auto flex items-center justify-center sm:justify-start">
-                                          dias seguidos
-                                        </div>
-                                      </div>
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          min={1}
+                                          value={field.value || ""}
+                                          onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : null)}
+                                          className="bg-card border-white/10 font-black text-center text-lg h-14"
+                                          placeholder="Ex: 5"
+                                        />
+                                      </FormControl>
                                     </FieldContent>
-                                    <FormMessage />
                                   </Field>
                                 </FormItem>
                               )}
                             />
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ) : null}
+                  )}
                 </TabsContent>
 
                 {/* --- GOVERNANCE SECTION --- */}
-                <TabsContent value="governance" className="m-0 space-y-8 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center gap-4 border-b border-gray-100 pb-6 mb-8">
-                    <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-amber-600" />
-                    </div>
-
-                    <div>
-                      <h3 className="text-xl font-black text-gray-900 tracking-tight">Status & Governança</h3>
-                      <p className="text-xs text-gray-500 font-medium">Controle de acesso e auditoria.</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* LEFT COLUMN: STATUS & ROLES */}
-                    <div className="lg:col-span-12 space-y-6">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* STATUS CARD */}
-                        <div className="p-6 rounded-3xl bg-gray-50/50 border border-gray-100 flex items-center justify-between gap-6 overflow-hidden relative">
-                          <div className="relative z-10 flex flex-col shrink-0">
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Status da Conta</span>
-                            {user.active ? (
-                              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-bold bg-emerald-100/80 text-emerald-800 border border-emerald-200/50 shadow-sm w-fit">
-                                <Check className="w-4 h-4" /> Ativo
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-bold bg-red-100/80 text-red-800 border border-red-200/50 shadow-sm w-fit">
-                                <X className="w-4 h-4" /> Bloqueado
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-2 relative z-10 shrink-0">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="h-10 w-10 p-0 rounded-xl border-amber-200 bg-amber-50/50 text-amber-700 hover:bg-amber-100 transition-all shadow-sm"
-                              onClick={onReset}
-                              disabled={isPending}
-                              title="Resetar Senha"
-                            >
-                              <KeyRound className="w-4 h-4" />
-                            </Button>
-
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className={cn(
-                                "h-10 px-4 rounded-xl font-bold transition-all shadow-sm text-xs",
-                                user.active
-                                  ? "border-red-200 bg-red-50/50 text-red-700 hover:bg-red-100"
-                                  : "border-emerald-200 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100",
-                              )}
-                              onClick={onToggleStatus}
-                              disabled={isPending}
-                            >
-                              {user.active ? (
-                                <>
-                                  <UserX className="w-4 h-4 mr-2 opacity-70" /> Bloquear
-                                </>
-                              ) : (
-                                <>
-                                  <UserCheck className="w-4 h-4 mr-2 opacity-70" /> Ativar
-                                </>
-                              )}
-                            </Button>
-                          </div>
+                <TabsContent value="governance" className="m-0 space-y-10 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 shadow-neumorph-pressed space-y-8">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <ShieldAlert className="w-6 h-6 text-primary" />
                         </div>
-
-                        {/* AUDIT SUMMARY */}
-                        <div className="p-5 rounded-3xl bg-white border border-gray-100 flex flex-col justify-center gap-3">
-                          <div className="flex items-center justify-between border-b border-gray-50 pb-2">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                              <Activity className="w-3 h-3" /> Data de Ingresso
-                            </span>
-                            <span className="text-xs font-bold text-gray-800">
-                              {user.audit.createdAt ? format(new Date(user.audit.createdAt), "dd/MM/yyyy HH:mm") : "-"}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between border-b border-gray-50 pb-2">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                              <RefreshCw className="w-3 h-3" /> modificação
-                            </span>
-                            <span className="text-xs font-bold text-amber-700">
-                              {user.audit.updatedAt ? format(new Date(user.audit.updatedAt), "dd/MM/yyyy HH:mm") : "-"}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
-                              <User className="w-3 h-3" /> Responsável
-                            </span>
-                            <span className="text-[10px] font-black text-primary-600 uppercase tracking-tighter truncate max-w-[120px]">
-                              {user.audit.updatedBy || "system"}
-                            </span>
-                          </div>
-                        </div>
+                        <h3 className="text-xl font-black text-foreground">Estado da Conta</h3>
                       </div>
 
-                      {/* ROLE MANAGEMENT - HORIZONTAL */}
-                      <div className="p-6 md:p-8 rounded-3xl bg-gray-50/30 border border-gray-100 space-y-5">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <ShieldAlert className="w-5 h-5 text-amber-500" />
-                            <h4 className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Níveis de Acesso</h4>
-                          </div>
-                          <span className="text-[10px] font-bold text-gray-400 italic">Mínimo 1 cargo exigido</span>
+                      <div className="flex flex-col gap-6">
+                        <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-white/20 shadow-neumorph-sm">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Status Atual</span>
+                          {user.active ? (
+                            <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase">Ativo</span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full text-xs font-black bg-destructive/10 text-destructive border border-destructive/20 uppercase">Bloqueado</span>
+                          )}
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          {["ROLE_ADMIN", "ROLE_MANAGER", "ROLE_USER"].map((role) => (
-                            <div
-                              key={role}
-                              className={cn(
-                                "flex flex-col items-start p-4 rounded-2xl border transition-all cursor-pointer group relative overflow-hidden",
-                                selectedRoles.includes(role)
-                                  ? "bg-white border-primary-300 shadow-md ring-1 ring-primary-100/50"
-                                  : "bg-white/40 border-gray-100 hover:border-gray-200 hover:bg-white",
-                              )}
-                              onClick={() => {
-                                if (selectedRoles.includes(role)) {
-                                  if (selectedRoles.length > 1) {
-                                    setSelectedRoles(selectedRoles.filter((r) => r !== role));
-                                  } else {
-                                    toast.error("O usuário deve possuir pelo menos um cargo.");
-                                  }
-                                } else {
-                                  setSelectedRoles([...selectedRoles, role]);
-                                }
-                              }}
-                            >
-                              <div
-                                className={cn(
-                                  "w-4 h-4 rounded-full border flex items-center justify-center transition-all mb-3",
-                                  selectedRoles.includes(role)
-                                    ? "bg-primary-600 border-primary-600 shadow-sm"
-                                    : "border-gray-300 bg-white group-hover:border-gray-400",
-                                )}
-                              >
-                                {selectedRoles.includes(role) && <Check className="w-2.5 h-2.5 text-white" />}
-                              </div>
-                              <span
-                                className={cn(
-                                  "text-xs font-black uppercase tracking-tight",
-                                  selectedRoles.includes(role) ? "text-primary-900" : "text-gray-500",
-                                )}
-                              >
-                                {role === "ROLE_ADMIN" ? "Admin" : role === "ROLE_MANAGER" ? "Gestor" : "Comum"}
-                              </span>
-                              <span className="text-[9px] font-bold text-gray-400 mt-0.5">
-                                {role === "ROLE_ADMIN" ? "Controle Total" : role === "ROLE_MANAGER" ? "Gestão" : "Acesso Limitado"}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="flex justify-end pt-2">
+                        <div className="grid grid-cols-2 gap-4">
                           <Button
                             type="button"
-                            variant="default"
-                            className="h-11 px-6 rounded-xl font-black text-xs shadow-lg shadow-gray-200 bg-gray-900 hover:bg-black transition-all flex items-center gap-2"
-                            disabled={
-                              isUpdatingRoles || isPending || JSON.stringify([...selectedRoles].sort()) === JSON.stringify([...user.roles].sort())
-                            }
-                            onClick={async () => {
-                              try {
-                                setIsUpdatingRoles(true);
-                                await updateUserRoles(user.id, selectedRoles);
-                                toast.success("Cargos atualizados!");
-                                if (onUpdateRoles) onUpdateRoles(selectedRoles);
-                              } catch (error) {
-                                console.error("Erro:", error);
-                                toast.error("Erro na atualização.");
-                              } finally {
-                                setIsUpdatingRoles(false);
-                              }
-                            }}
+                            variant="outline"
+                            className="h-12 rounded-md font-black text-[10px] uppercase tracking-widest border-amber-500/20 text-amber-500 hover:bg-amber-500/10"
+                            onClick={onReset}
+                            disabled={isPending}
                           >
-                            {isUpdatingRoles ? <Spinner className="w-3 h-3" /> : <Shield className="w-3 h-3" />}
-                            Salvar Cargos
+                            <KeyRound className="w-4 h-4 mr-2" /> Resetar Senha
+                          </Button>
+
+                          <Button
+                            type="button"
+                            variant={user.active ? "destructive" : "success"}
+                            className="h-12 rounded-md font-black text-[10px] uppercase tracking-widest"
+                            onClick={onToggleStatus}
+                            disabled={isPending}
+                          >
+                            {user.active ? <><UserX className="w-4 h-4 mr-2" /> Bloquear</> : <><UserCheck className="w-4 h-4 mr-2" /> Ativar</>}
                           </Button>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 shadow-neumorph-pressed space-y-6">
+                      <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+                        <RefreshCw className="w-4 h-4 text-primary opacity-50" />
+                        <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Auditoria</h4>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center text-sm font-bold">
+                          <span className="text-muted-foreground/60">Criação</span>
+                          <span className="text-foreground">{user.audit.createdAt ? format(new Date(user.audit.createdAt), "dd/MM/yy HH:mm") : "—"}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold">
+                          <span className="text-muted-foreground/60">Última Alteração</span>
+                          <span className="text-primary">{user.audit.updatedAt ? format(new Date(user.audit.updatedAt), "dd/MM/yy HH:mm") : "—"}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm font-bold">
+                          <span className="text-muted-foreground/60">Modificado por</span>
+                          <span className="text-foreground font-mono uppercase text-xs">{user.audit.updatedBy || "system"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-10 rounded-[3rem] bg-card border border-white/20 shadow-neumorph space-y-8">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <Shield className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="text-2xl font-black text-foreground">Permissões do Sistema</h3>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="rounded-md font-black text-[10px] uppercase tracking-widest h-10 px-6 text-white"
+                        disabled={isUpdatingRoles || isPending || JSON.stringify([...selectedRoles].sort()) === JSON.stringify([...user.roles].sort())}
+                        onClick={async () => {
+                          try {
+                            setIsUpdatingRoles(true);
+                            await updateUserRoles(user.id, selectedRoles);
+                            toast.success("Cargos salvos!");
+                            if (onUpdateRoles) onUpdateRoles(selectedRoles);
+                          } catch {
+                            toast.error("Erro ao salvar.");
+                          } finally {
+                            setIsUpdatingRoles(false);
+                          }
+                        }}
+                      >
+                        {isUpdatingRoles ? <Spinner className="w-3 h-3 text-white" /> : <Save className="w-3 h-3 mr-2 text-white" />} Salvar Permissões
+                      </Button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {["ROLE_ADMIN", "ROLE_MANAGER", "ROLE_USER"].map((role) => (
+                        <div
+                          key={role}
+                          className={cn(
+                            "p-6 rounded-3xl border-2 transition-all cursor-pointer group flex flex-col gap-4 relative overflow-hidden",
+                            selectedRoles.includes(role)
+                              ? "bg-primary/5 border-primary/40 shadow-neumorph-sm"
+                              : "bg-black/5 dark:bg-white/5 border-transparent hover:border-white/10"
+                          )}
+                          onClick={() => {
+                            if (selectedRoles.includes(role)) {
+                              if (selectedRoles.length > 1) setSelectedRoles(selectedRoles.filter((r) => r !== role));
+                              else toast.error("Mínimo 1 permissão.");
+                            } else setSelectedRoles([...selectedRoles, role]);
+                          }}
+                        >
+                          <div className={cn(
+                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                            selectedRoles.includes(role) ? "bg-primary border-primary" : "border-white/20"
+                          )}>
+                            {selectedRoles.includes(role) && <Check className="w-3 h-3 text-white" />}
+                          </div>
+                          <div>
+                            <span className={cn("text-sm font-black uppercase tracking-tight block", selectedRoles.includes(role) ? "text-primary" : "text-muted-foreground")}>
+                              {role.replace("ROLE_", "")}
+                            </span>
+                            <span className="text-[10px] font-bold text-muted-foreground/60 mt-1 block leading-tight">
+                              {role === "ROLE_ADMIN" ? "Administrador Master" : role === "ROLE_MANAGER" ? "Gestor do Sistema" : "Usuário Operacional"}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </TabsContent>
               </div>
 
-              {/* FLOATING ACTION BAR FOR SUBMIT */}
-              <div className="p-5 md:px-8 md:py-6 bg-white border-t border-gray-100 flex items-center justify-between shrink-0 shadow-[0_-5px_20px_rgba(0,0,0,0.02)] z-20 relative mt-auto">
-                <span className="text-sm font-bold text-gray-400 hidden sm:block">Atenção às alterações realizadas antes de persistir.</span>
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="h-12 w-full sm:w-auto sm:hidden rounded-xl px-6 font-bold text-gray-500 hover:bg-gray-100/50 hover:text-gray-900 transition-colors"
-                    onClick={() => onOpenChange(false)}
-                  >
-                    Cancelar
-                  </Button>
-
+              {/* ACTION BAR */}
+              <div className="p-8 bg-black/5 dark:bg-white/5 border-t border-white/5 flex items-center justify-between backdrop-blur-md">
+                <span className="text-xs font-bold text-muted-foreground/40 italic hidden lg:block">As alterações só entram em vigor após persistir os dados.</span>
+                <div className="flex gap-4 w-full sm:w-auto">
                   <Button
                     type="submit"
-                    className="h-12 w-full sm:w-auto rounded-xl px-8 font-black text-sm shadow-lg shadow-primary-200/50 bg-primary-600 hover:bg-primary-700 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+                    size="h12"
+                    className="flex-1 sm:flex-none px-12 font-black text-sm uppercase tracking-widest shadow-neumorph-convex hover:shadow-neumorph active:shadow-neumorph-pressed transition-all text-white"
                     disabled={!form.formState.isValid || form.formState.isSubmitting || isPending}
                   >
-                    {form.formState.isSubmitting || isPending ? <Spinner className="w-4 h-4 mr-2.5" /> : <Save className="w-4 h-4 mr-2.5" />}
-                    Persistir Alterações
+                    {form.formState.isSubmitting || isPending ? <Spinner className="w-4 h-4 mr-3 text-white" /> : <Save className="w-4 h-4 mr-3 text-white" />}
+                    Persistir Dados
                   </Button>
                 </div>
               </div>

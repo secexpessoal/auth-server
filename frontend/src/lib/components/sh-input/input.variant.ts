@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 
 export const inputVariants = cva(
-  "h-12 w-full min-w-0 rounded-2xl px-4 text-base transition-all outline-none border border-black/5 dark:border-white/5 placeholder:text-muted-foreground/50 disabled:opacity-50 md:text-sm transition-all duration-300 bg-white/60 dark:bg-white/5 backdrop-blur-md focus:bg-white/80 dark:focus:bg-white/10",
+  "h-12 w-full min-w-0 rounded-md px-4 text-base transition-all outline-none border border-black/5 dark:border-white/5 placeholder:text-muted-foreground/50 disabled:opacity-50 md:text-sm transition-all duration-300 bg-white/60 dark:bg-white/5 backdrop-blur-md focus:bg-white/80 dark:focus:bg-white/10",
   {
     variants: {
       variant: {
@@ -11,7 +11,7 @@ export const inputVariants = cva(
       },
       size: {
         default: "h-12",
-        sm: "h-8 rounded-xl px-3 text-xs file:text-xs",
+        sm: "h-8 rounded-md px-3 text-xs file:text-xs",
       },
     },
     defaultVariants: {

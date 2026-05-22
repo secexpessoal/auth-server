@@ -1,10 +1,10 @@
 import { Outlet, createRootRoute, createRoute, createRouter, redirect } from "@tanstack/react-router";
 import { AppErrorBoundary } from "./errors/error-boundary.component";
 import { useAuthStore } from "@lib/store/auth.store";
-import { LoginPage } from "@routes/auth/login.page";
-import { ResetPasswordPage } from "@routes/auth/reset-password.page";
-import { ErrorPage } from "./errors/error.page";
-import { UsersPage } from "@routes/users/users.page";
+import { LoginPage } from "@routes/auth/login.component";
+import { ResetPasswordPage } from "@routes/auth/reset-password.component";
+import { ErrorPage } from "./errors/error.component";
+import { UsersPage } from "@routes/users/users.component";
 import toast from "react-hot-toast";
 
 export const rootRoute = createRootRoute({

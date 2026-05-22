@@ -16,6 +16,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 
 import { useAuthStore } from "@lib/store/auth.store";
+import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -101,6 +102,11 @@ export function LoginPage() {
   return (
     <>
       <div className="min-h-screen flex items-center justify-center bg-background p-4 relative overflow-hidden">
+        {/* Theme Toggle */}
+        <div className="absolute top-6 right-6 z-50">
+          <ThemeToggle />
+        </div>
+
         {/* Background Decor */}
         <div className="absolute top-[-15%] left-[-15%] w-[50%] h-[50%] bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse"></div>
         <div className="absolute bottom-[-15%] right-[-15%] w-[50%] h-[50%] bg-blue-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse delay-700"></div>
@@ -111,7 +117,7 @@ export function LoginPage() {
               <div className="mx-auto bg-card shadow-neumorph-convex w-20 h-20 rounded-3xl flex items-center justify-center mb-6 border border-white/40">
                 <LogIn className="w-10 h-10 text-primary" />
               </div>
-              <h1 className="text-4xl font-black text-foreground tracking-tight mb-2">Autentição</h1>
+              <h1 className="text-4xl font-black text-foreground tracking-tight mb-2">Auth Server</h1>
               <p className="text-muted-foreground text-sm font-medium">Gestão Centralizada de Identidade</p>
             </div>
 
@@ -205,11 +211,11 @@ export function LoginPage() {
                 <Button
                   type="submit"
                   size="h12"
-                  className="w-full text-xl font-bold rounded-2xl"
+                  className="w-full text-xl font-bold rounded-md"
                   disabled={isResetDialogOpen || loginMutation.isPending}
                 >
                   {loginMutation.isPending && <Loader2 className="mr-3 h-6 w-6 animate-spin" />}
-                  Login
+                  Acessar Painel
                 </Button>
               </form>
             </Form>
@@ -258,7 +264,7 @@ export function LoginPage() {
               <Button
                 type="submit"
                 size="h12"
-                className="w-full text-lg font-bold rounded-2xl shadow-neumorph-convex active:shadow-neumorph-pressed"
+                className="w-full text-lg font-bold rounded-md shadow-sm"
                 disabled={resetPasswordMutation.isPending}
               >
                 {resetPasswordMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}

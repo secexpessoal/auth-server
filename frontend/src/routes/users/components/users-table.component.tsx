@@ -10,6 +10,7 @@ import { queryClient } from "@lib/infra/query/query.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Check, Copy, Eye, Info, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX } from "lucide-react";
 import { useState } from "react";
+import { cn } from "@lib/utils/cn/cn.util";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
 import { type UpdateUserProfileRequestDto } from "@lib/data/users/molecule/user.schema";
@@ -24,18 +25,12 @@ import { UserDetailsModal } from "./users-detail.component";
 
 export function UsersTableComponent() {
   const [page, setPage] = useState(0);
-
   const [copied, setCopied] = useState(false);
-
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
-
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
-
   const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
-
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
 
   const {
@@ -105,34 +100,27 @@ export function UsersTableComponent() {
     if (temporaryPassword) {
       void navigator.clipboard.writeText(temporaryPassword);
       setCopied(true);
-
-      toast.success("Senha copiada para a área de transferência!");
+      toast.success("Senha copiada!");
       setTimeout(() => setCopied(false), 2000);
     }
   };
 
   if (isLoading && !paginatedUsers) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
-        <Spinner className="w-10 h-10 text-primary-600 mb-4" />
-        <p className="text-gray-500 font-medium">Carregando usuários...</p>
+      <div className="bg-card rounded-[2.5rem] p-12 flex flex-col items-center justify-center min-h-[400px]">
+        <Spinner className="w-10 h-10 text-primary mb-4" />
+        <p className="text-muted-foreground font-medium">Carregando usuários...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
-        <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">
-          <ShieldAlert className="w-8 h-8 text-red-600" />
+      <div className="bg-card rounded-[2.5rem] p-12 flex flex-col items-center justify-center min-h-[400px]">
+        <div className="w-14 h-14 bg-destructive/10 rounded-full flex items-center justify-center mb-4">
+          <ShieldAlert className="w-8 h-8 text-destructive" />
         </div>
-
-        <p className="text-red-600 font-semibold mb-2">Erro ao carregar usuários</p>
-
-        <p className="text-gray-500 text-sm mb-6 max-w-sm text-center">
-          {getErrorMessage(error, "Não foi possível buscar a lista de usuários no momento.")}
-        </p>
-
+        <p className="text-destructive font-semibold mb-2">Erro ao carregar usuários</p>
         <Button onClick={() => void refetch()} variant="outline">
           Tentar Novamente
         </Button>
@@ -144,14 +132,14 @@ export function UsersTableComponent() {
   const pagination = paginatedUsers?.meta.pagination;
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          <h2 className="font-semibold text-gray-900 whitespace-nowrap hidden lg:block">Usuários Cadastrados</h2>
-          <InputGroup className="w-full max-w-md h-10">
+    <div className="bg-card/40 backdrop-blur-md rounded-[2rem] overflow-hidden border border-white/10">
+      <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div className="flex items-center gap-6 flex-1">
+          <h2 className="font-bold text-foreground whitespace-nowrap hidden lg:block tracking-tight text-lg">Usuários Cadastrados</h2>
+          <InputGroup className="w-full max-w-md bg-transparent">
             <InputGroupAddon>
               <InputGroupText>
-                <Search className="w-4 h-4" />
+                <Search className="w-4 h-4 opacity-50" />
               </InputGroupText>
             </InputGroupAddon>
             <InputGroupInput
@@ -159,69 +147,76 @@ export function UsersTableComponent() {
               value={searchTerm}
               onChange={(e) => {
                 setSearchTerm(e.target.value);
-                setPage(0); // Reset page when searching
+                setPage(0);
               }}
-              className="h-10 bg-gray-50/50 border-gray-100 focus:bg-white transition-all rounded-xl"
+              className="bg-transparent"
             />
           </InputGroup>
         </div>
-        <div className="flex items-center gap-3 justify-end">
-          {isRefetching && <Spinner className="w-4 h-4 text-gray-400" />}
-          <Button variant="ghost" size="icon" onClick={() => void refetch()} className="h-8 w-8 text-gray-400">
+        <div className="flex items-center gap-4 justify-end">
+          {isRefetching && <Spinner className="w-4 h-4 text-primary" />}
+          <Button variant="ghost" size="icon-sm" onClick={() => void refetch()} className="text-muted-foreground hover:text-primary">
             <RefreshCw className="w-4 h-4" />
           </Button>
-          <span className="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full">{pagination?.totalItems || 0} usuários</span>
+          <span className="text-[10px] font-black uppercase tracking-widest bg-primary/10 text-primary px-3 py-1.5 rounded-full border border-primary/20">
+            {pagination?.totalItems || 0} usuários
+          </span>
         </div>
       </div>
 
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50/50 hover:bg-gray-50/50">
-            <TableHead>Nome</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Nível de Acesso</TableHead>
-            <TableHead>Cargo</TableHead>
-            <TableHead className="text-right">Ações</TableHead>
+          <TableRow className="border-b border-white/10 bg-transparent">
+            <TableHead className="font-bold text-foreground/50 uppercase text-[11px] tracking-widest pl-6 h-14">Nome</TableHead>
+            <TableHead className="font-bold text-foreground/50 uppercase text-[11px] tracking-widest h-14">Email</TableHead>
+            <TableHead className="font-bold text-foreground/50 uppercase text-[11px] tracking-widest h-14">Acesso</TableHead>
+            <TableHead className="font-bold text-foreground/50 uppercase text-[11px] tracking-widest h-14">Cargo</TableHead>
+            <TableHead className="font-bold text-foreground/50 uppercase text-[11px] tracking-widest text-right pr-6 h-14">Ações</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="h-32 text-center text-gray-500">
+              <TableCell colSpan={5} className="h-48 text-center text-muted-foreground font-medium">
                 Nenhum usuário encontrado.
               </TableCell>
             </TableRow>
           ) : (
             users.map((user) => (
-              <TableRow key={user.id} className="group hover:bg-gray-50/50 transition-colors">
-                <TableCell className="font-medium text-gray-900">
-                  <div className="flex flex-col">
+              <TableRow key={user.id} className="group hover:bg-white/40 dark:hover:bg-white/5 transition-all border-b border-white/5 last:border-none">
+                <TableCell className="pl-6">
+                  <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold">{user.profile.username}</span>
+                      <span className="font-bold text-foreground">{user.profile.username}</span>
                       {!user.active && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-50 text-red-600 border border-red-100 uppercase tracking-tighter">
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-destructive/10 text-destructive border border-destructive/20 uppercase tracking-tighter">
                           Inativo
                         </span>
                       )}
                       {user.audit.updatedBy === "system" && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-50 text-amber-600 border border-amber-100 uppercase tracking-tighter">
-                          Exige Reset
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-amber-500/10 text-amber-600 border border-amber-500/20 uppercase tracking-tighter">
+                          Reset
                         </span>
                       )}
                     </div>
-                    <span className="text-[10px] text-gray-400 font-normal">ID: {user.id.slice(0, 8)}...</span>
+                    <span className="text-[10px] text-muted-foreground/60 font-mono tracking-tighter italic">#{user.id.slice(0, 8)}</span>
                   </div>
                 </TableCell>
 
-                <TableCell className="text-gray-500">{user.email}</TableCell>
+                <TableCell className="text-muted-foreground font-medium">{user.email}</TableCell>
 
                 <TableCell>
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1.5">
                     {user.roles.map((role) => (
                       <span
                         key={role}
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${role === "ROLE_ADMIN" ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "bg-gray-50 text-gray-600 border border-gray-100"}`}
+                        className={cn(
+                          "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border transition-colors",
+                          role === "ROLE_ADMIN"
+                            ? "bg-primary/10 text-primary border-primary/20"
+                            : "bg-muted text-muted-foreground border-border/40"
+                        )}
                       >
                         {role.replace("ROLE_", "")}
                       </span>
@@ -230,44 +225,45 @@ export function UsersTableComponent() {
                 </TableCell>
 
                 <TableCell>
-                  <div className="max-w-[200px]">
-                    <span className="text-gray-600 text-sm font-medium truncate block" title={user.profile.position || ""}>
-                      {user.profile.position || "-"}
-                    </span>
-                  </div>
+                  <span className="text-muted-foreground text-sm font-bold truncate block max-w-[150px]">
+                    {user.profile.position || "—"}
+                  </span>
                 </TableCell>
 
-                <TableCell className="text-right">
-                  <div className="flex items-center justify-end gap-1 transition-all">
+                <TableCell className="text-right pr-6">
+                  <div className="flex items-center justify-end gap-2">
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-amber-500 hover:text-amber-600 hover:bg-amber-50 rounded-full"
+                      size="icon-sm"
+                      className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 rounded-md"
                       onClick={() => resetMutation.mutate(user.email)}
-                      title="Resetar Senha"
                       disabled={resetMutation.isPending}
+                      title="Resetar Senha"
                     >
                       <KeyRound className="w-4 h-4" />
                     </Button>
                     <Button
                       variant="ghost"
-                      size="sm"
-                      className={`h-8 w-8 p-0 rounded-full ${user.active ? "text-red-500 hover:text-red-600 hover:bg-red-50" : "text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50"}`}
+                      size="icon-sm"
+                      className={cn(
+                        "rounded-md",
+                        user.active ? "text-destructive hover:bg-destructive/10" : "text-emerald-500 hover:bg-emerald-500/10"
+                      )}
                       onClick={() => (user.active ? deactivateMutation.mutate(user.id) : activateMutation.mutate(user.id))}
-                      title={user.active ? "Desativar" : "Ativar"}
                       disabled={deactivateMutation.isPending || activateMutation.isPending}
+                      title={user.active ? "Desativar" : "Ativar"}
                     >
                       {user.active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                     </Button>
-                    <div className="w-px h-4 bg-gray-200 mx-1" />
+                    <div className="w-px h-6 bg-white/10 mx-1" />
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      className="h-8 w-8 p-0 text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-full border border-gray-100 hover:border-primary-100"
+                      className="h-8 rounded-md font-black text-[10px] uppercase tracking-widest border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
                       onClick={() => handleOpenDetails(user)}
                       title="Ver Detalhes"
                     >
-                      <Eye className="w-4 h-4" />
+                      Detalhes
                     </Button>
                   </div>
                 </TableCell>
@@ -279,25 +275,29 @@ export function UsersTableComponent() {
 
       {/* Pagination */}
       {pagination && pagination.totalPages > 1 && (
-        <div className="p-4 border-t border-gray-100 flex items-center justify-between">
-          <p className="text-sm text-gray-500">
+        <div className="p-6 border-t border-white/10 flex items-center justify-between bg-black/5 dark:bg-white/5">
+          <p className="text-[10px] font-black text-muted-foreground/60 uppercase tracking-widest">
             Página {pagination.page + 1} de {pagination.totalPages}
           </p>
           <Pagination className="w-auto mx-0">
-            <PaginationContent>
+            <PaginationContent className="gap-2">
               <PaginationItem>
                 <PaginationPrevious
                   onClick={() => setPage((prev) => Math.max(0, prev - 1))}
-                  className={!pagination.hasPrevious ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  size="default"
+                  className={cn(
+                    "rounded-md font-bold bg-card shadow-neumorph-sm hover:translate-y-[-1px] transition-all",
+                    !pagination.hasPrevious && "pointer-events-none opacity-50"
+                  )}
                 />
               </PaginationItem>
 
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setPage((prev) => prev + 1)}
-                  className={!pagination.hasNext ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  size="default"
+                  className={cn(
+                    "rounded-md font-bold bg-card shadow-neumorph-sm hover:translate-y-[-1px] transition-all",
+                    !pagination.hasNext && "pointer-events-none opacity-50"
+                  )}
                 />
               </PaginationItem>
             </PaginationContent>
@@ -314,13 +314,11 @@ export function UsersTableComponent() {
         onReset={() => selectedUser && resetMutation.mutate(selectedUser.email)}
         onToggleStatus={() => {
           if (!selectedUser) return;
-
           if (selectedUser.active) {
             deactivateMutation.mutate(selectedUser.id);
           } else {
             activateMutation.mutate(selectedUser.id);
           }
-
           setDetailsModalOpen(false);
         }}
         onUpdateRoles={() => {
@@ -331,36 +329,36 @@ export function UsersTableComponent() {
 
       {/* Reset Password Result Dialog */}
       <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <DialogContent showCloseButton>
+        <DialogContent showCloseButton className="rounded-[3rem] border-white/20 bg-card shadow-neumorph backdrop-blur-3xl">
           <DialogHeader>
-            <div className="mx-auto w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mb-4">
-              <Info className="w-6 h-6 text-primary-600" />
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
+              <KeyRound className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-center">Senha Resetada com Sucesso</DialogTitle>
-            <DialogDescription className="text-center pt-2">
-              A nova senha temporária de <span className="font-bold text-gray-900">{selectedUser?.profile.username}</span> está abaixo.
+            <DialogTitle className="text-center text-3xl font-black">Senha Resetada</DialogTitle>
+            <DialogDescription className="text-center pt-2 font-medium">
+              A nova senha temporária de <span className="font-bold text-primary">{selectedUser?.profile.username}</span> está disponível.
             </DialogDescription>
           </DialogHeader>
-          <div className="mt-4 px-1">
+          <div className="mt-8 px-1">
             <button
               onClick={copyToClipboard}
-              className="w-full bg-gray-50/50 border-2 border-dashed border-gray-200 hover:border-primary-200 hover:bg-primary-50/50 rounded-2xl p-8 flex items-center justify-center flex-col gap-3 transition-all group relative active:scale-[0.98]"
+              className="w-full bg-black/5 dark:bg-white/5 border-2 border-dashed border-primary/20 hover:border-primary/40 rounded-xl p-10 flex items-center justify-center flex-col gap-4 transition-all group relative active:scale-[0.98]"
             >
-              <div className="absolute top-3 right-3 p-2 rounded-lg bg-white shadow-sm border border-gray-100 opacity-0 group-hover:opacity-100 transition-opacity">
-                {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-gray-400" />}
+              <div className="absolute top-4 right-4 p-2 rounded-md bg-card shadow-neumorph-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-primary/60" />}
               </div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em]">Senha Temporária</span>
-              <code className="text-3xl font-mono font-bold text-gray-900 tracking-[0.2em] bg-white px-6 py-3 rounded-xl border border-gray-100 shadow-sm transition-all">
+              <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em]">Senha Temporária</span>
+              <code className="text-4xl font-mono font-black text-foreground tracking-[0.2em] bg-white/50 dark:bg-white/5 px-8 py-4 rounded-md border border-white/10 shadow-neumorph-sm transition-all group-hover:shadow-neumorph">
                 {temporaryPassword}
               </code>
-              <span className="text-xs text-primary-600 font-medium flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Copy className="w-3 h-3" /> Clique para copiar
+              <span className="text-xs text-primary font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Copy className="w-3 h-3" /> Clique para copiar senha
               </span>
             </button>
           </div>
-          <div className="mt-8 flex justify-center">
-            <Button onClick={() => setResetDialogOpen(false)} className="w-full h-12 rounded-xl font-bold shadow-lg shadow-primary-200">
-              Ok, copiado!
+          <div className="mt-10">
+            <Button onClick={() => setResetDialogOpen(false)} size="h12" className="w-full font-black text-lg">
+              Concluído
             </Button>
           </div>
         </DialogContent>

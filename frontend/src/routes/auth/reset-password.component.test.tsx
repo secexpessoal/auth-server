@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { ResetPasswordPage } from "@routes/auth/reset-password.page";
+import { ResetPasswordPage } from "@routes/auth/reset-password.component";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@lib/store/auth.store";

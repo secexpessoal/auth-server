@@ -124,7 +124,7 @@ function DialogFooter({
       {children}
       {showCloseButton && (
         <DialogPrimitive.Close asChild>
-          <Button variant="outline" className="rounded-2xl">
+          <Button variant="outline" className="rounded-md">
             Fechar
           </Button>
         </DialogPrimitive.Close>

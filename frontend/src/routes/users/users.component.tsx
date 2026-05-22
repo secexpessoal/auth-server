@@ -6,6 +6,7 @@ import { CreateUserDialog } from "./components/user-form.component";
 import { UsersTableComponent } from "./components/users-table.component";
 import { ChangePasswordDialog } from "./components/change-password-dialog.component";
 import { useNavigate } from "@tanstack/react-router";
+import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
 export function UsersPage() {
   const navigate = useNavigate();
@@ -35,29 +36,30 @@ export function UsersPage() {
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="text-right hidden lg:block pr-4 border-r border-border/40">
-            <p className="text-sm font-bold text-foreground">{user?.profile.username || "Administrador"}</p>
+          <div className="text-right hidden lg:block pr-6 border-r border-border/40">
+            <p className="text-sm font-black text-foreground">{user?.profile.username || "Administrador"}</p>
 
-            <p className="text-xs text-muted-foreground font-semibold flex items-center justify-end gap-1.5 mt-0.5">
-              <Shield className="w-3 h-3 text-primary" /> Painel de Controle
+            <p className="text-[10px] text-primary font-black flex items-center justify-end gap-1.5 mt-1 uppercase tracking-widest">
+              <Shield className="w-3 h-3" /> Painel Master
             </p>
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle />
             <ChangePasswordDialog />
 
             <Button
-              variant="outline"
+              variant="success"
               onClick={() => (window.location.href = "/swagger-ui.html")}
-              className="h-11 px-5 border-transparent shadow-neumorph-sm hover:shadow-neumorph font-bold"
+              className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm"
             >
               API Docs
-              <BookOpen className="w-4 h-4 ml-2" />
+              <BookOpen className="w-4 h-4 ml-2 opacity-70" />
             </Button>
 
             <Button
               variant="destructive"
-              className="h-11 px-5 shadow-neumorph-convex hover:shadow-neumorph font-bold"
+              className="h-11 px-6 font-black text-xs uppercase tracking-widest shadow-sm"
               onClick={handleLogout}
             >
               Sair

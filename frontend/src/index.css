@@ -40,6 +40,11 @@
   --accent: #d1d9e6;
   --accent-foreground: #1a1f36;
   --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
   --border: #c9d4e4;
   --input: #c9d4e4;
   --ring: #3b82f6;
@@ -57,11 +62,11 @@
   --sidebar-border: #c9d4e4;
   --sidebar-ring: #3b82f6;
   
-  /* Neumorphism Shadows - Light Mode */
-  --shadow-flat: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
-  --shadow-convex: 9px 9px 16px rgba(163, 177, 198, 0.6), -9px -9px 16px rgba(255, 255, 255, 0.5);
-  --shadow-pressed: inset 6px 6px 12px rgba(163, 177, 198, 0.6), inset -6px -6px 12px rgba(255, 255, 255, 0.5);
-  --shadow-sm: 4px 4px 8px rgba(163, 177, 198, 0.4), -4px -4px 8px rgba(255, 255, 255, 0.4);
+  /* Subdued Neumorphism Shadows - Light Mode */
+  --shadow-flat: 4px 4px 10px rgba(163, 177, 198, 0.3), -4px -4px 10px rgba(255, 255, 255, 0.6);
+  --shadow-convex: 4px 4px 10px rgba(163, 177, 198, 0.3), -4px -4px 10px rgba(255, 255, 255, 0.6);
+  --shadow-pressed: inset 2px 2px 5px rgba(163, 177, 198, 0.3), inset -2px -2px 5px rgba(255, 255, 255, 0.6);
+  --shadow-sm: 2px 2px 5px rgba(163, 177, 198, 0.2), -2px -2px 5px rgba(255, 255, 255, 0.4);
 }
 
 @media (prefers-color-scheme: light) {
@@ -100,6 +105,11 @@ body {
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -139,6 +149,11 @@ body {
   --accent: #2d323d;
   --accent-foreground: #f8fafc;
   --destructive: #f87171;
+  --destructive-foreground: #ffffff;
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
   --border: #2d323d;
   --input: #2d323d;
   --ring: #60a5fa;
@@ -156,11 +171,11 @@ body {
   --sidebar-border: #2d323d;
   --sidebar-ring: #60a5fa;
 
-  /* Neumorphism Shadows - Dark Mode */
-  --shadow-flat: 9px 9px 16px #15171c, -9px -9px 16px #272b34;
-  --shadow-convex: 9px 9px 16px #15171c, -9px -9px 16px #272b34;
-  --shadow-pressed: inset 6px 6px 12px #15171c, inset -6px -6px 12px #272b34;
-  --shadow-sm: 4px 4px 8px #15171c, -4px -4px 8px #272b34;
+  /* Subdued Neumorphism Shadows - Dark Mode */
+  --shadow-flat: 4px 4px 10px #15171c, -4px -4px 10px #272b34;
+  --shadow-convex: 4px 4px 10px #15171c, -4px -4px 10px #272b34;
+  --shadow-pressed: inset 2px 2px 5px #15171c, inset -2px -2px 5px #272b34;
+  --shadow-sm: 2px 2px 5px #15171c, -2px -2px 5px #272b34;
 }
 
 @layer base {

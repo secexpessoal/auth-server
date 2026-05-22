@@ -57,16 +57,16 @@ export function ChangePasswordDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="h-10 border-gray-200 text-gray-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-100">
+        <Button variant="warning" className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm">
           Alterar Senha
           <KeyRound className="w-4 h-4 ml-2" />
         </Button>
       </DialogTrigger>
 
-      <DialogContent showCloseButton>
+      <DialogContent showCloseButton className="rounded-[2.5rem] border-white/20 bg-card backdrop-blur-3xl shadow-neumorph">
         <DialogHeader>
-          <div className="mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-4 bg-amber-100">
-            <KeyRound className="w-6 h-6 text-amber-600" />
+          <div className="mx-auto w-16 h-16 rounded-2xl flex items-center justify-center mb-6 bg-warning/10 border border-warning/20">
+            <KeyRound className="w-8 h-8 text-warning" />
           </div>
 
           <DialogTitle className="text-center">Alterar Senha</DialogTitle>
@@ -169,7 +169,7 @@ export function ChangePasswordDialog() {
               <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
                 Cancelar
               </Button>
-              <Button type="submit" disabled={!form.formState.isValid || mutation.isPending} className="bg-amber-600 hover:bg-amber-700 text-white">
+              <Button type="submit" variant="warning" disabled={!form.formState.isValid || mutation.isPending}>
                 {mutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ShieldCheck className="w-4 h-4 mr-2" />}
                 Confirmar
               </Button>

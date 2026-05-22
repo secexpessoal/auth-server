@@ -19,7 +19,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/v1": {
-        target: "http://test-auth-server.secexpessoal.org/",
+        target: "http://localhost:8080",
         changeOrigin: true,
       },
     },

@@ -127,7 +127,7 @@ export function ResetPasswordPage() {
                 <Button
                   type="submit"
                   size="h12"
-                  className="w-full text-xl font-bold rounded-2xl shadow-neumorph-convex active:shadow-neumorph-pressed"
+                  className="w-full text-xl font-bold rounded-md shadow-sm"
                   disabled={!form.formState.isValid || form.formState.isSubmitting || mutation.isPending}
                 >
                   {form.formState.isSubmitting || mutation.isPending ? (
