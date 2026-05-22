@@ -17,7 +17,7 @@ import { loginAttempt, resetPasswordAttempt } from "@lib/data/auth/services/auth
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const redirectUri = new URLSearchParams(window.location.search).get("rd") || undefined;
+  const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
