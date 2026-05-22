@@ -15,11 +15,15 @@ import type { LoginFormData, ResetPasswordFormData } from "@lib/data/auth/molecu
 import { loginSchema, resetPasswordSchema } from "@lib/data/auth/molecule/auth.schema";
 import { loginAttempt, resetPasswordAttempt } from "@lib/data/auth/services/auth.service";
 
+import { useAuthStore } from "@lib/store/auth.store";
+
 export function LoginPage() {
   const navigate = useNavigate();
   const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
@@ -33,8 +37,11 @@ export function LoginPage() {
         }
 
         if (data.redirectUri) {
+          setIsRedirecting(true);
           window.location.href = data.redirectUri;
         } else {
+          // NOTE: Só atualizamos o estado global se ficarmos dentro do Auth Server
+          setAuth(data.session, data.user);
           window.location.href = "/";
         }
       }
@@ -77,6 +84,16 @@ export function LoginPage() {
   const onResetSubmit = async (values: ResetPasswordFormData) => {
     await resetPasswordMutation.mutateAsync(values.email);
   };
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin mb-4" />
+        <h2 className="text-xl font-semibold text-gray-700">Redirecionando...</h2>
+        <p className="text-gray-500">Você está sendo levado de volta para o sistema.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4 relative overflow-hidden">
