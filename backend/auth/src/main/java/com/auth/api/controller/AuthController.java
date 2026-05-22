@@ -24,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -90,10 +91,9 @@ public class AuthController {
                 .body(result.responseDto());
     }
 
-    // NOTE: Não sei se precisa ser auth, por que ele mata o refresh token
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
-    public ResponseEntity<@NonNull Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
         if (refreshToken != null) {
             refreshTokenService.deleteByToken(refreshToken);
         }
@@ -101,7 +101,8 @@ public class AuthController {
         ResponseCookie refreshTokenLogoutCookie = cookieService.buildRefreshTokenLogoutCookie();
         ResponseCookie accessTokenLogoutCookie = cookieService.buildAccessTokenLogoutCookie();
 
-        return ResponseEntity.noContent()
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "/login")
                 .header(HttpHeaders.SET_COOKIE, refreshTokenLogoutCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, accessTokenLogoutCookie.toString())
                 .build();

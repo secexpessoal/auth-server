@@ -109,7 +109,7 @@ export function ResetPasswordPage() {
                               <InputGroupAddon align="inline-end">
                                 <InputGroupButton
                                   type="button"
-                                  onClick={() => setShowConfirmPassword((v) => !v)}
+                                  onClick={() => setShowConfirmPassword((value) => !value)}
                                   className="text-gray-400 hover:text-gray-600 transition-colors"
                                 >
                                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

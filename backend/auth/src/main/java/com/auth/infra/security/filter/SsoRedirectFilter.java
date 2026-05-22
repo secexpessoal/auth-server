@@ -36,7 +36,10 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
 
         // Só interceptamos rotas de navegação do frontend (não interceptamos API ou assets estáticos como JS/CSS)
         if (isFrontendNavigation(path)) {
-            findSsoRedirectCookie(request).ifPresent(redirectUri -> {
+            // Caso 1: Redirecionamento SSO pendente (Prioridade máxima)
+            Optional<String> ssoRedirect = findSsoRedirectCookie(request);
+            if (ssoRedirect.isPresent()) {
+                String redirectUri = ssoRedirect.get();
                 // Invalida o cookie para não entrar em loop infinito
                 ResponseCookie logoutCookie = cookieService.buildSsoRedirectLogoutCookie();
                 response.addHeader(HttpHeaders.SET_COOKIE, logoutCookie.toString());
@@ -44,10 +47,22 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
                 // Executa o redirecionamento real via servidor
                 response.setStatus(HttpServletResponse.SC_FOUND);
                 response.setHeader(HttpHeaders.LOCATION, redirectUri);
-            });
+                return;
+            }
 
-            // Se redirecionamos, encerramos a cadeia aqui
-            if (response.getStatus() == HttpServletResponse.SC_FOUND) {
+            // Caso 2: Verificação de sessão para rotas protegidas do frontend
+            boolean authenticated = hasValidSession(request);
+
+            if (isProtectedRoute(path) && !authenticated) {
+                response.setStatus(HttpServletResponse.SC_FOUND);
+                response.setHeader(HttpHeaders.LOCATION, "/login");
+                return;
+            }
+
+            // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, manda para o dashboard
+            if ((path.equals("/login") || path.equals("/")) && authenticated) {
+                response.setStatus(HttpServletResponse.SC_FOUND);
+                response.setHeader(HttpHeaders.LOCATION, "/dashboard");
                 return;
             }
         }
@@ -57,7 +72,24 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
 
     private boolean isFrontendNavigation(String path) {
         // Intercepta raiz, dashboard e outras rotas que carregariam o index.html
-        return path.equals("/") || path.equals("/dashboard") || path.startsWith("/reset-password");
+        return path.equals("/") || path.equals("/dashboard") || path.equals("/login") || path.startsWith("/reset-password");
+    }
+
+    private boolean isProtectedRoute(String path) {
+        return path.equals("/dashboard") || path.startsWith("/reset-password");
+    }
+
+    /**
+     * Verifica se existe um cookie de acesso ou de refresh válido.
+     * Se houver pelo menos um deles, permitimos que o SPA carregue para tentar o refresh ou usar o token atual.
+     */
+    private boolean hasValidSession(HttpServletRequest request) {
+        if (request.getCookies() == null) {
+            return false;
+        }
+        return Arrays.stream(request.getCookies())
+                .anyMatch(cookie -> ("access_token".equals(cookie.getName()) || "refresh_token".equals(cookie.getName()))
+                        && cookie.getValue() != null && !cookie.getValue().isBlank());
     }
 
     private Optional<String> findSsoRedirectCookie(HttpServletRequest request) {
@@ -65,9 +97,9 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
             return Optional.empty();
         }
         return Arrays.stream(request.getCookies())
-                .filter(c -> "sso_redirect".equals(c.getName()))
+                .filter(cookie -> "sso_redirect".equals(cookie.getName()))
                 .map(Cookie::getValue)
-                .filter(v -> v != null && !v.isBlank())
+                .filter(value -> value != null && !value.isBlank())
                 .findFirst();
     }
 }
