@@ -17,6 +17,7 @@ import { loginAttempt, resetPasswordAttempt } from "@lib/data/auth/services/auth
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const redirectUri = new URLSearchParams(window.location.search).get("rd") || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
 
@@ -31,7 +32,11 @@ export function LoginPage() {
           toast.success(`Bem-vindo, ${data.user.profile.username}!`);
         }
 
-        void navigate({ to: "/" });
+        if (data.redirectUri) {
+          window.location.href = data.redirectUri;
+        } else {
+          void navigate({ to: "/" });
+        }
       }
     },
     onError: (error) => {
@@ -66,7 +71,7 @@ export function LoginPage() {
   });
 
   const onSubmit = async (values: LoginFormData) => {
-    await loginMutation.mutateAsync(values);
+    await loginMutation.mutateAsync({ ...values, redirectUri });
   };
 
   const onResetSubmit = async (values: ResetPasswordFormData) => {

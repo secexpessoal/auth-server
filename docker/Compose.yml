@@ -1,4 +1,18 @@
 services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8081:8080" # Painel admin Traefik (usando 8081 pra não conflitar com a app)
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   auth-server:
     build:
       context: ..
@@ -9,3 +23,13 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth-server.rule=Host(`auth.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.auth-server.entrypoints=web"
+      - "traefik.http.services.auth-server.loadbalancer.server.port=${APP_PORT}"
+
+      # Configuração do Middleware de Forward Auth (para ser usado por outros apps)
+      # - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"

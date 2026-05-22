@@ -16,6 +16,9 @@ public record AuthenticationResponseDto(
         UserSessionResponseDto session,
 
         @JsonProperty("user")
-        UserResponseDto user
+        UserResponseDto user,
+
+        @JsonProperty("redirectUri")
+        String redirectUri
 ) {
 }

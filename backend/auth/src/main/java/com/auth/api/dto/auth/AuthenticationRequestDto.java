@@ -23,6 +23,9 @@ public record AuthenticationRequestDto(
 
         @Size(min = 6, message = "A senha deve ter no mínimo 6 caracteres")
         @NotBlank(message = "A senha não pode estar em branco")
-        String password
+        String password,
+
+        @JsonProperty("redirectUri")
+        String redirectUri
 ) {
 }

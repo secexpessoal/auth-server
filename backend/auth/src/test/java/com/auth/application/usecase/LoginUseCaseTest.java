@@ -16,6 +16,7 @@ import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
+import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -66,7 +67,7 @@ class LoginUseCaseTest {
         userData.setUser(testUser);
         testUser.setUserData(userData);
 
-        loginRequest = new AuthenticationRequestDto("test@example.com", "password");
+        loginRequest = new AuthenticationRequestDto("test@example.com", "password", null);
     }
 
     @Test
@@ -109,5 +110,22 @@ class LoginUseCaseTest {
         // Act & Assert
         assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer"));
         verify(userService, never()).incrementTokenVersion(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar BadRequestException quando a URL de redirecionamento for inválida")
+    void shouldThrowBadRequestWhenRedirectUriIsInvalid() {
+        // Arrange
+        AuthenticationRequestDto invalidRedirectRequest = new AuthenticationRequestDto("test@example.com", "password", "https://site-malicioso.com");
+        
+        org.springframework.test.util.ReflectionTestUtils.setField(loginUseCase, "baseDomain", "dominio.com");
+
+        // Act & Assert
+        BadRequestException exception = assertThrows(
+                BadRequestException.class,
+                () -> loginUseCase.execute(invalidRedirectRequest, "Mozilla", "127.0.0.1", "origin", "referer")
+        );
+
+        assertEquals("O site que você quer acessar não é permitido.", exception.getMessage());
     }
 }

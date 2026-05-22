@@ -18,11 +18,14 @@ import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +40,12 @@ public class LoginUseCase {
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
+    @Value("${app.base-domain:}")
+    private String baseDomain;
+
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
+        String validatedRedirect = validateRedirectUri(loginRequest.redirectUri());
+
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
@@ -90,8 +98,28 @@ public class LoginUseCase {
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
                 .user(userDto)
+                .redirectUri(validatedRedirect)
                 .build();
 
         return new AuthenticationResult(responseDto, refreshToken.getToken());
+    }
+
+    private String validateRedirectUri(String redirectUri) {
+        if (redirectUri == null || redirectUri.isBlank()) {
+            return null;
+        }
+
+        try {
+            URI uri = URI.create(redirectUri);
+            String uriHost = uri.getHost();
+            if (baseDomain != null && !baseDomain.isBlank() && uriHost != null && 
+               (uriHost.equals(baseDomain) || uriHost.endsWith(String.format(".%s", baseDomain)))) {
+                return redirectUri;
+            }
+        } catch (Exception exception) {
+            log.warn("Falha ao analisar URL de redirecionamento: {}", redirectUri, exception);
+        }
+
+        throw new BadRequestException(ErrorCode.BAD_REQUEST, "O site que você quer acessar não é permitido.");
     }
 }

@@ -212,11 +212,73 @@ sequenceDiagram
     end
 ```
 
-### Regras de Ouro para APIs Externas:
+### Regras de Ouro para APIs Externas (Modo API):
 
 1. **Não armazene senhas**: Deixe que o Painel Admin deste projeto cuide de toda a gestão de segurança.
 2. **Valide em cada request**: Utilize o endpoint de perfil do Auth Server como uma barreira de segurança (Introspecção de Token).
 3. **Roles Dinâmicas**: Use as roles retornadas pelo Auth Server para controlar o acesso granular às suas próprias rotas.
+
+---
+
+## 🚀 Arquitetura Híbrida: API vs Forward Auth (SSO)
+
+O Auth Server funciona simultaneamente em dois modos, permitindo flexibilidade total para o seu ecossistema.
+
+### 1. Modo API REST (Integração Direta)
+Ideal para Aplicativos Mobile (React Native, Flutter) ou serviços de terceiros (B2B).
+- O cliente chama `POST /v1/user/login`.
+- O servidor retorna o `accessToken` (JWT) no corpo da resposta JSON.
+- O cliente armazena o token e o envia no header `Authorization: Bearer <jwt>` em todas as chamadas seguintes.
+
+### 2. Modo Forward Auth (Traefik / SSO Web)
+Ideal para ecossistemas Web (Subdomínios) que desejam implementar **Single Sign-On (SSO)** sem modificar o código das aplicações de destino.
+- O usuário acessa `app1.dominio.com`.
+- O Traefik intercepta a requisição e consulta `auth.dominio.com/v1/auth/verify`.
+- Se o usuário não estiver logado (não possui o cookie global da raiz `.dominio.com`), o Traefik redireciona para a tela de login (`auth.dominio.com/login?rd=https://app1.dominio.com`).
+- Se estiver logado, o Auth Server gera um **JWT fresquinho na hora** e o Traefik injeta na requisição (`Authorization: Bearer <jwt>`) para o `app1.dominio.com`.
+- O `app1.dominio.com` só precisa ler o Header de Autorização. **Zero gestão de cookies ou refresh tokens no App1!**
+
+### Exemplo de Configuração: Traefik + Auth Server + App1
+
+Abaixo, um `docker-compose.yml` de exemplo demonstrando como amarrar tudo:
+
+```yaml
+services:
+  # O Proxy Reverso
+  traefik:
+    image: traefik:v3.0
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  # O nosso Auth Server Central
+  auth-server:
+    build: .
+    environment:
+      - BASE_DOMAIN=dominio.com
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.dominio.com`)"
+      # Define o middleware que os outros apps vão usar
+      - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:8080/v1/auth/verify"
+      - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      # Injeta o JWT de volta para o App que solicitou
+      - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"
+
+  # Um App qualquer da sua empresa (Ex: RH, Financeiro)
+  app1-rh:
+    image: nginx:alpine # Qualquer aplicação
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app1.rule=Host(`rh.dominio.com`)"
+      # Protegendo o App1 com o Middleware do Auth Server
+      - "traefik.http.routers.app1.middlewares=auth-forward"
+```
 
 ---
 
