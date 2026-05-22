@@ -18,11 +18,14 @@ import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +39,9 @@ public class LoginUseCase {
     private final JwtGeneratorService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
+
+    @Value("${app.base-domain:}")
+    private String baseDomain;
 
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
         Authentication auth = authManager.authenticate(
@@ -87,11 +93,31 @@ public class LoginUseCase {
                 .audit(audit)
                 .build();
 
+        String validatedRedirect = validateRedirectUri(loginRequest.redirectUri());
+
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
                 .user(userDto)
+                .redirectUri(validatedRedirect)
                 .build();
 
         return new AuthenticationResult(responseDto, refreshToken.getToken());
+    }
+
+    private String validateRedirectUri(String redirectUri) {
+        return Optional.ofNullable(redirectUri)
+                .filter(redirectString -> !redirectString.isBlank())
+                .map(redirectString -> {
+                    try {
+                        return URI.create(redirectString);
+                    } catch (Exception exception) {
+                        log.warn("Falha ao analisar URL de redirecionamento: {}", redirectString, exception);
+                        return null;
+                    }
+                })
+                .map(URI::getHost)
+                .filter(uriHost -> baseDomain != null && !baseDomain.isBlank() && (uriHost.equals(baseDomain) || uriHost.endsWith(String.format(".%s", baseDomain))))
+                .map(uriHost -> redirectUri)
+                .orElse(null);
     }
 }

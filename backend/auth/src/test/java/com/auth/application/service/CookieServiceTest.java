@@ -37,7 +37,7 @@ class CookieServiceTest {
         assertEquals(token, cookie.getValue());
         assertTrue(cookie.isHttpOnly());
         assertTrue(cookie.isSecure());
-        assertEquals("/v1/user", cookie.getPath());
+        assertEquals("/", cookie.getPath());
         assertEquals("Strict", cookie.getSameSite());
         assertEquals(604800L, cookie.getMaxAge().getSeconds());
     }
@@ -52,7 +52,7 @@ class CookieServiceTest {
         assertEquals("", cookie.getValue());
         assertTrue(cookie.isHttpOnly());
         assertTrue(cookie.isSecure());
-        assertEquals("/v1/user", cookie.getPath());
+        assertEquals("/", cookie.getPath());
         assertEquals(0L, cookie.getMaxAge().getSeconds());
     }
 }
