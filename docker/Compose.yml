@@ -35,8 +35,6 @@ services:
       - PASSWORD_ADMIN=${PASSWORD_ADMIN}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
-    ports:
-      - "${APP_PORT}:${APP_PORT}"
     restart: always
 
       # Configuração do Middleware de Forward Auth
