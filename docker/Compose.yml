@@ -21,11 +21,11 @@ services:
     env_file:
       - .env
     ports:
-      - "${APP_PORT}:${APP_PORT}"
+       - "${APP_PORT:-80}:${APP_PORT:-80}"
     restart: always
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.auth-server.rule=Host(`auth.${BASE_DOMAIN}`)"
+      - "traefik.http.routers.auth-server.rule=Host(`${DOMAIN}`)"
       - "traefik.http.routers.auth-server.entrypoints=web"
       - "traefik.http.services.auth-server.loadbalancer.server.port=${APP_PORT}"
 
