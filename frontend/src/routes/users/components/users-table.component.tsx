@@ -136,7 +136,7 @@ export function UsersTableComponent() {
       <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-6 flex-1">
           <h2 className="font-bold text-foreground whitespace-nowrap hidden lg:block tracking-tight text-lg">Usuários Cadastrados</h2>
-          <InputGroup className="w-full max-w-md bg-transparent">
+          <InputGroup className="w-full max-w-md">
             <InputGroupAddon>
               <InputGroupText>
                 <Search className="w-4 h-4 opacity-50" />

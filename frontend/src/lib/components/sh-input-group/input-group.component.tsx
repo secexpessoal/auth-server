@@ -15,7 +15,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "group/input-group relative flex w-full min-w-0 items-center h-12 rounded-md border border-black/5 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md transition-all duration-300 has-[[data-slot=input-group-control]:focus]:border-primary/40 has-[[data-slot][aria-invalid=true]]:border-destructive/50 overflow-hidden",
+        "group/input-group relative flex w-full min-w-0 items-center h-12 rounded-md border border-black/5 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md transition-all duration-300 has-[[data-slot=input-group-control]:focus]:border-primary/40 has-[[data-slot=input-group-control]:focus]:bg-white/80 dark:has-[[data-slot=input-group-control]:focus]:bg-white/10 has-[[data-slot][aria-invalid=true]]:border-destructive/50 overflow-hidden",
         className,
       )}
       {...props}
@@ -73,7 +73,7 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<"input">)
     <Input
       data-slot="input-group-control"
       className={cn(
-        "h-auto self-center rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 focus:bg-transparent disabled:bg-transparent aria-invalid:ring-0 dark:bg-transparent dark:disabled:bg-transparent flex-1 px-3",
+        "h-auto self-center rounded-none border-0 bg-transparent! shadow-none ring-0 focus-visible:ring-0 focus:bg-transparent! disabled:bg-transparent! aria-invalid:ring-0 dark:bg-transparent! dark:disabled:bg-transparent! dark:focus:bg-transparent! backdrop-blur-none! flex-1 px-3",
         "[-webkit-text-fill-color:inherit] [transition:background-color_5000s_ease-in-out_0s]",
         className,
       )}

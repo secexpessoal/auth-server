@@ -75,7 +75,7 @@ export function ResetPasswordPage() {
                         <FormLabel className="font-bold ml-1">Nova Senha</FormLabel>
                         <FieldContent>
                           <FormControl>
-                            <InputGroup className="bg-transparent">
+                            <InputGroup>
                               <InputGroupInput {...field} type={showPassword ? "text" : "password"} placeholder="••••••••" />
                               <InputGroupAddon align="inline-end">
                                 <InputGroupButton
@@ -104,8 +104,9 @@ export function ResetPasswordPage() {
                         <FormLabel className="font-bold ml-1">Confirmar Senha</FormLabel>
                         <FieldContent>
                           <FormControl>
-                            <InputGroup className="bg-transparent">
-                              <InputGroupInput {...field} type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" />
+                            <InputGroup>
+                              <InputGroupInput
+ {...field} type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" />
                               <InputGroupAddon align="inline-end">
                                 <InputGroupButton
                                   type="button"

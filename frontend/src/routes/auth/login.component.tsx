@@ -132,7 +132,7 @@ export function LoginPage() {
                         <FormLabel className="text-foreground/80 font-bold ml-1">E-mail Corporativo</FormLabel>
                         <FieldContent>
                           <FormControl>
-                            <InputGroup className="bg-transparent">
+                            <InputGroup>
                               <InputGroupAddon>
                                 <InputGroupText>
                                   <Mail className="w-5 h-5 opacity-60" />
@@ -163,8 +163,9 @@ export function LoginPage() {
                           <FormLabel className="text-foreground/80 font-bold ml-1">Senha de Acesso</FormLabel>
                           <FieldContent>
                             <FormControl>
-                              <InputGroup className="bg-transparent">
+                              <InputGroup>
                                 <InputGroupAddon>
+
                                   <InputGroupText>
                                     <Lock className="w-5 h-5 opacity-60" />
                                   </InputGroupText>
@@ -246,8 +247,9 @@ export function LoginPage() {
 
                       <FieldContent>
                         <FormControl>
-                          <InputGroup className="bg-transparent">
+                          <InputGroup>
                             <InputGroupAddon>
+
                               <InputGroupText>
                                 <Mail className="w-5 h-5 opacity-60" />
                               </InputGroupText>
