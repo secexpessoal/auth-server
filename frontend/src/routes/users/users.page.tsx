@@ -5,12 +5,19 @@ import { Button } from "@lib/components/sh-button/button.component";
 import { CreateUserDialog } from "./components/user-form.component";
 import { UsersTableComponent } from "./components/users-table.component";
 import { ChangePasswordDialog } from "./components/change-password-dialog.component";
+import { useNavigate } from "@tanstack/react-router";
 
 export function UsersPage() {
-  const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { user, clearAuth } = useAuthStore();
 
   const handleLogout = async () => {
-    await logoutAttempt();
+    try {
+      await logoutAttempt();
+    } finally {
+      clearAuth();
+      void navigate({ to: "/login" });
+    }
   };
 
   return (
