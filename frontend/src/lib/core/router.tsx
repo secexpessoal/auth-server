@@ -62,7 +62,7 @@ export const protectedLayout = createRoute({
     }
 
     if (!passwordResetRequired && isResetPage) {
-      throw redirect({ to: "/" });
+      throw redirect({ to: "/dashboard" });
     }
 
     if (!isAdmin && !passwordResetRequired) {
@@ -82,9 +82,18 @@ export const protectedLayout = createRoute({
 });
 
 export const dashboardRoute = createRoute({
-  path: "/",
+  path: "/dashboard",
   component: UsersPage,
   getParentRoute: () => protectedLayout,
+});
+
+export const indexRoute = createRoute({
+  path: "/",
+  getParentRoute: () => rootRoute,
+  beforeLoad: () => {
+    const { isAuthenticated } = useAuthStore.getState();
+    throw redirect({ to: isAuthenticated ? "/dashboard" : "/login" });
+  },
 });
 
 export const resetPasswordRoute = createRoute({
@@ -93,41 +102,17 @@ export const resetPasswordRoute = createRoute({
   getParentRoute: () => protectedLayout,
 });
 
-export const routeTree = rootRoute.addChildren([loginRoute, protectedLayout.addChildren([dashboardRoute, resetPasswordRoute])]);
+export const routeTree = rootRoute.addChildren([
+  indexRoute,
+  loginRoute,
+  protectedLayout.addChildren([dashboardRoute, resetPasswordRoute]),
+]);
 
 export const router = createRouter({
   routeTree,
   defaultPreload: "intent",
   defaultNotFoundComponent: () => <ErrorPage code={404} message="Página não encontrada" />,
 });
-
-// NOTE: Subscrição reativa para gerenciar navegação baseada no estado global (Perfec SPA Architecture)
-useAuthStore.subscribe(
-  (state) => ({
-    isAuthenticated: state.isAuthenticated,
-    passwordResetRequired: state.passwordResetRequired,
-  }),
-  ({ isAuthenticated, passwordResetRequired }) => {
-    const path = window.location.pathname;
-
-    // Se não estamos autenticados no Zustand, mas existe um token no sessionStorage,
-    // ignoramos o redirect pois o Zustand ainda pode estar hidratando (F5).
-    const hasPersistentToken = !!sessionStorage.getItem("auth-storage");
-
-    if (!isAuthenticated && !hasPersistentToken && path !== "/login") {
-      void router.navigate({ to: "/login" });
-      return;
-    }
-
-    if (isAuthenticated && passwordResetRequired && path !== "/reset-password") {
-      void router.navigate({ to: "/reset-password" });
-      return;
-    }
-
-    // Se o estado mudar mas continuarmos na mesma rota, forçamos o Router a revalidar as guardas
-    void router.invalidate();
-  },
-);
 
 // Registra as rotas para type safety.
 declare module "@tanstack/react-router" {

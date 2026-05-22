@@ -43,6 +43,7 @@ public class ServerSecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final RateLimitingFilter rateLimitingFilter;
     private final MdcFilter mdcFilter;
+    private final SsoRedirectFilter ssoRedirectFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -54,6 +55,7 @@ public class ServerSecurityConfig {
 
         httpSecurity
                 .addFilterBefore(mdcFilter, UsernamePasswordAuthenticationFilter.class) // NOTE: MDC em primeiro para rastrear tudo
+                .addFilterAfter(ssoRedirectFilter, MdcFilter.class)
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // NOTE: Permite o JS ler o cookie XSRF-TOKEN

@@ -31,20 +31,23 @@ export function LoginPage() {
       if (data.session.passwordResetRequired) {
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
         void navigate({ to: "/reset-password" });
-      } else {
-        if (data.user.roles.includes("ROLE_ADMIN")) {
-          toast.success(`Bem-vindo, ${data.user.profile.username}!`);
-        }
-
-        if (data.redirectUri) {
-          setIsRedirecting(true);
-          window.location.href = data.redirectUri;
-        } else {
-          // NOTE: Só atualizamos o estado global se ficarmos dentro do Auth Server
-          setAuth(data.session, data.user);
-          window.location.href = "/";
-        }
+        return;
       }
+
+      if (data.redirectUri) {
+        setIsRedirecting(true);
+        // NOTE: Usamos replace para não sujar o histórico e evitar que o usuário volte para o login logado.
+        // Não chamamos setAuth para evitar que o TanStack Router tente processar rotas protegidas antes da saída.
+        window.location.replace(data.redirectUri);
+        return;
+      }
+
+      if (data.user.roles.includes("ROLE_ADMIN")) {
+        toast.success(`Bem-vindo, ${data.user.profile.username}!`);
+      }
+
+      setAuth(data.session, data.user);
+      void navigate({ to: "/dashboard" });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Credenciais inválidas. Tente novamente."));

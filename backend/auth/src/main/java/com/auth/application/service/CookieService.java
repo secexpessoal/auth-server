@@ -78,6 +78,32 @@ public class CookieService {
         return builder.build();
     }
 
+    /**
+     * Cria um cookie temporário para gerenciar o redirecionamento SSO no servidor.
+     */
+    public ResponseCookie buildSsoRedirectCookie(String redirectUri) {
+        return ResponseCookie.from("sso_redirect", redirectUri)
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(120) // 2 minutos
+                .sameSite("Lax")
+                .build();
+    }
+
+    /**
+     * Invalida o cookie de redirecionamento SSO.
+     */
+    public ResponseCookie buildSsoRedirectLogoutCookie() {
+        return ResponseCookie.from("sso_redirect", "")
+                .httpOnly(true)
+                .secure(cookieSecure)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+    }
+
     private void applyDomain(ResponseCookie.ResponseCookieBuilder builder) {
         Optional.ofNullable(baseDomain)
                 .filter(domain -> !domain.isBlank())

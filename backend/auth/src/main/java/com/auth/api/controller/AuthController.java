@@ -60,10 +60,17 @@ public class AuthController {
         ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
         ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.responseDto().session().accessToken());
 
-        return ResponseEntity.ok()
+        var responseBuilder = ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-                .body(result.responseDto());
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+
+        // Se houver redirectUri, enviamos o cookie de controle para o SsoRedirectFilter
+        if (result.responseDto().redirectUri() != null) {
+            ResponseCookie ssoCookie = cookieService.buildSsoRedirectCookie(result.responseDto().redirectUri());
+            responseBuilder.header(HttpHeaders.SET_COOKIE, ssoCookie.toString());
+        }
+
+        return responseBuilder.body(result.responseDto());
     }
 
     // NOTE: Rota publica
