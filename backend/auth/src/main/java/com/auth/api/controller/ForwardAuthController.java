@@ -1,6 +1,7 @@
 package com.auth.api.controller;
 
 import com.auth.application.usecase.VerifyAuthUseCase;
+import com.auth.infra.security.service.JwtGeneratorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
 import java.util.Optional;
 
 @Slf4j
@@ -23,11 +25,20 @@ import java.util.Optional;
 public class ForwardAuthController {
 
     private final VerifyAuthUseCase verifyAuthUseCase;
+    private final JwtGeneratorService jwtService;
 
     @GetMapping("/verify")
-    @Operation(summary = "Verifica sessão para Forward Auth", description = "Lê o cookie refresh_token, valida e retorna um JWT novo no header Authorization.")
-    public ResponseEntity<Void> verify(@CookieValue(value = "refresh_token", required = false) String refreshTokenCookie) {
-        String jwtToken = verifyAuthUseCase.execute(refreshTokenCookie);
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwtToken)).build();
+    @Operation(summary = "Verifica sessão para Forward Auth", description = "Lê o cookie access_token, valida e retorna 200 OK ou 302 Redirect.")
+    public ResponseEntity<Void> verify(@CookieValue(value = "access_token", required = false) String accessToken) {
+        if (accessToken == null || accessToken.isBlank() || !jwtService.isTokenValid(accessToken)) {
+            log.info("Sessão inválida ou ausente no Forward Auth. Redirecionando para login.");
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(URI.create("/login"))
+                    .build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", accessToken))
+                .build();
     }
 }

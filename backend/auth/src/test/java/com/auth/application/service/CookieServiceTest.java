@@ -38,14 +38,31 @@ class CookieServiceTest {
         assertTrue(cookie.isHttpOnly());
         assertTrue(cookie.isSecure());
         assertEquals("/", cookie.getPath());
-        assertEquals("Strict", cookie.getSameSite());
+        assertEquals("Lax", cookie.getSameSite());
         assertEquals(604800L, cookie.getMaxAge().getSeconds());
     }
 
     @Test
-    @DisplayName("Deve construir cookie de logout corretamente")
+    @DisplayName("Deve construir cookie de access token corretamente")
+    void deveConstruirCookieAccessToken() {
+        String token = "test-access-token";
+        ReflectionTestUtils.setField(cookieService, "accessTokenExpiration", 900000L);
+        ResponseCookie cookie = cookieService.buildAccessTokenCookie(token);
+
+        assertNotNull(cookie);
+        assertEquals("access_token", cookie.getName());
+        assertEquals(token, cookie.getValue());
+        assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.isSecure());
+        assertEquals("/", cookie.getPath());
+        assertEquals("Lax", cookie.getSameSite());
+        assertEquals(900L, cookie.getMaxAge().getSeconds());
+    }
+
+    @Test
+    @DisplayName("Deve construir cookie de logout de refresh token corretamente")
     void deveConstruirCookieLogout() {
-        ResponseCookie cookie = cookieService.buildLogoutCookie();
+        ResponseCookie cookie = cookieService.buildRefreshTokenLogoutCookie();
 
         assertNotNull(cookie);
         assertEquals("refresh_token", cookie.getName());
@@ -54,5 +71,21 @@ class CookieServiceTest {
         assertTrue(cookie.isSecure());
         assertEquals("/", cookie.getPath());
         assertEquals(0L, cookie.getMaxAge().getSeconds());
+        assertEquals("Lax", cookie.getSameSite());
+    }
+
+    @Test
+    @DisplayName("Deve construir cookie de logout de access token corretamente")
+    void deveConstruirCookieAccessTokenLogout() {
+        ResponseCookie cookie = cookieService.buildAccessTokenLogoutCookie();
+
+        assertNotNull(cookie);
+        assertEquals("access_token", cookie.getName());
+        assertEquals("", cookie.getValue());
+        assertTrue(cookie.isHttpOnly());
+        assertTrue(cookie.isSecure());
+        assertEquals("/", cookie.getPath());
+        assertEquals(0L, cookie.getMaxAge().getSeconds());
+        assertEquals("Lax", cookie.getSameSite());
     }
 }

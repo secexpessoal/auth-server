@@ -83,8 +83,17 @@ public class JwtGeneratorService {
         // 1. O e-mail bater
         // 2. A versão no token for IGUAL à versão no banco
         // 3. Não estiver expirado
-        return (email.equals(user.getEmail())) && (version != null
-                && version.equals(user.getTokenVersion())) && !isTokenExpired(token);
+        return email.equals(user.getEmail()) && 
+               version != null && version.equals(user.getTokenVersion()) && 
+               !isTokenExpired(token);
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception exception) {
+            return false;
+        }
     }
 
     private boolean isTokenExpired(String token) {

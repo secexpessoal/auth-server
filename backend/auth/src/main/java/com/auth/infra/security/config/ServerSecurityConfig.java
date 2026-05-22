@@ -70,6 +70,7 @@ public class ServerSecurityConfig {
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
                             .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh", "/v1/password/user-reset").permitAll()
+                            .requestMatchers("/v1/auth/verify").permitAll()
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())

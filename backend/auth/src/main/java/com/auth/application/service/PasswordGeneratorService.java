@@ -55,7 +55,7 @@ public class PasswordGeneratorService {
             password.append(ALL_CHARS.charAt(RANDOM.nextInt(ALL_CHARS.length())));
         }
 
-        List<Character> characters = password.chars().mapToObj(it -> (char) it).collect(Collectors.toList());
+        List<Character> characters = password.chars().mapToObj(charValue -> (char) charValue).collect(Collectors.toList());
         Collections.shuffle(characters, RANDOM);
 
         return characters.stream().map(String::valueOf).collect(Collectors.joining());

@@ -95,7 +95,7 @@ public class TomcatConfig implements WebServerFactoryCustomizer<ConfigurableServ
                 response.getWriter().write(jsonResponse);
                 response.getWriter().flush();
 
-            } catch (IOException e) {
+            } catch (IOException exception) {
                 // Falha silenciosa ou log genérico caso não possamos escrever
             }
         }

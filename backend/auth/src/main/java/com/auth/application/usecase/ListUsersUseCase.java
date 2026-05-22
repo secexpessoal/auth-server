@@ -20,7 +20,9 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.domain.PageImpl;
+
 import java.util.UUID;
+
 import com.auth.domain.model.UserData;
 import org.springframework.stereotype.Service;
 
@@ -41,14 +43,16 @@ public class ListUsersUseCase {
 
     public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl, String email, String userName, String position) {
         Pageable pageable = PageRequest.of(page, limit);
-        
+
         List<UUID> matchingUserIds = null;
         if ((userName != null && !userName.isBlank()) || (position != null && !position.isBlank())) {
             Query dataQuery = new Query();
             if (userName != null && !userName.isBlank()) dataQuery.addCriteria(Criteria.where("name").regex(userName, "i"));
             if (position != null && !position.isBlank()) dataQuery.addCriteria(Criteria.where("position").regex(position, "i"));
+
             List<UserData> userDatas = mongoTemplate.find(dataQuery, UserData.class);
             matchingUserIds = userDatas.stream().map(UserData::getUserId).toList();
+
             if (matchingUserIds.isEmpty()) {
                 return buildEmptyResponse(page, limit);
             }
@@ -65,7 +69,7 @@ public class ListUsersUseCase {
         long total = mongoTemplate.count(Query.of(query), UserAuth.class);
         query.with(pageable);
         List<UserAuth> users = mongoTemplate.find(query, UserAuth.class);
-        
+
         Page<UserAuth> usersPage = new PageImpl<>(users, pageable, total);
 
         List<UserResponseDto> data = usersPage.getContent().stream()
@@ -93,7 +97,7 @@ public class ListUsersUseCase {
                     return UserResponseDto.builder()
                             .id(user.getUserId())
                             .email(user.getEmail())
-                            .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                            .roles(user.getRoles().stream().map(role -> "ROLE_" + role.getRole()).collect(Collectors.toSet()))
                             .active(user.getActive() != null && user.getActive())
                             .profile(profile)
                             .audit(audit)
@@ -115,8 +119,13 @@ public class ListUsersUseCase {
         if (userName != null && !userName.isBlank()) queryParams.append("&userName=").append(userName);
         if (position != null && !position.isBlank()) queryParams.append("&position=").append(position);
 
-        String nextLink = usersPage.hasNext() ? requestUrl + "?page=" + (page + 1) + "&limit=" + limit + queryParams : "";
-        String prevLink = usersPage.hasPrevious() ? requestUrl + "?page=" + (page - 1) + "&limit=" + limit + queryParams : "";
+        String nextLink = usersPage.hasNext()
+                ? String.format("%s?page=%d&limit=%d%s", requestUrl, page + 1, limit, queryParams)
+                : "";
+
+        String prevLink = usersPage.hasPrevious()
+                ? String.format("%s?page=%d&limit=%d%s", requestUrl, page - 1, limit, queryParams)
+                : "";
 
         return PaginatedResponseDto.<UserResponseDto>builder()
                 .data(data)

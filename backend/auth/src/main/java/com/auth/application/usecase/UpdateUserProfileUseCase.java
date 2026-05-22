@@ -89,7 +89,7 @@ public class UpdateUserProfileUseCase {
         return UserResponseDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(roleItem -> "ROLE_" + roleItem.getRole()).collect(Collectors.toSet()))
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)

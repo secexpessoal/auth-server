@@ -89,7 +89,7 @@ public class LoginUseCase {
         UserResponseDto userDto = UserResponseDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(it -> "ROLE_" + it.getRole()).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(role -> "ROLE_" + role.getRole()).collect(Collectors.toSet()))
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)

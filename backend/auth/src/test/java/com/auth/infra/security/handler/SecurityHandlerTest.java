@@ -32,7 +32,7 @@ class SecurityHandlerTest {
     @BeforeEach
     void setUp() {
         accessDeniedHandler = new CustomAccessDeniedHandler(objectMapper);
-        authenticationEntryPoint = new CustomAuthenticationEntryPoint(objectMapper);
+        authenticationEntryPoint = new CustomAuthenticationEntryPoint();
     }
 
     @Test
@@ -40,24 +40,24 @@ class SecurityHandlerTest {
     void accessDeniedShouldReturn403() throws IOException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        AccessDeniedException exception = new AccessDeniedException("Denied");
+        AccessDeniedException accessDeniedException = new AccessDeniedException("Denied");
 
-        accessDeniedHandler.handle(request, response, exception);
+        accessDeniedHandler.handle(request, response, accessDeniedException);
 
         assertEquals(403, response.getStatus());
         assertEquals("application/json", response.getContentType());
     }
 
     @Test
-    @DisplayName("CustomAuthenticationEntryPoint deve retornar 401 e mensagem de erro")
-    void authEntryPointShouldReturn401() throws IOException {
+    @DisplayName("CustomAuthenticationEntryPoint deve redirecionar para /login")
+    void authEntryPointShouldRedirectToLogin() throws IOException {
         MockHttpServletRequest request = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        AuthenticationException exception = new AuthenticationException("Unauthorized") {};
+        AuthenticationException authenticationException = new AuthenticationException("Unauthorized") {};
 
-        authenticationEntryPoint.commence(request, response, exception);
+        authenticationEntryPoint.commence(request, response, authenticationException);
 
-        assertEquals(401, response.getStatus());
-        assertEquals("application/json", response.getContentType());
+        assertEquals(302, response.getStatus());
+        assertEquals("/login", response.getRedirectedUrl());
     }
 }
