@@ -40,7 +40,7 @@ public class LoginUseCase {
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
-    @Value("${app.base-domain:}")
+    @Value("${app.base-domain}")
     private String baseDomain;
 
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {

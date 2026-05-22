@@ -9,16 +9,16 @@ import java.util.Optional;
 @Service
 public class CookieService {
 
-    @Value("${security.jwt.cookie.secure:false}")
+    @Value("${security.jwt.cookie.secure}")
     private boolean cookieSecure;
 
-    @Value("${security.jwt.expiration-time:900000}")
+    @Value("${security.jwt.expiration-time}")
     private long accessTokenExpiration;
 
-    @Value("${security.jwt.refresh-expiration-time:604800000}")
+    @Value("${security.jwt.refresh-expiration-time}")
     private long refreshTokenExpiration;
 
-    @Value("${app.base-domain:}")
+    @Value("${app.base-domain}")
     private String baseDomain;
 
     public ResponseCookie buildAccessTokenCookie(String accessToken) {

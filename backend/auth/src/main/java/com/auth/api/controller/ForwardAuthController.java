@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,9 @@ public class ForwardAuthController {
     private final VerifyAuthUseCase verifyAuthUseCase;
     private final JwtGeneratorService jwtService;
 
+    @Value("${app.auth-url}")
+    private String authUrl;
+
     @GetMapping("/verify")
     @Operation(summary = "Verifica sessão para Forward Auth", description = "Lê o cookie access_token, valida e retorna 200 OK ou 302 Redirect.")
     public ResponseEntity<Void> verify(
@@ -37,7 +41,7 @@ public class ForwardAuthController {
         if (accessToken == null || accessToken.isBlank() || !jwtService.isTokenValid(accessToken)) {
             log.info("Sessão inválida ou ausente no Forward Auth. Preparando redirecionamento.");
             
-            String loginUrl = "/login";
+            String loginUrl = authUrl + "/login";
             
             if (forwardedHost != null && !forwardedHost.isBlank()) {
                 String returnUrl = forwardedProtocol + "://" + forwardedHost + (forwardedUri != null ? forwardedUri : "");

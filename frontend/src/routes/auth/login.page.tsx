@@ -35,7 +35,7 @@ export function LoginPage() {
         if (data.redirectUri) {
           window.location.href = data.redirectUri;
         } else {
-          void navigate({ to: "/" });
+          window.location.href = "/";
         }
       }
     },
