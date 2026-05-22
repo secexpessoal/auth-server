@@ -105,19 +105,21 @@ public class LoginUseCase {
     }
 
     private String validateRedirectUri(String redirectUri) {
-        return Optional.ofNullable(redirectUri)
-                .filter(redirectString -> !redirectString.isBlank())
-                .map(redirectString -> {
-                    try {
-                        return URI.create(redirectString);
-                    } catch (Exception exception) {
-                        log.warn("Falha ao analisar URL de redirecionamento: {}", redirectString, exception);
-                        return null;
-                    }
-                })
-                .map(URI::getHost)
-                .filter(uriHost -> baseDomain != null && !baseDomain.isBlank() && (uriHost.equals(baseDomain) || uriHost.endsWith(String.format(".%s", baseDomain))))
-                .map(uriHost -> redirectUri)
-                .orElse(null);
+        if (redirectUri == null || redirectUri.isBlank()) {
+            return null;
+        }
+
+        try {
+            URI uri = URI.create(redirectUri);
+            String uriHost = uri.getHost();
+            if (baseDomain != null && !baseDomain.isBlank() && uriHost != null && 
+               (uriHost.equals(baseDomain) || uriHost.endsWith(String.format(".%s", baseDomain)))) {
+                return redirectUri;
+            }
+        } catch (Exception exception) {
+            log.warn("Falha ao analisar URL de redirecionamento: {}", redirectUri, exception);
+        }
+
+        throw new BadRequestException(ErrorCode.VALIDATION_ERROR, "O site que você quer acessar não é permitido.");
     }
 }

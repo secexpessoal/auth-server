@@ -27,18 +27,7 @@ public class ForwardAuthController {
     @GetMapping("/verify")
     @Operation(summary = "Verifica sessão para Forward Auth", description = "Lê o cookie refresh_token, valida e retorna um JWT novo no header Authorization.")
     public ResponseEntity<Void> verify(@CookieValue(value = "refresh_token", required = false) String refreshTokenCookie) {
-        try {
-            return Optional.ofNullable(refreshTokenCookie)
-                    .filter(cookieToken -> !cookieToken.isBlank())
-                    .map(verifyAuthUseCase::execute)
-                    .map(jwtToken -> ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwtToken)).<Void>build())
-                    .orElseGet(() -> {
-                        log.debug("Acesso negado no Forward Auth: Cookie refresh_token ausente ou em branco.");
-                        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                    });
-        } catch (Exception exception) {
-            log.warn("Falha na validação do Forward Auth. Motivo: {}", exception.getMessage(), exception);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        String jwtToken = verifyAuthUseCase.execute(refreshTokenCookie);
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", jwtToken)).build();
     }
 }
