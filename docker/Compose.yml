@@ -28,7 +28,8 @@ services:
       - "traefik.http.routers.auth-server.rule=Host(`auth.${BASE_DOMAIN}`)"
       - "traefik.http.routers.auth-server.entrypoints=web"
       - "traefik.http.services.auth-server.loadbalancer.server.port=${APP_PORT}"
+
       # Configuração do Middleware de Forward Auth (para ser usado por outros apps)
-      - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
-      - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
-      - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"

@@ -44,6 +44,8 @@ public class LoginUseCase {
     private String baseDomain;
 
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
+        String validatedRedirect = validateRedirectUri(loginRequest.redirectUri());
+
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
@@ -93,8 +95,6 @@ public class LoginUseCase {
                 .audit(audit)
                 .build();
 
-        String validatedRedirect = validateRedirectUri(loginRequest.redirectUri());
-
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
                 .user(userDto)
@@ -120,6 +120,6 @@ public class LoginUseCase {
             log.warn("Falha ao analisar URL de redirecionamento: {}", redirectUri, exception);
         }
 
-        throw new BadRequestException(ErrorCode.VALIDATION_ERROR, "O site que você quer acessar não é permitido.");
+        throw new BadRequestException(ErrorCode.BAD_REQUEST, "O site que você quer acessar não é permitido.");
     }
 }

@@ -116,10 +116,6 @@ class LoginUseCaseTest {
     @DisplayName("Deve lançar BadRequestException quando a URL de redirecionamento for inválida")
     void shouldThrowBadRequestWhenRedirectUriIsInvalid() {
         // Arrange
-        Authentication auth = mock(Authentication.class);
-        when(auth.getPrincipal()).thenReturn(testUser);
-        when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
-        
         AuthenticationRequestDto invalidRedirectRequest = new AuthenticationRequestDto("test@example.com", "password", "https://site-malicioso.com");
         
         org.springframework.test.util.ReflectionTestUtils.setField(loginUseCase, "baseDomain", "dominio.com");
