@@ -63,7 +63,7 @@ const FormItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEl
 });
 FormItem.displayName = "FormItem";
 
-const FormLabel = React.forwardRef<React.ElementRef<typeof Label>, React.ComponentPropsWithoutRef<typeof Label>>(({ className, ...props }, ref) => {
+const FormLabel = React.forwardRef<React.ComponentRef<typeof Label>, React.ComponentPropsWithoutRef<typeof Label>>(({ className, ...props }, ref) => {
   const { error, formItemId } = useFormField();
 
   return (
@@ -81,7 +81,7 @@ const FormLabel = React.forwardRef<React.ElementRef<typeof Label>, React.Compone
 });
 FormLabel.displayName = "FormLabel";
 
-const FormControl = React.forwardRef<React.ElementRef<typeof Slot.Root>, React.ComponentPropsWithoutRef<typeof Slot.Root>>(({ ...props }, ref) => {
+const FormControl = React.forwardRef<React.ComponentRef<typeof Slot.Root>, React.ComponentPropsWithoutRef<typeof Slot.Root>>(({ ...props }, ref) => {
   const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   return (

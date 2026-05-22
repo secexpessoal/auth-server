@@ -73,8 +73,8 @@ export const protectedLayout = createRoute({
     }
   },
   component: () => (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-500">
+      <main className="flex-1 p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
         <Outlet />
       </main>
     </div>

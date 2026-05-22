@@ -21,57 +21,64 @@ export function UsersPage() {
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <header className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-primary-100/50 rounded-xl text-primary-600">
-            <Users className="w-6 h-6" />
+    <div className="flex flex-col gap-10">
+      <header className="bg-card rounded-[2.5rem] shadow-neumorph p-6 sm:p-10 flex flex-col sm:flex-row sm:items-center justify-between gap-8 border border-white/20">
+        <div className="flex items-center gap-6">
+          <div className="p-5 bg-card shadow-neumorph-convex rounded-3xl text-primary border border-white/40">
+            <Users className="w-8 h-8" />
           </div>
 
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">Gestão de Autenticação</h1>
-            <p className="text-sm text-gray-500">Listagem de contas e criação de usuários</p>
+            <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Gestão de Identidade</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">Administração centralizada de acessos e permissões</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-gray-900">{user?.profile.username || "Admin"}</p>
+        <div className="flex items-center gap-6">
+          <div className="text-right hidden lg:block pr-4 border-r border-border/40">
+            <p className="text-sm font-bold text-foreground">{user?.profile.username || "Administrador"}</p>
 
-            <p className="text-xs text-gray-500 flex items-center justify-end gap-1">
-              <Shield className="w-3 h-3 text-emerald-500" /> Administrador
+            <p className="text-xs text-muted-foreground font-semibold flex items-center justify-end gap-1.5 mt-0.5">
+              <Shield className="w-3 h-3 text-primary" /> Painel de Controle
             </p>
           </div>
 
-          <ChangePasswordDialog />
+          <div className="flex items-center gap-3">
+            <ChangePasswordDialog />
 
-          <Button
-            variant="outline"
-            onClick={() => (window.location.href = "/swagger-ui.html")}
-            className="h-10 border-gray-200 text-gray-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100"
-          >
-            API Docs
-            <BookOpen className="w-4 h-4 ml-2" />
-          </Button>
+            <Button
+              variant="outline"
+              onClick={() => (window.location.href = "/swagger-ui.html")}
+              className="h-11 px-5 border-transparent shadow-neumorph-sm hover:shadow-neumorph font-bold"
+            >
+              API Docs
+              <BookOpen className="w-4 h-4 ml-2" />
+            </Button>
 
-          <Button
-            variant="outline"
-            className="h-10 border-gray-200 text-gray-600 hover:text-red-600 hover:bg-red-50 hover:border-red-100"
-            onClick={handleLogout}
-          >
-            Sair
-            <LogOut className="w-4 h-4 ml-2" />
-          </Button>
+            <Button
+              variant="destructive"
+              className="h-11 px-5 shadow-neumorph-convex hover:shadow-neumorph font-bold"
+              onClick={handleLogout}
+            >
+              Sair
+              <LogOut className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
         </div>
       </header>
 
-      <div className="flex flex-col gap-6">
-        <div className="flex items-center justify-end gap-3">
-          <CreateUserDialog role="USER" />
-          <CreateUserDialog role="ADMIN" />
+      <div className="flex flex-col gap-8">
+        <div className="flex items-center justify-between px-2">
+          <h2 className="text-xl font-bold text-foreground">Colaboradores do Sistema</h2>
+          <div className="flex items-center gap-4">
+            <CreateUserDialog role="USER" />
+            <CreateUserDialog role="ADMIN" />
+          </div>
         </div>
 
-        <UsersTableComponent />
+        <div className="bg-card rounded-[2.5rem] shadow-neumorph-pressed p-1 border border-white/10">
+          <UsersTableComponent />
+        </div>
       </div>
     </div>
   );

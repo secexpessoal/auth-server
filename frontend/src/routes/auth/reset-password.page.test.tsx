@@ -47,8 +47,8 @@ describe("ResetPasswordPage", () => {
 
   it("renders reset password form elements", () => {
     render(<ResetPasswordPage />);
-    expect(screen.getByText(/definir nova senha/i)).toBeInTheDocument();
+    expect(screen.getByText(/nova credencial/i)).toBeInTheDocument();
     expect(screen.getByText(/testuser/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /atualizar e sair/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirmar e sair/i })).toBeInTheDocument();
   });
 });
