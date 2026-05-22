@@ -28,17 +28,25 @@ RUN ./gradlew :auth:bootJar --no-daemon
 
 FROM eclipse-temurin:25-jre-alpine-3.23
 
+ARG APP_PORT
+ARG DOMAIN
+
+LABEL traefik.enable="true"
+LABEL traefik.http.routers.auth-server.rule="Host(`${DOMAIN}`)"
+LABEL traefik.http.routers.auth-server.entrypoints="web"
+LABEL traefik.http.services.auth-server.loadbalancer.server.port="${APP_PORT}"
+
 WORKDIR /app
 COPY --from=backend-build /app/auth/build/libs/auth-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8080
+EXPOSE ${APP_PORT}
 
 ENTRYPOINT ["java", \
-            "-XX:+UseG1GC", \
-            "-XX:MaxRAMPercentage=75.0", \
-            "-XX:G1PeriodicGCInterval=10000", \
-            "-XX:+UseStringDeduplication", \
-            "-XX:MinHeapFreeRatio=10", \
-            "-XX:MaxHeapFreeRatio=20", \
-            "-XX:+ExitOnOutOfMemoryError", \
-            "-jar", "app.jar"]
+  "-XX:+UseG1GC", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-XX:G1PeriodicGCInterval=10000", \
+  "-XX:+UseStringDeduplication", \
+  "-XX:MinHeapFreeRatio=10", \
+  "-XX:MaxHeapFreeRatio=20", \
+  "-XX:+ExitOnOutOfMemoryError", \
+  "-jar", "app.jar"]

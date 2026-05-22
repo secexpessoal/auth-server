@@ -17,9 +17,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        - APP_PORT=${APP_PORT}
+        - DOMAIN=${DOMAIN}
     container_name: auth-server
-
-    # Pegando as variáveis dinamicamente via ${}
     environment:
       - APP_PORT=${APP_PORT}
       - DOMAIN=${DOMAIN}
@@ -34,15 +35,9 @@ services:
       - PASSWORD_ADMIN=${PASSWORD_ADMIN}
       - RESEND_API_KEY=${RESEND_API_KEY}
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
-
     ports:
       - "${APP_PORT}:${APP_PORT}"
     restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.auth-server.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.auth-server.entrypoints=web"
-      - "traefik.http.services.auth-server.loadbalancer.server.port=${APP_PORT}"
 
       # Configuração do Middleware de Forward Auth
       # - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
