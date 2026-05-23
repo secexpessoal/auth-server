@@ -34,10 +34,10 @@ import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
-import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@lib/data/users/molecule/user.schema";
-import { updateUserRoles } from "@lib/data/users/services/user.service";
+import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@lib/data/manager/molecule/user.schema";
+import { updateUserRoles } from "@lib/data/manager/services/user.service";
 
-export function UserDetailsModal({
+export function ManagerDetailsModal({
   open,
   onOpenChange,
   user,

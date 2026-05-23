@@ -13,17 +13,17 @@ import { useState } from "react";
 import { cn } from "@lib/utils/cn/cn.util";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
-import { type UpdateUserProfileRequestDto } from "@lib/data/users/molecule/user.schema";
+import { type UpdateUserProfileRequestDto } from "@lib/data/manager/molecule/user.schema";
 import {
   activateUserAttempt,
   deactivateUserAttempt,
   getUsersList,
   resetPasswordAttempt,
   updateUserProfile,
-} from "@lib/data/users/services/user.service";
-import { UserDetailsModal } from "./users-detail.component";
+} from "@lib/data/manager/services/user.service";
+import { ManagerDetailsModal } from "./manager-detail.component";
 
-export function UsersTableComponent() {
+export function ManagerTableComponent() {
   const [page, setPage] = useState(0);
   const [copied, setCopied] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -306,7 +306,7 @@ export function UsersTableComponent() {
       )}
 
       {/* Details & Actions Modal */}
-      <UserDetailsModal
+      <ManagerDetailsModal
         open={detailsModalOpen}
         onOpenChange={setDetailsModalOpen}
         user={selectedUser}

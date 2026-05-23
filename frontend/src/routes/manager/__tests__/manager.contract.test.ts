@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { registerAdminSchema } from "@lib/data/users/molecule/user.schema";
+import { registerAdminSchema } from "@lib/data/manager/molecule/user.schema";
 import { loginSchema } from "@lib/data/auth/molecule/auth.schema";
 import { mockLoginResponseAdmin } from "@fixtures/auth.seeder";
 

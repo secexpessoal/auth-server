@@ -2,13 +2,13 @@ import { LogOut, Users, Shield, BookOpen } from "lucide-react";
 import { useAuthStore } from "@lib/store/auth.store";
 import { logoutAttempt } from "@lib/data/auth/services/auth.service";
 import { Button } from "@lib/components/sh-button/button.component";
-import { CreateUserDialog } from "./components/user-form.component";
-import { UsersTableComponent } from "./components/users-table.component";
+import { ManagerFormDialog } from "./components/manager-form.component";
+import { ManagerTableComponent } from "./components/manager-table.component";
 import { ChangePasswordDialog } from "./components/change-password-dialog.component";
 import { useNavigate } from "@tanstack/react-router";
 import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
-export function UsersPage() {
+export function ManagerPage() {
   const navigate = useNavigate();
   const { user, clearAuth } = useAuthStore();
 
@@ -73,13 +73,13 @@ export function UsersPage() {
         <div className="flex items-center justify-between px-2">
           <h2 className="text-xl font-bold text-foreground">Colaboradores do Sistema</h2>
           <div className="flex items-center gap-4">
-            <CreateUserDialog role="USER" />
-            <CreateUserDialog role="ADMIN" />
+            <ManagerFormDialog role="USER" />
+            <ManagerFormDialog role="ADMIN" />
           </div>
         </div>
 
         <div className="bg-card rounded-[2.5rem] shadow-neumorph-pressed p-1 border border-white/10">
-          <UsersTableComponent />
+          <ManagerTableComponent />
         </div>
       </div>
     </div>

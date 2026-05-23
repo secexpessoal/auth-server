@@ -4,7 +4,7 @@ import { useAuthStore } from "@lib/store/auth.store";
 import { LoginPage } from "@routes/auth/login.component";
 import { ResetPasswordPage } from "@routes/auth/reset-password.component";
 import { ErrorPage } from "./errors/error.component";
-import { UsersPage } from "@routes/users/users.component";
+import { ManagerPage } from "@routes/manager/manager.component";
 import toast from "react-hot-toast";
 
 export const rootRoute = createRootRoute({
@@ -83,7 +83,7 @@ export const protectedLayout = createRoute({
 
 export const dashboardRoute = createRoute({
   path: "/dashboard",
-  component: UsersPage,
+  component: ManagerPage,
   getParentRoute: () => protectedLayout,
 });
 

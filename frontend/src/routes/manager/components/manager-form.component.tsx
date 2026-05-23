@@ -11,8 +11,8 @@ import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react"
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { registerAdminSchema, registerUserSchema } from "@lib/data/users/molecule/user.schema";
-import { registerAdminAttempt, registerUserAttempt } from "@lib/data/users/services/user.service";
+import { registerAdminSchema, registerUserSchema } from "@lib/data/manager/molecule/user.schema";
+import { registerAdminAttempt, registerUserAttempt } from "@lib/data/manager/services/user.service";
 
 type Props = {
   role: "ADMIN" | "USER";
@@ -25,7 +25,7 @@ type RegisterFormData = {
   role?: "USER" | "MANAGER";
 };
 
-export function CreateUserDialog({ role }: Props) {
+export function ManagerFormDialog({ role }: Props) {
   const [open, setOpen] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const queryClient = useQueryClient();

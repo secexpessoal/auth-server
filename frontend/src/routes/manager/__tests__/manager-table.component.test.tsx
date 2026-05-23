@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { UsersTableComponent } from "@routes/users/components/users-table.component";
+import { ManagerTableComponent } from "@routes/manager/components/manager-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type * as Query from "@tanstack/react-query";
 
@@ -71,7 +71,7 @@ const mockUsers = {
   },
 };
 
-describe("UsersTableComponent", () => {
+describe("ManagerTableComponent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useQuery as Mock).mockReturnValue({
@@ -88,19 +88,19 @@ describe("UsersTableComponent", () => {
   });
 
   it("renders users table with data", () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     expect(screen.getByText("User 1")).toBeInTheDocument();
     expect(screen.getByText("user1@test.com")).toBeInTheDocument();
   });
 
   it("offers quick actions directly in the table row", () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     expect(screen.getByTitle("Resetar Senha")).toBeInTheDocument();
     expect(screen.getByTitle("Desativar")).toBeInTheDocument();
   });
 
   it("opens redesigned details modal when clicking the eye icon button", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
 
     const detailsButton = screen.getByTitle("Ver Detalhes");
     fireEvent.click(detailsButton);
@@ -112,7 +112,7 @@ describe("UsersTableComponent", () => {
   });
 
   it("shows tabs inside the premium details modal", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
 
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
@@ -128,7 +128,7 @@ describe("UsersTableComponent", () => {
   });
 
   it("contains persist control inside the modal footer", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
@@ -137,7 +137,7 @@ describe("UsersTableComponent", () => {
   });
 
   it("interacts with the Shadcn Select for work regime after switching tab", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
@@ -156,7 +156,7 @@ describe("UsersTableComponent", () => {
   });
 
   it("renders the premium Shadcn DatePicker after switching tab", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
