@@ -3,6 +3,7 @@ package com.auth.infra.security.filter;
 import com.auth.application.service.CookieService;
 import com.auth.application.service.RedirectService;
 import com.auth.infra.exception.custom.BadRequestException;
+import com.auth.infra.security.service.JwtGeneratorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -18,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,6 +34,7 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
 
     private final CookieService cookieService;
     private final RedirectService redirectService;
+    private final JwtGeneratorService jwtGeneratorService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -53,7 +56,8 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
         }
 
         // Caso 2: Verificação de sessão para rotas protegidas do frontend
-        boolean isAuthenticated = hasValidSession(request);
+        Optional<String> accessToken = findCookie(request, "access_token");
+        boolean isAuthenticated = accessToken.isPresent() && jwtGeneratorService.isTokenValid(accessToken.get());
 
         if (isProtectedRoute(requestPath) && !isAuthenticated) {
             response.setStatus(HttpServletResponse.SC_FOUND);
@@ -61,10 +65,12 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
             return;
         }
 
-    // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, redirecionamos.
+        // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, redirecionamos.
         if ((requestPath.equals("/login") || requestPath.equals("/")) && isAuthenticated) {
             try {
-                String redirectTarget = determineRedirectTarget(request);
+                List<String> roles = jwtGeneratorService.extractRoles(accessToken.get());
+                String redirectTarget = determineRedirectTarget(request, roles);
+                
                 response.setStatus(HttpServletResponse.SC_FOUND);
                 response.setHeader(HttpHeaders.LOCATION, redirectTarget);
             } catch (BadRequestException badRequestException) {
@@ -83,15 +89,23 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
         response.setHeader(HttpHeaders.LOCATION, redirectUri);
     }
 
-    private String determineRedirectTarget(HttpServletRequest request) {
+    private String determineRedirectTarget(HttpServletRequest request, List<String> roles) {
         String externalRedirectUri = request.getParameter("redirectUri");
         if (externalRedirectUri != null && !externalRedirectUri.isBlank()) {
             return redirectService.validateRedirectUri(externalRedirectUri);
         }
 
-        return Optional.ofNullable(request.getParameter("redirect"))
-                .filter(internalPath -> !internalPath.isBlank())
-                .orElse("/dashboard");
+        String internalPath = request.getParameter("redirect");
+        
+        // Se o usuário é ADMIN e quer ir pro dashboard (ou não especificou nada), permitimos.
+        if (roles != null && roles.contains("ROLE_ADMIN")) {
+            return (internalPath != null && !internalPath.isBlank()) ? internalPath : "/dashboard";
+        }
+
+        // Se não é admin, mandamos para a home ou para o redirecionamento interno se não for sensível
+        return (internalPath != null && !internalPath.isBlank() && !internalPath.contains("dashboard")) 
+                ? internalPath 
+                : "/";
     }
 
     private boolean isFrontendNavigation(String path) {
@@ -103,27 +117,18 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
         return path.equals("/dashboard") || path.startsWith("/reset-password");
     }
 
-    /**
-     * Verifica se existe um cookie de acesso ou de refresh válido.
-     * Se houver pelo menos um deles, permitimos que o SPA carregue para tentar o refresh ou usar o token atual.
-     */
-    private boolean hasValidSession(HttpServletRequest request) {
-        if (request.getCookies() == null) {
-            return false;
-        }
-        return Arrays.stream(request.getCookies())
-                .anyMatch(cookie -> ("access_token".equals(cookie.getName()) || "refresh_token".equals(cookie.getName()))
-                        && cookie.getValue() != null && !cookie.getValue().isBlank());
-    }
-
-    private Optional<String> findSsoRedirectCookie(HttpServletRequest request) {
+    private Optional<String> findCookie(HttpServletRequest request, String name) {
         if (request.getCookies() == null) {
             return Optional.empty();
         }
         return Arrays.stream(request.getCookies())
-                .filter(cookie -> "sso_redirect".equals(cookie.getName()))
+                .filter(cookie -> name.equals(cookie.getName()))
                 .map(Cookie::getValue)
                 .filter(value -> value != null && !value.isBlank())
                 .findFirst();
+    }
+
+    private Optional<String> findSsoRedirectCookie(HttpServletRequest request) {
+        return findCookie(request, "sso_redirect");
     }
 }

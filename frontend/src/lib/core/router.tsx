@@ -91,8 +91,13 @@ export const indexRoute = createRoute({
   path: "/",
   getParentRoute: () => rootRoute,
   beforeLoad: () => {
-    const { isAuthenticated } = useAuthStore.getState();
-    throw redirect({ to: isAuthenticated ? "/dashboard" : "/login" });
+    const { isAuthenticated, isAdmin } = useAuthStore.getState();
+    
+    if (!isAuthenticated) {
+      throw redirect({ to: "/login" });
+    }
+
+    throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
   },
 });
 
