@@ -124,7 +124,7 @@ export const useAuthStore = create<AuthState>()(
       }),
       {
         name: "auth-storage",
-        storage: createJSONStorage(() => localStorage),
+        storage: createJSONStorage(() => sessionStorage),
         onRehydrateStorage: () => (state) => {
           // Se sobrevivermos a um F5 e formos autenticados, precisamos registrar novamente o intervalo de atualização do token.
           if (state?.isAuthenticated) {

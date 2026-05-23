@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import java.util.regex.Pattern;
+
 /**
  * Caso de Uso responsável por listar os usuários com paginação.
  */
@@ -47,8 +49,12 @@ public class ListUsersUseCase {
         List<UUID> matchingUserIds = null;
         if ((userName != null && !userName.isBlank()) || (position != null && !position.isBlank())) {
             Query dataQuery = new Query();
-            if (userName != null && !userName.isBlank()) dataQuery.addCriteria(Criteria.where("name").regex(userName, "i"));
-            if (position != null && !position.isBlank()) dataQuery.addCriteria(Criteria.where("position").regex(position, "i"));
+            if (userName != null && !userName.isBlank()) {
+                dataQuery.addCriteria(Criteria.where("name").regex(Pattern.quote(userName), "i"));
+            }
+            if (position != null && !position.isBlank()) {
+                dataQuery.addCriteria(Criteria.where("position").regex(Pattern.quote(position), "i"));
+            }
 
             List<UserData> userDatas = mongoTemplate.find(dataQuery, UserData.class);
             matchingUserIds = userDatas.stream().map(UserData::getUserId).toList();
@@ -60,7 +66,7 @@ public class ListUsersUseCase {
 
         Query query = new Query();
         if (email != null && !email.isBlank()) {
-            query.addCriteria(Criteria.where("email").regex(email, "i"));
+            query.addCriteria(Criteria.where("email").regex(Pattern.quote(email), "i"));
         }
         if (matchingUserIds != null) {
             query.addCriteria(Criteria.where("_id").in(matchingUserIds));

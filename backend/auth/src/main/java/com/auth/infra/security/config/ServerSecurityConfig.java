@@ -31,6 +31,7 @@ import org.springframework.security.web.header.writers.CrossOriginResourcePolicy
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import java.util.Arrays;
 import java.util.Set;
 
 @Configuration
@@ -123,6 +124,15 @@ public class ServerSecurityConfig {
             String path = request.getRequestURI();
             if (publicRoutes.contains(path)) return false;
 
+            // Se existe o cookie de access_token, DEVEMOS aplicar CSRF, 
+            // pois o navegador enviará esse cookie automaticamente.
+            boolean hasAccessTokenCookie = request.getCookies() != null && 
+                Arrays.stream(request.getCookies())
+                    .anyMatch(cookie -> "access_token".equals(cookie.getName()));
+
+            if (hasAccessTokenCookie) return true;
+
+            // Se não tem cookie, mas tem Bearer Token, podemos ignorar CSRF (Bearer não é automático)
             String authHeader = request.getHeader("Authorization");
             return authHeader == null || !authHeader.startsWith("Bearer ");
         }
