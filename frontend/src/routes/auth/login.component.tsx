@@ -30,6 +30,7 @@ export function LoginPage() {
     mutationFn: loginAttempt,
     onSuccess: (data) => {
       if (data.session.passwordResetRequired) {
+        setAuth(data.session, data.user);
         toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
         void navigate({ to: "/reset-password" });
         return;

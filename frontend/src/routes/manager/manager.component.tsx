@@ -32,18 +32,13 @@ export function ManagerPage() {
           <div>
             <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Gestão de Identidade</h1>
             <p className="text-sm text-muted-foreground font-medium mt-1">Administração centralizada de acessos e permissões</p>
+            <p className="text-xs font-bold text-primary mt-2 flex items-center gap-1.5 uppercase tracking-wider">
+              <Shield className="w-3.5 h-3.5" /> {user?.profile.username || "Administrador"}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-6">
-          <div className="text-right hidden lg:block pr-6 border-r border-border/40">
-            <p className="text-sm font-black text-foreground">{user?.profile.username || "Administrador"}</p>
-
-            <p className="text-[10px] text-primary font-black flex items-center justify-end gap-1.5 mt-1 uppercase tracking-widest">
-              <Shield className="w-3 h-3" /> Painel Master
-            </p>
-          </div>
-
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <ChangePasswordDialog />

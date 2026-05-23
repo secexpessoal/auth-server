@@ -13,6 +13,7 @@ import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { firstChangeSchema, type FirstChangeFormData } from "@lib/data/auth/molecule/auth.schema";
 import { firstChangePasswordAttempt } from "@lib/data/auth/services/auth.service";
+import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
 export function ResetPasswordPage() {
   const { isAuthenticated, passwordResetRequired, user } = useAuthStore();
@@ -46,8 +47,17 @@ export function ResetPasswordPage() {
   if (!passwordResetRequired) return <Navigate to="/" />;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-6 selection:bg-primary/20">
-      <div className="w-full max-w-lg">
+    <div className="min-h-screen flex items-center justify-center bg-background p-6 selection:bg-primary/20 relative overflow-hidden">
+      {/* Theme Toggle */}
+      <div className="absolute top-6 right-6 z-50">
+        <ThemeToggle />
+      </div>
+
+      {/* Background Decor */}
+      <div className="absolute top-[-15%] left-[-15%] w-[50%] h-[50%] bg-primary/10 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse"></div>
+      <div className="absolute bottom-[-15%] right-[-15%] w-[50%] h-[50%] bg-blue-400/10 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse delay-700"></div>
+
+      <div className="w-full max-w-lg relative z-10">
         <div className="bg-card rounded-[2.5rem] shadow-neumorph border border-white/20 overflow-hidden transform transition-all duration-500 hover:shadow-neumorph-convex">
           <div className="p-8 sm:p-12">
             <div className="flex flex-col items-center mb-10 text-center">
@@ -105,8 +115,7 @@ export function ResetPasswordPage() {
                         <FieldContent>
                           <FormControl>
                             <InputGroup>
-                              <InputGroupInput
- {...field} type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" />
+                              <InputGroupInput {...field} type={showConfirmPassword ? "text" : "password"} placeholder="••••••••" />
                               <InputGroupAddon align="inline-end">
                                 <InputGroupButton
                                   type="button"
@@ -141,12 +150,6 @@ export function ResetPasswordPage() {
                 </Button>
               </form>
             </Form>
-          </div>
-
-          <div className="p-8 bg-card/50 border-t border-white/10 text-center">
-            <p className="text-[10px] text-muted-foreground/40 font-black uppercase tracking-[0.3em]">
-              Security Protocol Layer &bull; v2.0
-            </p>
           </div>
         </div>
       </div>

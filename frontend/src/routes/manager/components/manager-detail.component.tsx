@@ -17,7 +17,6 @@ import {
   Activity,
   Calendar as CalendarIcon,
   Check,
-  Eye,
   KeyRound,
   MapPin,
   RefreshCw,
@@ -28,7 +27,6 @@ import {
   UserCheck,
   UserCircle,
   UserX,
-  X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -123,7 +121,6 @@ export function ManagerDetailsModal({
   }, [open, user, form]);
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
-  const frequencyCycleWeeks = useWatch({ control: form.control, name: "inPersonWorkPeriod.frequencyCycleWeeks" });
 
   if (!user) return null;
 

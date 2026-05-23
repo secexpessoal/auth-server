@@ -1,5 +1,5 @@
 import { Button } from "@lib/components/sh-button/button.component";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@lib/components/sh-dialog/dialog.component";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@lib/components/sh-dialog/dialog.component";
 import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@lib/components/sh-input-group/input-group.component";
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@lib/components/sh-pagination/pagination.component";
 import { Spinner } from "@lib/components/sh-spinner/spinner.component";
@@ -8,11 +8,13 @@ import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
 import { useDebounce } from "@lib/hooks/use-debounce.hook";
 import { queryClient } from "@lib/infra/query/query.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Copy, Eye, Info, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX } from "lucide-react";
+import { Separator } from "@lib/components/sh-separator/separator.component";
+import { Check, Copy, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX, Mail, Send } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@lib/utils/cn/cn.util";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
+import { resetPasswordAttempt as userResetPasswordAttempt } from "@lib/data/auth/services/auth.service";
 import { type UpdateUserProfileRequestDto } from "@lib/data/manager/molecule/user.schema";
 import {
   activateUserAttempt,
@@ -29,6 +31,7 @@ export function ManagerTableComponent() {
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [sendEmailDialogOpen, setSendEmailDialogOpen] = useState(false);
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
   const [temporaryPassword, setTemporaryPassword] = useState<string | null>(null);
@@ -54,6 +57,17 @@ export function ManagerTableComponent() {
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Erro ao resetar senha do usuário."));
+    },
+  });
+
+  const sendEmailMutation = useMutation({
+    mutationFn: (email: string) => userResetPasswordAttempt(email),
+    onSuccess: () => {
+      toast.success("E-mail de recuperação enviado com sucesso!");
+      setSendEmailDialogOpen(false);
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error, "Erro ao enviar e-mail de recuperação."));
     },
   });
 
@@ -132,7 +146,7 @@ export function ManagerTableComponent() {
   const pagination = paginatedUsers?.meta.pagination;
 
   return (
-    <div className="bg-card/40 backdrop-blur-md rounded-[2rem] overflow-hidden border border-white/10">
+    <div>
       <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="flex items-center gap-6 flex-1">
           <h2 className="font-bold text-foreground whitespace-nowrap hidden lg:block tracking-tight text-lg">Usuários Cadastrados</h2>
@@ -235,8 +249,24 @@ export function ManagerTableComponent() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
+                      className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10 rounded-md"
+                      onClick={() => {
+                        setSelectedUser(user);
+                        setSendEmailDialogOpen(true);
+                      }}
+                      disabled={sendEmailMutation.isPending}
+                      title="Enviar e-mail de recuperação"
+                    >
+                      <Mail className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
                       className="text-amber-500 hover:text-amber-600 hover:bg-amber-500/10 rounded-md"
-                      onClick={() => resetMutation.mutate(user.email)}
+                      onClick={() => {
+                        setSelectedUser(user);
+                        resetMutation.mutate(user.email);
+                      }}
                       disabled={resetMutation.isPending}
                       title="Resetar Senha"
                     >
@@ -255,7 +285,7 @@ export function ManagerTableComponent() {
                     >
                       {user.active ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                     </Button>
-                    <div className="w-px h-6 bg-white/10 mx-1" />
+                    <Separator orientation="vertical" className="h-6 mx-1" />
                     <Button
                       variant="outline"
                       size="sm"
@@ -327,28 +357,59 @@ export function ManagerTableComponent() {
         isPending={updateProfileMutation.isPending || resetMutation.isPending || deactivateMutation.isPending || activateMutation.isPending}
       />
 
+      {/* Send Reset Email Dialog */}
+      <Dialog open={sendEmailDialogOpen} onOpenChange={setSendEmailDialogOpen}>
+        <DialogContent size="sm" showCloseButton className="rounded-[2.5rem] border-white/20 bg-card shadow-neumorph backdrop-blur-3xl">
+          <DialogHeader>
+            <div className="mx-auto w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center mb-6 border border-blue-500/20">
+              <Mail className="w-8 h-8 text-blue-500" />
+            </div>
+            <DialogTitle className="text-center">Enviar E-mail</DialogTitle>
+            <DialogDescription className="text-center pt-2">
+              Deseja enviar as instruções de recuperação de senha para <span className="font-bold text-primary">{selectedUser?.email}</span>?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter className="mt-6 sm:justify-center">
+            <Button onClick={() => setSendEmailDialogOpen(false)} variant="outline" size="h12" className="font-black px-8">
+              Cancelar
+            </Button>
+            <Button 
+              onClick={() => selectedUser && sendEmailMutation.mutate(selectedUser.email)} 
+              size="h12" 
+              className="font-black px-8 bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={sendEmailMutation.isPending}
+            >
+              {sendEmailMutation.isPending ? <Spinner className="w-5 h-5 mr-2 text-white" /> : <Send className="w-5 h-5 mr-2" />}
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Reset Password Result Dialog */}
       <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
-        <DialogContent showCloseButton className="rounded-[3rem] border-white/20 bg-card shadow-neumorph backdrop-blur-3xl">
+        <DialogContent showCloseButton className="rounded-[2.5rem] border-white/20 bg-card shadow-neumorph backdrop-blur-3xl">
           <DialogHeader>
             <div className="mx-auto w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20">
               <KeyRound className="w-8 h-8 text-primary" />
             </div>
-            <DialogTitle className="text-center text-3xl font-black">Senha Resetada</DialogTitle>
-            <DialogDescription className="text-center pt-2 font-medium">
+            <DialogTitle className="text-center">Senha Resetada</DialogTitle>
+            <DialogDescription className="text-center pt-2">
               A nova senha temporária de <span className="font-bold text-primary">{selectedUser?.profile.username}</span> está disponível.
             </DialogDescription>
           </DialogHeader>
+          
           <div className="mt-8 px-1">
             <button
               onClick={copyToClipboard}
-              className="w-full bg-black/5 dark:bg-white/5 border-2 border-dashed border-primary/20 hover:border-primary/40 rounded-xl p-10 flex items-center justify-center flex-col gap-4 transition-all group relative active:scale-[0.98]"
+              className="w-full bg-black/5 dark:bg-white/5 border-2 border-dashed border-primary/20 hover:border-primary/40 rounded-xl p-6 sm:p-10 flex items-center justify-center flex-col gap-4 transition-all group relative active:scale-[0.98]"
             >
               <div className="absolute top-4 right-4 p-2 rounded-md bg-card shadow-neumorph-sm opacity-0 group-hover:opacity-100 transition-opacity">
                 {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4 text-primary/60" />}
               </div>
               <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.3em]">Senha Temporária</span>
-              <code className="text-4xl font-mono font-black text-foreground tracking-[0.2em] bg-white/50 dark:bg-white/5 px-8 py-4 rounded-md border border-white/10 shadow-neumorph-sm transition-all group-hover:shadow-neumorph">
+              <code className="text-xl sm:text-2xl md:text-3xl font-mono font-black text-foreground tracking-tight sm:tracking-[0.1em] bg-white/50 dark:bg-white/5 px-4 sm:px-8 py-4 rounded-md border border-white/10 shadow-neumorph-sm transition-all group-hover:shadow-neumorph break-all max-w-full text-center">
                 {temporaryPassword}
               </code>
               <span className="text-xs text-primary font-bold flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -356,11 +417,12 @@ export function ManagerTableComponent() {
               </span>
             </button>
           </div>
-          <div className="mt-10">
+          
+          <DialogFooter className="mt-10">
             <Button onClick={() => setResetDialogOpen(false)} size="h12" className="w-full font-black text-lg">
               Concluído
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -13,6 +13,10 @@ vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
 }));
 
+vi.mock("@lib/core/theme.provider", () => ({
+  useTheme: vi.fn().mockReturnValue({ theme: "light", toggleTheme: vi.fn() }),
+}));
+
 vi.mock("../services/auth.service", () => ({
   loginAttempt: vi.fn(),
 }));

@@ -73,7 +73,7 @@ export function ManagerFormDialog({ role }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={isAdmin ? "default" : "outline"} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+        <Button variant={isAdmin ? "default" : "outline"} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : ""}>
           {isAdmin ? <ShieldPlus className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
           Novo {isAdmin ? "Admin" : "Usuário"}
         </Button>
@@ -197,7 +197,11 @@ export function ManagerFormDialog({ role }: Props) {
                 <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={registerMutation.isPending} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : ""}>
+                <Button
+                  type="submit"
+                  disabled={registerMutation.isPending}
+                  className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "text-white"}
+                >
                   {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Salvar {isAdmin ? "Administrador" : "Usuário"}
                 </Button>
