@@ -356,9 +356,15 @@ export function ManagerDetailsModal({
                                       <SelectValue placeholder="Selecione..." />
                                     </SelectTrigger>
                                     <SelectContent className="bg-card border-white/20 shadow-2xl">
-                                      <SelectItem value="HOME_WORK" className="font-bold">Home Office</SelectItem>
-                                      <SelectItem value="OFFICE" className="font-bold">Presencial</SelectItem>
-                                      <SelectItem value="HYBRID" className="font-bold">Híbrido</SelectItem>
+                                      <SelectItem value="HOME_WORK" className="font-bold">
+                                        Home Office
+                                      </SelectItem>
+                                      <SelectItem value="OFFICE" className="font-bold">
+                                        Presencial
+                                      </SelectItem>
+                                      <SelectItem value="HYBRID" className="font-bold">
+                                        Híbrido
+                                      </SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </FormControl>
@@ -375,10 +381,7 @@ export function ManagerDetailsModal({
                           name="livesElsewhere"
                           render={({ field }) => (
                             <FormItem>
-                              <Field
-                                orientation="horizontal"
-                                className="p-6 bg-black/5 dark:bg-white/5 rounded-2xl border border-white/10"
-                              >
+                              <Field orientation="horizontal" className="p-6 bg-black/5 dark:bg-white/5 rounded-2xl border border-white/10">
                                 <FieldContent className="flex-row items-center gap-4">
                                   <FormControl>
                                     <Checkbox
@@ -422,6 +425,7 @@ export function ManagerDetailsModal({
                                   <FormControl>
                                     <Input
                                       {...field}
+                                      value={field.value ?? ""}
                                       type="number"
                                       min={1}
                                       onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
@@ -469,8 +473,13 @@ export function ManagerDetailsModal({
                                     <FieldContent>
                                       <div className="flex flex-wrap gap-2.5">
                                         {[
-                                          { label: "S", val: 1 }, { label: "T", val: 2 }, { label: "Q", val: 4 },
-                                          { label: "Q", val: 8 }, { label: "S", val: 16 }, { label: "S", val: 32 }, { label: "D", val: 64 }
+                                          { label: "S", val: 1 },
+                                          { label: "T", val: 2 },
+                                          { label: "Q", val: 4 },
+                                          { label: "Q", val: 8 },
+                                          { label: "S", val: 16 },
+                                          { label: "S", val: 32 },
+                                          { label: "D", val: 64 },
                                         ].map((day, idx) => {
                                           const mask = field.value || 0;
                                           const isSelected = (mask & day.val) === day.val;
@@ -538,9 +547,13 @@ export function ManagerDetailsModal({
                         <div className="flex items-center justify-between p-4 bg-card rounded-2xl border border-white/20 shadow-neumorph-sm">
                           <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">Status Atual</span>
                           {user.active ? (
-                            <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase">Ativo</span>
+                            <span className="px-3 py-1 rounded-full text-xs font-black bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 uppercase">
+                              Ativo
+                            </span>
                           ) : (
-                            <span className="px-3 py-1 rounded-full text-xs font-black bg-destructive/10 text-destructive border border-destructive/20 uppercase">Bloqueado</span>
+                            <span className="px-3 py-1 rounded-full text-xs font-black bg-destructive/10 text-destructive border border-destructive/20 uppercase">
+                              Bloqueado
+                            </span>
                           )}
                         </div>
 
@@ -562,7 +575,15 @@ export function ManagerDetailsModal({
                             onClick={onToggleStatus}
                             disabled={isPending}
                           >
-                            {user.active ? <><UserX className="w-4 h-4 mr-2" /> Bloquear</> : <><UserCheck className="w-4 h-4 mr-2" /> Ativar</>}
+                            {user.active ? (
+                              <>
+                                <UserX className="w-4 h-4 mr-2" /> Bloquear
+                              </>
+                            ) : (
+                              <>
+                                <UserCheck className="w-4 h-4 mr-2" /> Ativar
+                              </>
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -576,11 +597,15 @@ export function ManagerDetailsModal({
                       <div className="space-y-4">
                         <div className="flex justify-between items-center text-sm font-bold">
                           <span className="text-muted-foreground/60">Criação</span>
-                          <span className="text-foreground">{user.audit.createdAt ? format(new Date(user.audit.createdAt), "dd/MM/yy HH:mm") : "—"}</span>
+                          <span className="text-foreground">
+                            {user.audit.createdAt ? format(new Date(user.audit.createdAt), "dd/MM/yy HH:mm") : "—"}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center text-sm font-bold">
                           <span className="text-muted-foreground/60">Última Alteração</span>
-                          <span className="text-primary">{user.audit.updatedAt ? format(new Date(user.audit.updatedAt), "dd/MM/yy HH:mm") : "—"}</span>
+                          <span className="text-primary">
+                            {user.audit.updatedAt ? format(new Date(user.audit.updatedAt), "dd/MM/yy HH:mm") : "—"}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center text-sm font-bold">
                           <span className="text-muted-foreground/60">Modificado por</span>
@@ -602,7 +627,9 @@ export function ManagerDetailsModal({
                         type="button"
                         size="sm"
                         className="rounded-md font-black text-[10px] uppercase tracking-widest h-10 px-6 text-white"
-                        disabled={isUpdatingRoles || isPending || JSON.stringify([...selectedRoles].sort()) === JSON.stringify([...user.roles].sort())}
+                        disabled={
+                          isUpdatingRoles || isPending || JSON.stringify([...selectedRoles].sort()) === JSON.stringify([...user.roles].sort())
+                        }
                         onClick={async () => {
                           try {
                             setIsUpdatingRoles(true);
@@ -616,7 +643,8 @@ export function ManagerDetailsModal({
                           }
                         }}
                       >
-                        {isUpdatingRoles ? <Spinner className="w-3 h-3 text-white" /> : <Save className="w-3 h-3 mr-2 text-white" />} Salvar Permissões
+                        {isUpdatingRoles ? <Spinner className="w-3 h-3 text-white" /> : <Save className="w-3 h-3 mr-2 text-white" />} Salvar
+                        Permissões
                       </Button>
                     </div>
 
@@ -628,7 +656,7 @@ export function ManagerDetailsModal({
                             "p-6 rounded-3xl border-2 transition-all cursor-pointer group flex flex-col gap-4 relative overflow-hidden",
                             selectedRoles.includes(role)
                               ? "bg-primary/5 border-primary/40 shadow-neumorph-sm"
-                              : "bg-black/5 dark:bg-white/5 border-transparent hover:border-white/10"
+                              : "bg-black/5 dark:bg-white/5 border-transparent hover:border-white/10",
                           )}
                           onClick={() => {
                             if (selectedRoles.includes(role)) {
@@ -637,14 +665,21 @@ export function ManagerDetailsModal({
                             } else setSelectedRoles([...selectedRoles, role]);
                           }}
                         >
-                          <div className={cn(
-                            "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
-                            selectedRoles.includes(role) ? "bg-primary border-primary" : "border-white/20"
-                          )}>
+                          <div
+                            className={cn(
+                              "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all",
+                              selectedRoles.includes(role) ? "bg-primary border-primary" : "border-white/20",
+                            )}
+                          >
                             {selectedRoles.includes(role) && <Check className="w-3 h-3 text-white" />}
                           </div>
                           <div>
-                            <span className={cn("text-sm font-black uppercase tracking-tight block", selectedRoles.includes(role) ? "text-primary" : "text-muted-foreground")}>
+                            <span
+                              className={cn(
+                                "text-sm font-black uppercase tracking-tight block",
+                                selectedRoles.includes(role) ? "text-primary" : "text-muted-foreground",
+                              )}
+                            >
                               {role.replace("ROLE_", "")}
                             </span>
                             <span className="text-[10px] font-bold text-muted-foreground/60 mt-1 block leading-tight">
@@ -660,7 +695,9 @@ export function ManagerDetailsModal({
 
               {/* ACTION BAR */}
               <div className="p-8 bg-black/5 dark:bg-white/5 border-t border-white/5 flex items-center justify-between backdrop-blur-md">
-                <span className="text-xs font-bold text-muted-foreground/40 italic hidden lg:block">As alterações só entram em vigor após persistir os dados.</span>
+                <span className="text-xs font-bold text-muted-foreground/40 italic hidden lg:block">
+                  As alterações só entram em vigor após persistir os dados.
+                </span>
                 <div className="flex gap-4 w-full sm:w-auto">
                   <Button
                     type="submit"
@@ -668,7 +705,11 @@ export function ManagerDetailsModal({
                     className="flex-1 sm:flex-none px-12 font-black text-sm uppercase tracking-widest shadow-neumorph-convex hover:shadow-neumorph active:shadow-neumorph-pressed transition-all text-white"
                     disabled={!form.formState.isValid || form.formState.isSubmitting || isPending}
                   >
-                    {form.formState.isSubmitting || isPending ? <Spinner className="w-4 h-4 mr-3 text-white" /> : <Save className="w-4 h-4 mr-3 text-white" />}
+                    {form.formState.isSubmitting || isPending ? (
+                      <Spinner className="w-4 h-4 mr-3 text-white" />
+                    ) : (
+                      <Save className="w-4 h-4 mr-3 text-white" />
+                    )}
                     Persistir Dados
                   </Button>
                 </div>
