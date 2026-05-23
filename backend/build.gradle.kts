@@ -5,7 +5,7 @@ plugins {
 }
 
 allprojects {
-    group = "gov.tcm"
+    group = "com.auth"
     version = "0.0.1-SNAPSHOT"
 
     repositories {
