@@ -57,27 +57,33 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
 
         // Caso 2: Verificação de sessão para rotas protegidas do frontend
         Optional<String> accessToken = findCookie(request, "access_token");
-        boolean isAuthenticated = accessToken.isPresent() && jwtGeneratorService.isTokenValid(accessToken.get());
+        boolean hasAccessToken = accessToken.isPresent() && jwtGeneratorService.isTokenValid(accessToken.get());
+        boolean hasAnySession = hasAccessToken || findCookie(request, "refresh_token").isPresent();
 
-        if (isProtectedRoute(requestPath) && !isAuthenticated) {
+        // Se é uma rota protegida e não tem NENHUMA sessão (nem access nem refresh), manda pro login
+        if (isProtectedRoute(requestPath) && !hasAnySession) {
             response.setStatus(HttpServletResponse.SC_FOUND);
             response.setHeader(HttpHeaders.LOCATION, "/login");
             return;
         }
 
         // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, redirecionamos.
-        if ((requestPath.equals("/login") || requestPath.equals("/")) && isAuthenticated) {
+        // Só redirecionamos se tivermos um access_token válido para saber para onde mandar.
+        if ((requestPath.equals("/login") || requestPath.equals("/")) && hasAccessToken) {
             try {
                 List<String> roles = jwtGeneratorService.extractRoles(accessToken.get());
                 String redirectTarget = determineRedirectTarget(request, roles);
                 
-                response.setStatus(HttpServletResponse.SC_FOUND);
-                response.setHeader(HttpHeaders.LOCATION, redirectTarget);
-            } catch (BadRequestException badRequestException) {
-                log.warn("Tentativa de redirecionamento para URL não permitida: {}", request.getParameter("redirectUri"));
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, badRequestException.getMessage());
+                // EVITA LOOP: Só redireciona se o destino for diferente do caminho atual
+                if (!redirectTarget.equals(requestPath)) {
+                    response.setStatus(HttpServletResponse.SC_FOUND);
+                    response.setHeader(HttpHeaders.LOCATION, redirectTarget);
+                    return;
+                }
+            } catch (Exception exception) {
+                log.warn("Erro ao processar redirecionamento automático: {}", exception.getMessage());
+                // Se der erro (ex: token antigo sem roles), deixa passar para o SPA resolver
             }
-            return;
         }
 
         filterChain.doFilter(request, response);
@@ -96,16 +102,20 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
         }
 
         String internalPath = request.getParameter("redirect");
-        
-        // Se o usuário é ADMIN e quer ir pro dashboard (ou não especificou nada), permitimos.
-        if (roles != null && roles.contains("ROLE_ADMIN")) {
+        boolean isAdmin = roles != null && roles.contains("ROLE_ADMIN");
+
+        // Se o usuário é ADMIN e quer ir pro dashboard (ou não especificou nada), mandamos pra lá.
+        if (isAdmin) {
             return (internalPath != null && !internalPath.isBlank()) ? internalPath : "/dashboard";
         }
 
-        // Se não é admin, mandamos para a home ou para o redirecionamento interno se não for sensível
-        return (internalPath != null && !internalPath.isBlank() && !internalPath.contains("dashboard")) 
-                ? internalPath 
-                : "/";
+        // Se não é admin ou não sabemos (roles null), e ele pediu algo que NÃO seja dashboard, respeitamos.
+        if (internalPath != null && !internalPath.isBlank() && !internalPath.contains("dashboard")) {
+            return internalPath;
+        }
+
+        // Caso contrário, mandamos para a raiz (onde o SPA decidirá o que fazer)
+        return "/";
     }
 
     private boolean isFrontendNavigation(String path) {
