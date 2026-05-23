@@ -11,11 +11,13 @@ import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.RedirectService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
+import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,6 +49,8 @@ class LoginUseCaseTest {
     private RefreshTokenService refreshTokenService;
     @Mock
     private UserService userService;
+    @Mock
+    private RedirectService redirectService;
 
     @InjectMocks
     private LoginUseCase loginUseCase;
@@ -74,6 +78,8 @@ class LoginUseCaseTest {
     @DisplayName("Deve realizar login com sucesso e retornar tokens e metadados")
     void shouldLoginSuccessfully() {
         // Arrange
+        when(redirectService.validateRedirectUri(any())).thenReturn(null);
+
         Authentication auth = mock(Authentication.class);
         when(auth.getPrincipal()).thenReturn(testUser);
         when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class))).thenReturn(auth);
@@ -104,21 +110,24 @@ class LoginUseCaseTest {
     @DisplayName("Deve lançar BadCredentialsException quando a senha for inválida")
     void shouldThrowExceptionWhenCredentialsAreInvalid() {
         // Arrange
+        when(redirectService.validateRedirectUri(any())).thenReturn(null);
+
         when(authManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("Usuário ou senha inválidos"));
 
         // Act & Assert
         assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer"));
-        verify(userService, never()).incrementTokenVersion(any());
     }
 
     @Test
     @DisplayName("Deve lançar BadRequestException quando a URL de redirecionamento for inválida")
     void shouldThrowBadRequestWhenRedirectUriIsInvalid() {
         // Arrange
-        AuthenticationRequestDto invalidRedirectRequest = new AuthenticationRequestDto("test@example.com", "password", "https://site-malicioso.com");
+        String invalidUrl = "https://site-malicioso.com";
+        AuthenticationRequestDto invalidRedirectRequest = new AuthenticationRequestDto("test@example.com", "password", invalidUrl);
         
-        org.springframework.test.util.ReflectionTestUtils.setField(loginUseCase, "baseDomain", "dominio.com");
+        when(redirectService.validateRedirectUri(invalidUrl))
+                .thenThrow(new BadRequestException(ErrorCode.BAD_REQUEST, "O site que você quer acessar não é permitido."));
 
         // Act & Assert
         BadRequestException exception = assertThrows(

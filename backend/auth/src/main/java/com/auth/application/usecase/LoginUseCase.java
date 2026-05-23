@@ -10,6 +10,7 @@ package com.auth.application.usecase;
 import com.auth.api.dto.auth.*;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.RedirectService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
@@ -40,11 +41,10 @@ public class LoginUseCase {
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
-    @Value("${app.base-domain}")
-    private String baseDomain;
+    private final RedirectService redirectService;
 
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
-        String validatedRedirect = validateRedirectUri(loginRequest.redirectUri());
+        String validatedRedirect = redirectService.validateRedirectUri(loginRequest.redirectUri());
 
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
@@ -102,24 +102,5 @@ public class LoginUseCase {
                 .build();
 
         return new AuthenticationResult(responseDto, refreshToken.getToken());
-    }
-
-    private String validateRedirectUri(String redirectUri) {
-        if (redirectUri == null || redirectUri.isBlank()) {
-            return null;
-        }
-
-        try {
-            URI uri = URI.create(redirectUri);
-            String uriHost = uri.getHost();
-            if (baseDomain != null && !baseDomain.isBlank() && uriHost != null && 
-               (uriHost.equals(baseDomain) || uriHost.endsWith(String.format(".%s", baseDomain)))) {
-                return redirectUri;
-            }
-        } catch (Exception exception) {
-            log.warn("Falha ao analisar URL de redirecionamento: {}", redirectUri, exception);
-        }
-
-        throw new BadRequestException(ErrorCode.BAD_REQUEST, "O site que você quer acessar não é permitido.");
     }
 }

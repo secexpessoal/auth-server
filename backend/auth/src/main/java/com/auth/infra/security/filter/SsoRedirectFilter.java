@@ -1,12 +1,15 @@
 package com.auth.infra.security.filter;
 
 import com.auth.application.service.CookieService;
+import com.auth.application.service.RedirectService;
+import com.auth.infra.exception.custom.BadRequestException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
@@ -22,52 +25,73 @@ import java.util.Optional;
  * Garante que o usuário seja levado ao sistema de destino via redirecionamento 302 real,
  * evitando que o SPA seja carregado desnecessariamente.
  */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class SsoRedirectFilter extends OncePerRequestFilter {
 
     private final CookieService cookieService;
+    private final RedirectService redirectService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
-        String path = request.getRequestURI();
+        String requestPath = request.getRequestURI();
 
         // Só interceptamos rotas de navegação do frontend (não interceptamos API ou assets estáticos como JS/CSS)
-        if (isFrontendNavigation(path)) {
-            // Caso 1: Redirecionamento SSO pendente (Prioridade máxima)
-            Optional<String> ssoRedirect = findSsoRedirectCookie(request);
-            if (ssoRedirect.isPresent()) {
-                String redirectUri = ssoRedirect.get();
-                // Invalida o cookie para não entrar em loop infinito
-                ResponseCookie logoutCookie = cookieService.buildSsoRedirectLogoutCookie();
-                response.addHeader(HttpHeaders.SET_COOKIE, logoutCookie.toString());
+        if (!isFrontendNavigation(requestPath)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                // Executa o redirecionamento real via servidor
+        // Caso 1: Redirecionamento SSO pendente (Prioridade máxima)
+        Optional<String> ssoRedirect = findSsoRedirectCookie(request);
+        if (ssoRedirect.isPresent()) {
+            performRedirect(response, ssoRedirect.get(), cookieService.buildSsoRedirectLogoutCookie());
+            return;
+        }
+
+        // Caso 2: Verificação de sessão para rotas protegidas do frontend
+        boolean isAuthenticated = hasValidSession(request);
+
+        if (isProtectedRoute(requestPath) && !isAuthenticated) {
+            response.setStatus(HttpServletResponse.SC_FOUND);
+            response.setHeader(HttpHeaders.LOCATION, "/login");
+            return;
+        }
+
+    // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, redirecionamos.
+        if ((requestPath.equals("/login") || requestPath.equals("/")) && isAuthenticated) {
+            try {
+                String redirectTarget = determineRedirectTarget(request);
                 response.setStatus(HttpServletResponse.SC_FOUND);
-                response.setHeader(HttpHeaders.LOCATION, redirectUri);
-                return;
+                response.setHeader(HttpHeaders.LOCATION, redirectTarget);
+            } catch (BadRequestException badRequestException) {
+                log.warn("Tentativa de redirecionamento para URL não permitida: {}", request.getParameter("redirectUri"));
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, badRequestException.getMessage());
             }
-
-            // Caso 2: Verificação de sessão para rotas protegidas do frontend
-            boolean authenticated = hasValidSession(request);
-
-            if (isProtectedRoute(path) && !authenticated) {
-                response.setStatus(HttpServletResponse.SC_FOUND);
-                response.setHeader(HttpHeaders.LOCATION, "/login");
-                return;
-            }
-
-            // Caso 3: Se já está autenticado e tenta acessar login ou a raiz, manda para o dashboard
-            if ((path.equals("/login") || path.equals("/")) && authenticated) {
-                response.setStatus(HttpServletResponse.SC_FOUND);
-                response.setHeader(HttpHeaders.LOCATION, "/dashboard");
-                return;
-            }
+            return;
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void performRedirect(HttpServletResponse response, String redirectUri, ResponseCookie logoutCookie) {
+        response.addHeader(HttpHeaders.SET_COOKIE, logoutCookie.toString());
+        response.setStatus(HttpServletResponse.SC_FOUND);
+        response.setHeader(HttpHeaders.LOCATION, redirectUri);
+    }
+
+    private String determineRedirectTarget(HttpServletRequest request) {
+        String externalRedirectUri = request.getParameter("redirectUri");
+        if (externalRedirectUri != null && !externalRedirectUri.isBlank()) {
+            return redirectService.validateRedirectUri(externalRedirectUri);
+        }
+
+        return Optional.ofNullable(request.getParameter("redirect"))
+                .filter(internalPath -> !internalPath.isBlank())
+                .orElse("/dashboard");
     }
 
     private boolean isFrontendNavigation(String path) {
