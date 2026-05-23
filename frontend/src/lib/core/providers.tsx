@@ -28,7 +28,7 @@ export function AppProvider({ children }: AppProviderProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-...
+      <ThemeProvider>
         <RouterProvider router={router} />
         <Toaster position="top-right" />
         {children}

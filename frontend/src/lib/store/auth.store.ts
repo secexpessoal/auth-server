@@ -17,6 +17,27 @@ type AuthState = {
 
 let refreshInterval: number | undefined;
 
+const proactiveRefresh = async () => {
+  try {
+    const response = await axios.post<{
+      session: UserSessionResponseDto;
+      user: UserResponseDto;
+    }>(
+      "/v1/user/refresh",
+      {},
+      {
+        withCredentials: true,
+      },
+    );
+    if (response.data.session && response.data.user) {
+      useAuthStore.getState().setAuth(response.data.session, response.data.user);
+    }
+  } catch (_error) {
+    console.error("Proactive refresh failed", _error);
+    useAuthStore.getState().clearAuth();
+  }
+};
+
 const fetchProfile = async () => {
   const response = await axios.get<UserResponseDto>("/v1/user/profile", {
     withCredentials: true,
@@ -52,7 +73,7 @@ export const useAuthStore = create<AuthState>()(
               isAdmin: user.roles.includes("ROLE_ADMIN"),
               isInitializing: false,
             });
-          } catch (error) {
+          } catch (_error) {
             // Se falhou (401), tentamos o refresh silencioso
             try {
               const refreshResponse = await axios.post<{
@@ -61,7 +82,7 @@ export const useAuthStore = create<AuthState>()(
               }>("/v1/user/refresh", {}, { withCredentials: true });
               
               get().setAuth(refreshResponse.data.session, refreshResponse.data.user);
-            } catch (refreshError) {
+            } catch (_refreshError) {
               console.warn("Sessão expirada ou inexistente");
               get().clearAuth();
             } finally {
