@@ -1,7 +1,10 @@
 package com.auth.api.controller;
 
+import com.auth.application.dto.VerifyAuthResult;
 import com.auth.application.service.CookieService;
 import com.auth.application.usecase.VerifyAuthUseCase;
+import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -20,6 +23,7 @@ import jakarta.servlet.http.Cookie;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -72,25 +76,33 @@ class ForwardAuthControllerTest {
     }
 
     @Test
-    @DisplayName("GET /v1/auth/verify - Deve renovar silenciosamente quando access_token expira mas refresh_token é válido")
-    void shouldRenewSilentlyWhenAccessTokenIsInvalidButRefreshTokenIsValid() throws Exception {
+    @DisplayName("GET /v1/auth/verify - Deve renovar silenciosamente com rotação quando access_token expira mas refresh_token é válido")
+    void shouldRenewSilentlyWithRotationWhenAccessTokenIsInvalidButRefreshTokenIsValid() throws Exception {
         String oldToken = "expired-token";
         String refreshToken = "valid-refresh";
         String newToken = "new-access-token";
+        String newRefreshToken = "new-refresh-token";
+        String userAgent = "Mozilla/5.0";
 
         when(jwtService.isTokenValid(oldToken)).thenReturn(false);
-        when(verifyAuthUseCase.execute(refreshToken)).thenReturn(newToken);
+        when(verifyAuthUseCase.execute(eq(refreshToken), eq(userAgent), anyString(), any(), any()))
+                .thenReturn(new VerifyAuthResult(newToken, newRefreshToken));
         
-        ResponseCookie newCookie = ResponseCookie.from("access_token", newToken).build();
-        when(cookieService.buildAccessTokenCookie(newToken)).thenReturn(newCookie);
+        ResponseCookie newAccessCookie = ResponseCookie.from("access_token", newToken).build();
+        ResponseCookie newRefreshCookie = ResponseCookie.from("refresh_token", newRefreshToken).build();
+        
+        when(cookieService.buildAccessTokenCookie(newToken)).thenReturn(newAccessCookie);
+        when(cookieService.buildRefreshTokenCookie(newRefreshToken)).thenReturn(newRefreshCookie);
 
         mockMvc.perform(get("/v1/auth/verify")
+                .header(HttpHeaders.USER_AGENT, userAgent)
                 .cookie(new Cookie("access_token", oldToken), new Cookie("refresh_token", refreshToken)))
                 .andExpect(status().isOk())
-                .andExpect(header().exists(HttpHeaders.SET_COOKIE))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("access_token")))
+                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refresh_token")))
                 .andExpect(header().string(HttpHeaders.AUTHORIZATION, "Bearer " + newToken));
         
-        verify(verifyAuthUseCase).execute(refreshToken);
+        verify(verifyAuthUseCase).execute(eq(refreshToken), eq(userAgent), anyString(), any(), any());
     }
 
     @Test
@@ -105,13 +117,14 @@ class ForwardAuthControllerTest {
     }
 
     @Test
-    @DisplayName("GET /v1/auth/verify - Deve redirecionar para login quando renovação falha")
-    void shouldRedirectToLoginWhenRenewalFails() throws Exception {
+    @DisplayName("GET /v1/auth/verify - Deve redirecionar para login quando renovação falha por metadados divergentes")
+    void shouldRedirectToLoginWhenRenewalFailsDueToMetadata() throws Exception {
         String oldToken = "invalid";
-        String refreshToken = "invalid-refresh";
+        String refreshToken = "valid-refresh";
 
         when(jwtService.isTokenValid(anyString())).thenReturn(false);
-        when(verifyAuthUseCase.execute(refreshToken)).thenThrow(new RuntimeException("Invalid refresh token"));
+        when(verifyAuthUseCase.execute(anyString(), anyString(), anyString(), any(), any()))
+                .thenThrow(new BadRequestException(ErrorCode.UNAUTHORIZED, "IP divergente"));
 
         mockMvc.perform(get("/v1/auth/verify")
                 .cookie(new Cookie("access_token", oldToken), new Cookie("refresh_token", refreshToken)))

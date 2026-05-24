@@ -1,5 +1,6 @@
 package com.auth.application.usecase;
 
+import com.auth.application.dto.VerifyAuthResult;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
@@ -33,7 +34,7 @@ class VerifyAuthUseCaseTest {
     void shouldThrowWhenTokenIsNull() {
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> verifyAuthUseCase.execute(null)
+                () -> verifyAuthUseCase.execute(null, "ua", "ip", null, null)
         );
 
         assertEquals("O token é inválido ou ausente.", exception.getMessage());
@@ -44,7 +45,14 @@ class VerifyAuthUseCaseTest {
     void shouldThrowWhenUserIsInactive() {
         // Arrange
         String tokenString = "valid-token-string";
+        String ua = "Mozilla/5.0";
+        String ip = "127.0.0.1";
+        
         RefreshToken token = new RefreshToken();
+        token.setToken(tokenString);
+        token.setUserAgent(ua);
+        token.setIpAddress(ip);
+        
         UserAuth user = new UserAuth();
         user.setActive(false);
         token.setUser(user);
@@ -55,31 +63,67 @@ class VerifyAuthUseCaseTest {
         // Act & Assert
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> verifyAuthUseCase.execute(tokenString)
+                () -> verifyAuthUseCase.execute(tokenString, ua, ip, null, null)
         );
 
         assertEquals("O token é inválido ou o usuário está inativo.", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Deve retornar JWT novo quando o token e usuário forem válidos")
-    void shouldReturnJwtWhenTokenIsValid() {
+    @DisplayName("Deve retornar JWT e RefreshToken novos quando o token e usuário forem válidos")
+    void shouldReturnTokensWhenValid() {
         // Arrange
-        String tokenString = "valid-token-string";
-        RefreshToken token = new RefreshToken();
+        String tokenString = "old-refresh";
+        String ua = "Mozilla/5.0";
+        String ip = "127.0.0.1";
+        
+        RefreshToken oldToken = new RefreshToken();
+        oldToken.setToken(tokenString);
+        oldToken.setUserAgent(ua);
+        oldToken.setIpAddress(ip);
+        
         UserAuth user = new UserAuth();
         user.setActive(true);
-        token.setUser(user);
+        user.setEmail("user@test.com");
+        oldToken.setUser(user);
 
-        when(refreshTokenService.findByToken(tokenString)).thenReturn(token);
-        when(refreshTokenService.verifyExpiration(token)).thenReturn(token);
-        when(jwtService.generateToken(user)).thenReturn("new-jwt-token");
+        RefreshToken newToken = new RefreshToken();
+        newToken.setToken("new-refresh");
+
+        when(refreshTokenService.findByToken(tokenString)).thenReturn(oldToken);
+        when(refreshTokenService.verifyExpiration(oldToken)).thenReturn(oldToken);
+        when(jwtService.generateToken(user)).thenReturn("new-jwt");
+        when(refreshTokenService.createRefreshToken(eq(user), eq(ua), eq(ip), any(), any())).thenReturn(newToken);
 
         // Act
-        String result = verifyAuthUseCase.execute(tokenString);
+        VerifyAuthResult result = verifyAuthUseCase.execute(tokenString, ua, ip, null, null);
 
         // Assert
-        assertEquals("new-jwt-token", result);
-        verify(jwtService).generateToken(user);
+        assertEquals("new-jwt", result.accessToken());
+        assertEquals("new-refresh", result.refreshToken());
+        
+        verify(refreshTokenService).deleteByToken(tokenString);
+        verify(refreshTokenService).createRefreshToken(eq(user), eq(ua), eq(ip), any(), any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção quando o User-Agent for divergente")
+    void shouldThrowWhenUserAgentDiffers() {
+        // Arrange
+        String tokenString = "valid-token";
+        RefreshToken token = new RefreshToken();
+        token.setToken(tokenString);
+        token.setUserAgent("Mozilla/5.0");
+        token.setIpAddress("127.0.0.1");
+
+        when(refreshTokenService.findByToken(tokenString)).thenReturn(token);
+
+        // Act & Assert
+        assertThrows(
+                BadRequestException.class,
+                () -> verifyAuthUseCase.execute(tokenString, "Attacker-Agent", "127.0.0.1", null, null)
+        );
+        
+        verify(refreshTokenService).deleteByToken(tokenString);
     }
 }
