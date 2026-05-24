@@ -56,6 +56,31 @@ public class ForwardAuthController {
 
         // 2. Valida o access_token (seja do cookie ou do header)
         if (tokenToValidate != null && !tokenToValidate.isBlank() && jwtService.isTokenValid(tokenToValidate)) {
+            // PROACTIVE REFRESH: Se o token é válido mas expira em menos de 5 minutos, tentamos renovar já.
+            if (jwtService.isTokenAboutToExpire(tokenToValidate, 5) && refreshToken != null && !refreshToken.isBlank()) {
+                log.info("Access token próximo da expiração (janela de 5min). Iniciando Proactive Refresh.");
+                try {
+                    String userAgent = request.getHeader(HttpHeaders.USER_AGENT);
+                    String ipAddress = RequestUtil.getClientIP(request);
+                    String origin = request.getHeader(HttpHeaders.ORIGIN);
+                    String referer = request.getHeader(HttpHeaders.REFERER);
+
+                    VerifyAuthResult result = verifyAuthUseCase.execute(refreshToken, userAgent, ipAddress, origin, referer);
+                    
+                    ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.accessToken());
+                    ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
+                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                            .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", result.accessToken()))
+                            .build();
+                } catch (Exception exception) {
+                    log.warn("Falha no Proactive Refresh, mas access_token ainda é válido. Deixando passar: {}", exception.getMessage());
+                    // Se falhar o refresh proativo, deixamos passar com o token atual que ainda vale por < 5min
+                }
+            }
+
             return ResponseEntity.ok()
                     .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", tokenToValidate))
                     .build();

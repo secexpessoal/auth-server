@@ -107,6 +107,20 @@ public class JwtGeneratorService {
         }
     }
 
+    /**
+     * Verifica se o token está próximo da expiração (ex: faltam menos de X minutos).
+     * Útil para Proactive Refresh.
+     */
+    public boolean isTokenAboutToExpire(String token, int thresholdMinutes) {
+        try {
+            Date expiration = extractExpiration(token);
+            long thresholdMillis = (long) thresholdMinutes * 60 * 1000;
+            return expiration.before(new Date(System.currentTimeMillis() + thresholdMillis));
+        } catch (Exception exception) {
+            return true; // Se não conseguir ler, assume que deve renovar
+        }
+    }
+
     private boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
     }
