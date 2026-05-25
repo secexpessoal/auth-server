@@ -11,8 +11,8 @@ import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react"
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { registerAdminSchema, registerUserSchema } from "@lib/data/users/molecule/user.schema";
-import { registerAdminAttempt, registerUserAttempt } from "@lib/data/users/services/user.service";
+import { registerAdminSchema, registerUserSchema } from "@lib/data/manager/molecule/user.schema";
+import { registerAdminAttempt, registerUserAttempt } from "@lib/data/manager/services/user.service";
 
 type Props = {
   role: "ADMIN" | "USER";
@@ -25,7 +25,7 @@ type RegisterFormData = {
   role?: "USER" | "MANAGER";
 };
 
-export function CreateUserDialog({ role }: Props) {
+export function ManagerFormDialog({ role }: Props) {
   const [open, setOpen] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const queryClient = useQueryClient();
@@ -73,7 +73,7 @@ export function CreateUserDialog({ role }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant={isAdmin ? "default" : "outline"} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+        <Button variant={isAdmin ? "default" : "outline"} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : ""}>
           {isAdmin ? <ShieldPlus className="w-4 h-4 mr-2" /> : <UserPlus className="w-4 h-4 mr-2" />}
           Novo {isAdmin ? "Admin" : "Usuário"}
         </Button>
@@ -197,7 +197,11 @@ export function CreateUserDialog({ role }: Props) {
                 <Button type="button" variant="ghost" onClick={() => handleOpenChange(false)}>
                   Cancelar
                 </Button>
-                <Button type="submit" disabled={registerMutation.isPending} className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700" : ""}>
+                <Button
+                  type="submit"
+                  disabled={registerMutation.isPending}
+                  className={isAdmin ? "bg-indigo-600 hover:bg-indigo-700 text-white" : "text-white"}
+                >
                   {registerMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Salvar {isAdmin ? "Administrador" : "Usuário"}
                 </Button>

@@ -1,4 +1,4 @@
-group = "gov.tcm"
+group = "com.auth"
 version = "0.0.1-SNAPSHOT"
 description = "App de aposentadoria SIAAP feito pela SAP."
 

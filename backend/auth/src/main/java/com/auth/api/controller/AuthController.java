@@ -24,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -57,9 +58,20 @@ public class AuthController {
         String ipAddress = RequestUtil.getClientIP(request);
         AuthenticationResult result = loginUseCase.execute(loginRequest, userAgent, ipAddress, origin, referer);
 
-        ResponseCookie cookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+        ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+        ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.responseDto().session().accessToken());
 
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
+        var responseBuilder = ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
+
+        // Se houver redirectUri, enviamos o cookie de controle para o SsoRedirectFilter
+        if (result.responseDto().redirectUri() != null) {
+            ResponseCookie ssoCookie = cookieService.buildSsoRedirectCookie(result.responseDto().redirectUri());
+            responseBuilder.header(HttpHeaders.SET_COOKIE, ssoCookie.toString());
+        }
+
+        return responseBuilder.body(result.responseDto());
     }
 
     // NOTE: Rota publica
@@ -70,20 +82,30 @@ public class AuthController {
         AuthenticationResult result = refreshTokenUseCase.execute(refreshRequest);
 
         // NOTE: Renova (roda) o cookie do refresh token
-        ResponseCookie cookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(result.responseDto());
+        ResponseCookie newRefreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+        ResponseCookie newAccessTokenCookie = cookieService.buildAccessTokenCookie(result.responseDto().session().accessToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, newRefreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString())
+                .body(result.responseDto());
     }
 
-    // NOTE: Não sei se precisa ser auth, por que ele mata o refresh token
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
-    public ResponseEntity<@NonNull Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
+    public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
         if (refreshToken != null) {
             refreshTokenService.deleteByToken(refreshToken);
         }
 
-        ResponseCookie cookie = cookieService.buildLogoutCookie();
-        return ResponseEntity.noContent().header(HttpHeaders.SET_COOKIE, cookie.toString()).build();
+        ResponseCookie refreshTokenLogoutCookie = cookieService.buildRefreshTokenLogoutCookie();
+        ResponseCookie accessTokenLogoutCookie = cookieService.buildAccessTokenLogoutCookie();
+
+        return ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "/login")
+                .header(HttpHeaders.SET_COOKIE, refreshTokenLogoutCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, accessTokenLogoutCookie.toString())
+                .build();
     }
 
     // NOTE: Rota privada, usuário precisa mandar o token

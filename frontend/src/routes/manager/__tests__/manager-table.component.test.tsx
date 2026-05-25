@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { UsersTableComponent } from "@routes/users/components/users-table.component";
+import { ManagerTableComponent } from "@routes/manager/components/manager-table.component";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import type * as Query from "@tanstack/react-query";
 
@@ -22,7 +22,7 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
   };
 });
 
-vi.mock("@lib/query.util", () => ({
+vi.mock("@lib/infra/query/query.util", () => ({
   queryClient: {
     invalidateQueries: vi.fn(),
   },
@@ -71,7 +71,7 @@ const mockUsers = {
   },
 };
 
-describe("UsersTableComponent", () => {
+describe("ManagerTableComponent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (useQuery as Mock).mockReturnValue({
@@ -88,57 +88,56 @@ describe("UsersTableComponent", () => {
   });
 
   it("renders users table with data", () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     expect(screen.getByText("User 1")).toBeInTheDocument();
     expect(screen.getByText("user1@test.com")).toBeInTheDocument();
   });
 
   it("offers quick actions directly in the table row", () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     expect(screen.getByTitle("Resetar Senha")).toBeInTheDocument();
     expect(screen.getByTitle("Desativar")).toBeInTheDocument();
   });
 
   it("opens redesigned details modal when clicking the eye icon button", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
 
     const detailsButton = screen.getByTitle("Ver Detalhes");
     fireEvent.click(detailsButton);
 
     await waitFor(() => {
-      expect(screen.getByText("Detalhes")).toBeInTheDocument();
-      // Test the redesigned header content or new labels
-      expect(screen.getByText(/Perfil de acesso de/i)).toBeInTheDocument();
+      expect(screen.getByText("Gerenciar Usuário")).toBeInTheDocument();
+      expect(screen.getByText(/Configurações avançadas para/i)).toBeInTheDocument();
     });
   });
 
   it("shows tabs inside the premium details modal", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
 
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
       // Tab triggers
-      expect(screen.getByRole("tab", { name: /Informações do Perfil/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Perfil do Colaborador/i })).toBeInTheDocument();
       expect(screen.getByRole("tab", { name: /Regime & Localização/i })).toBeInTheDocument();
-      expect(screen.getByRole("tab", { name: /Governança/i })).toBeInTheDocument();
+      expect(screen.getByRole("tab", { name: /Segurança & Acessos/i })).toBeInTheDocument();
 
       // Current active tab content
-      expect(screen.getByRole("heading", { name: /Informações do Perfil/i })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Informações Pessoais/i })).toBeInTheDocument();
     });
   });
 
   it("contains persist control inside the modal footer", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /Persistir Alterações/i })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Persistir Dados/i })).toBeInTheDocument();
     });
   });
 
   it("interacts with the Shadcn Select for work regime after switching tab", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
@@ -157,7 +156,7 @@ describe("UsersTableComponent", () => {
   });
 
   it("renders the premium Shadcn DatePicker after switching tab", async () => {
-    render(<UsersTableComponent />);
+    render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
     await waitFor(() => {
@@ -170,7 +169,7 @@ describe("UsersTableComponent", () => {
     await waitFor(
       () => {
         // The DatePicker trigger is a button that shows the placeholder or formatted date
-        expect(screen.getByText(/Selecione a data/i)).toBeInTheDocument();
+        expect(screen.getByText(/Selecionar data/i)).toBeInTheDocument();
       },
       { timeout: 3000 },
     );

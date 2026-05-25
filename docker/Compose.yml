@@ -1,11 +1,43 @@
 services:
+  # traefik:
+  #   image: traefik:v3.0
+  #   container_name: traefik
+  #   command:
+  #     - "--api.insecure=true"
+  #     - "--providers.docker=true"
+  #     - "--providers.docker.exposedbydefault=false"
+  #     - "--entrypoints.web.address=:80"
+  #   ports:
+  #     - "80:80"
+  #     - "8081:8080" # Painel admin Traefik (usando 8081 pra não conflitar com a app)
+  #   volumes:
+  #     - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   auth-server:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        - APP_PORT=${APP_PORT}
+        - DOMAIN=${DOMAIN}
     container_name: auth-server
-    env_file:
-      - .env
-    ports:
-      - "${APP_PORT}:${APP_PORT}"
+    environment:
+      - APP_PORT=${APP_PORT}
+      - DOMAIN=${DOMAIN}
+      - BASE_DOMAIN=${BASE_DOMAIN}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+      - REFRESH_EXPIRATION=${REFRESH_EXPIRATION}
+      - DB_URI=${DB_URI}
+      - DB_NAME=${DB_NAME}
+      - NAME_ADMIN=${NAME_ADMIN}
+      - EMAIL_ADMIN=${EMAIL_ADMIN}
+      - PASSWORD_ADMIN=${PASSWORD_ADMIN}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
     restart: always
+
+      # Configuração do Middleware de Forward Auth
+      # - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      # - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"

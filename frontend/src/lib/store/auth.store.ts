@@ -9,8 +9,10 @@ type AuthState = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   passwordResetRequired: boolean;
+  isInitializing: boolean;
   setAuth: (session: UserSessionResponseDto, user: UserResponseDto) => void;
   clearAuth: () => void;
+  initializeAuth: () => Promise<void>;
 };
 
 let refreshInterval: number | undefined;
@@ -30,21 +32,64 @@ const proactiveRefresh = async () => {
     if (response.data.session && response.data.user) {
       useAuthStore.getState().setAuth(response.data.session, response.data.user);
     }
-  } catch (error) {
-    console.error("Proactive refresh failed", error);
+  } catch (_error) {
+    console.error("Proactive refresh failed", _error);
     useAuthStore.getState().clearAuth();
   }
+};
+
+const fetchProfile = async () => {
+  const response = await axios.get<UserResponseDto>("/v1/user/profile", {
+    withCredentials: true,
+  });
+  return response.data;
 };
 
 export const useAuthStore = create<AuthState>()(
   subscribeWithSelector(
     persist(
-      (set) => ({
+      (set, get) => ({
         token: null,
         user: null,
         isAuthenticated: false,
         isAdmin: false,
         passwordResetRequired: false,
+        isInitializing: true,
+
+        initializeAuth: async () => {
+          // Se já estamos autenticados via persistência, só removemos o loading
+          if (get().isAuthenticated) {
+            set({ isInitializing: false });
+            return;
+          }
+
+          try {
+            // Se não estamos autenticados na memória, tentamos buscar o perfil (usa o cookie access_token)
+            const user = await fetchProfile();
+            // Se funcionou, significa que o cookie é válido! Reconstruímos a sessão parcial
+            set({
+              user,
+              isAuthenticated: true,
+              isAdmin: user.roles.includes("ROLE_ADMIN"),
+              isInitializing: false,
+            });
+          } catch (_error) {
+            // Se falhou (401), tentamos o refresh silencioso
+            try {
+              const refreshResponse = await axios.post<{
+                session: UserSessionResponseDto;
+                user: UserResponseDto;
+              }>("/v1/user/refresh", {}, { withCredentials: true });
+              
+              get().setAuth(refreshResponse.data.session, refreshResponse.data.user);
+            } catch (_refreshError) {
+              console.warn("Sessão expirada ou inexistente");
+              get().clearAuth();
+            } finally {
+              set({ isInitializing: false });
+            }
+          }
+        },
 
         setAuth: (session, user) => {
           set({
@@ -73,6 +118,7 @@ export const useAuthStore = create<AuthState>()(
             isAdmin: false,
             isAuthenticated: false,
             passwordResetRequired: false,
+            isInitializing: false,
           });
         },
       }),

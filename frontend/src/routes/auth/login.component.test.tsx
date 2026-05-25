@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { LoginPage } from "@routes/auth/login.page";
+import { LoginPage } from "@routes/auth/login.component";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 
@@ -11,6 +11,10 @@ vi.mock("@tanstack/react-router", () => ({
 
 vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
+}));
+
+vi.mock("@lib/core/theme.provider", () => ({
+  useTheme: vi.fn().mockReturnValue({ theme: "light", toggleTheme: vi.fn() }),
 }));
 
 vi.mock("../services/auth.service", () => ({
@@ -31,10 +35,10 @@ describe("LoginPage", () => {
 
   it("renders login form elements", () => {
     render(<LoginPage />);
-    expect(screen.getByText(/painel admin/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/admin@exemplo.com/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /entrar/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /esqueceu sua senha\?/i })).toBeInTheDocument();
+    expect(screen.getByText(/auth server/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/colaborador@empresa.com/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /acessar painel/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /recuperar credenciais\?/i })).toBeInTheDocument();
   });
 
   it("opens forgot password dialog when clicking the link", async () => {
@@ -43,11 +47,11 @@ describe("LoginPage", () => {
 
     render(<LoginPage />);
 
-    const forgotPasswordBtn = screen.getByRole("button", { name: /esqueceu sua senha\?/i });
+    const forgotPasswordBtn = screen.getByRole("button", { name: /recuperar credenciais\?/i });
     await user.click(forgotPasswordBtn);
 
-    expect(screen.getByText(/recuperar senha/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/exemplo@empresa.com/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /enviar nova senha/i })).toBeInTheDocument();
+    expect(screen.getByText(/recuperar acesso/i)).toBeInTheDocument();
+    expect(screen.getAllByPlaceholderText(/colaborador@empresa.com/i)).toHaveLength(2);
+    expect(screen.getByRole("button", { name: /enviar solicitação/i })).toBeInTheDocument();
   });
 });

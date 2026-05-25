@@ -66,7 +66,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /v1/user/login - Deve retornar 200 e tokens")
     void shouldReturnOkOnLogin() throws Exception {
-        AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123");
+        AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123", null);
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(com.auth.api.dto.auth.UserSessionResponseDto.builder().accessToken("fake-jwt").build())
@@ -87,7 +87,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("POST /v1/user/login - Deve retornar 400 se campos estiverem inválidos")
     void shouldReturnBadRequestOnInvalidLogin() throws Exception {
-        AuthenticationRequestDto request = new AuthenticationRequestDto("invalid-email", "");
+        AuthenticationRequestDto request = new AuthenticationRequestDto("invalid-email", "", null);
 
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -78,7 +78,7 @@ export function DatePicker({ value, onChange, placeholder = "Selecione uma data"
           variant={"outline"}
           disabled={disabled}
           className={cn(
-            "w-full justify-start text-left font-bold h-12 rounded-xl bg-background border border-input transition-all hover:border-primary/30 hover:bg-accent",
+            "w-full justify-start text-left font-bold h-12 rounded-md bg-background border border-input transition-all hover:border-primary/30 hover:bg-accent",
             !date && "text-muted-foreground font-semibold",
             className,
           )}
@@ -90,7 +90,7 @@ export function DatePicker({ value, onChange, placeholder = "Selecione uma data"
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0 rounded-2xl border border-input shadow-2xl" align="start">
+      <PopoverContent className="w-auto p-0 rounded-md border border-input shadow-2xl" align="start">
         <Calendar
           mode="single"
           selected={date}

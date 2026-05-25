@@ -40,7 +40,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
     private final ObjectMapper objectMapper;
 
-    @Value("${security.rate-limit.enabled:true}")
+    @Value("${security.rate-limit.enabled}")
     private boolean enabled;
 
     @Override

@@ -4,7 +4,9 @@ import { useAuthStore } from "@lib/store/auth.store";
 
 export async function loginAttempt(payload: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
   const { data } = await axiosClient.post<AuthenticationResponseDto>("/v1/user/login", payload);
-  useAuthStore.getState().setAuth(data.session, data.user);
+  // NOTE: Não atualizamos o Store aqui para evitar que o Router tente renderizar o Dashboard 
+  // antes do redirecionamento de volta para o Siaap acontecer.
+  // useAuthStore.getState().setAuth(data.session, data.user); 
   return data;
 }
 

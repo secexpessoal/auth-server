@@ -69,7 +69,7 @@ public class RefreshTokenUseCase {
         UserResponseDto userDto = UserResponseDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(r -> "ROLE_" + r.getRole()).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(role -> "ROLE_" + role.getRole()).collect(Collectors.toSet()))
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)

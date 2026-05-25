@@ -31,6 +31,7 @@ import org.springframework.security.web.header.writers.CrossOriginResourcePolicy
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
+import java.util.Arrays;
 import java.util.Set;
 
 @Configuration
@@ -43,6 +44,7 @@ public class ServerSecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final RateLimitingFilter rateLimitingFilter;
     private final MdcFilter mdcFilter;
+    private final SsoRedirectFilter ssoRedirectFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
@@ -54,6 +56,7 @@ public class ServerSecurityConfig {
 
         httpSecurity
                 .addFilterBefore(mdcFilter, UsernamePasswordAuthenticationFilter.class) // NOTE: MDC em primeiro para rastrear tudo
+                .addFilterAfter(ssoRedirectFilter, MdcFilter.class)
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // NOTE: Permite o JS ler o cookie XSRF-TOKEN
@@ -70,6 +73,7 @@ public class ServerSecurityConfig {
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
                             .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh", "/v1/password/user-reset").permitAll()
+                            .requestMatchers("/v1/auth/verify").permitAll()
                             .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
@@ -120,6 +124,15 @@ public class ServerSecurityConfig {
             String path = request.getRequestURI();
             if (publicRoutes.contains(path)) return false;
 
+            // Se existe o cookie de access_token, DEVEMOS aplicar CSRF, 
+            // pois o navegador enviará esse cookie automaticamente.
+            boolean hasAccessTokenCookie = request.getCookies() != null && 
+                Arrays.stream(request.getCookies())
+                    .anyMatch(cookie -> "access_token".equals(cookie.getName()));
+
+            if (hasAccessTokenCookie) return true;
+
+            // Se não tem cookie, mas tem Bearer Token, podemos ignorar CSRF (Bearer não é automático)
             String authHeader = request.getHeader("Authorization");
             return authHeader == null || !authHeader.startsWith("Bearer ");
         }

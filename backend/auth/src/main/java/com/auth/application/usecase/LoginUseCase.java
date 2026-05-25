@@ -10,6 +10,7 @@ package com.auth.application.usecase;
 import com.auth.api.dto.auth.*;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.RedirectService;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
@@ -18,11 +19,14 @@ import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -37,7 +41,11 @@ public class LoginUseCase {
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
 
+    private final RedirectService redirectService;
+
     public AuthenticationResult execute(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
+        String validatedRedirect = redirectService.validateRedirectUri(loginRequest.redirectUri());
+
         Authentication auth = authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
         );
@@ -81,7 +89,7 @@ public class LoginUseCase {
         UserResponseDto userDto = UserResponseDto.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
-                .roles(user.getRoles().stream().map(it -> "ROLE_" + it.getRole()).collect(Collectors.toSet()))
+                .roles(user.getRoles().stream().map(role -> "ROLE_" + role.getRole()).collect(Collectors.toSet()))
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)
@@ -90,6 +98,7 @@ public class LoginUseCase {
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
                 .user(userDto)
+                .redirectUri(validatedRedirect)
                 .build();
 
         return new AuthenticationResult(responseDto, refreshToken.getToken());

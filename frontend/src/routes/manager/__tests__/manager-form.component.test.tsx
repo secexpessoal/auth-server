@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { CreateUserDialog } from "@routes/users/components/user-form.component";
+import { ManagerFormDialog } from "@routes/manager/components/manager-form.component";
 
 // Mocks
 vi.mock("../services/user.service", () => ({
@@ -16,7 +16,7 @@ vi.mock("react-hot-toast", () => ({
   },
 }));
 
-describe("CreateUserDialog", () => {
+describe("ManagerFormDialog", () => {
   let queryClient: QueryClient;
 
   beforeEach(() => {
@@ -33,7 +33,7 @@ describe("CreateUserDialog", () => {
   const renderComponent = (props: { role: "ADMIN" | "USER" } = { role: "ADMIN" }) =>
     render(
       <QueryClientProvider client={queryClient}>
-        <CreateUserDialog {...props} />
+        <ManagerFormDialog {...props} />
       </QueryClientProvider>,
     );
 

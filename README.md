@@ -33,7 +33,7 @@ sequenceDiagram
 
     Note over User, Ext: Consumo de Serviços
     User->>Ext: Requisição com Token JWT
-    Ext->>Auth: Valida Token e obtém Identidade
+    Ext->>Auth: Valida Token via /v1/user/profile
     Auth-->>Ext: Retorna Claims (Roles, ID, Email)
     Ext-->>User: Entrega Recurso Protegido
 ```
@@ -42,7 +42,10 @@ sequenceDiagram
 
 ## 🔐 Módulo 1: Autenticação e Gestão de Sessão (Público)
 
-Detalhamento técnico do processo de login, renovação via Refresh Token (Cookie HttpOnly) e encerramento de sessão.
+### Ciclo de Vida e Rotação de Tokens (Silent Refresh)
+O sistema utiliza uma política rigorosa de **Refresh Token Rotation**. Toda vez que o Access Token expira e o cliente solicita uma renovação (`/v1/user/refresh`), o servidor invalida o Refresh Token anterior e gera um novo par.
+- **Silent Refresh**: O processo ocorre em background via cookies `HttpOnly`, mantendo a sessão ativa sem deslogar o usuário.
+- **Segurança**: Se um token antigo for reutilizado, o sistema detecta a quebra de sequência e invalida a sessão.
 
 ```mermaid
 sequenceDiagram
@@ -55,17 +58,17 @@ sequenceDiagram
     Client->>API: POST /v1/user/login (Email/Senha)
     API->>DB: Valida credenciais e status (Ativo?)
     DB-->>API: Usuário OK
-    API-->>Client: 200 OK (JSON: AccessToken | Set-Cookie: RefreshToken)
+    API-->>Client: 200 OK (JSON: AccessToken | Set-Cookie: RefreshToken V1)
 
-    Note over Client, DB: Ciclo de Refresh (Silencioso)
-    Client->>API: POST /v1/user/refresh (Lê Cookie HttpOnly)
-    API->>DB: Valida persistência do Refresh Token
+    Note over Client, DB: Ciclo de Refresh (Silencioso e Rotativo)
+    Client->>API: POST /v1/user/refresh (Lê Cookie V1)
+    API->>DB: Valida e Invalida Token V1
     DB-->>API: Token Válido
-    API-->>Client: 200 OK (JSON: Novo AccessToken | Set-Cookie: Novo RefreshToken)
+    API-->>Client: 200 OK (JSON: Novo AccessToken | Set-Cookie: Novo RefreshToken V2)
 
     Note over Client, DB: Logout
     Client->>API: POST /v1/user/logout
-    API-->>Client: 204 No Content (Limpa Cookie de Refresh)
+    API-->>Client: 302 Found (Limpa Cookies e Invalida no DB)
 ```
 
 ---
@@ -103,16 +106,13 @@ sequenceDiagram
 ```
 
 ### Detalhes de Endpoints ADMIN:
-
 - **Listagem Paginada (`GET /v1/user`)**: Suporta filtros por `email`, `userName` e `position` (Cargo).
-- **Gestão de Roles (`PATCH /v1/user/{id}/roles`)**: Permite alteração granular dos privilégios de acesso de qualquer usuário.
-- **Registro de Administradores (`POST /v1/user/register/admin`)**: Endpoint exclusivo para criação de novas contas com privilégios totais.
+- **Gestão de Roles (`PATCH /v1/user/{id}/roles`)**: Permite alteração granular dos privilégios.
+- **Registro de Administradores (`POST /v1/user/register/admin`)**: Criação de contas com privilégios totais.
 
 ---
 
 ## 🔑 Módulo 3: Segurança e Políticas de Senha
-
-Processos de segurança para troca voluntária, segurança de primeiro acesso e recuperação administrativa.
 
 ```mermaid
 sequenceDiagram
@@ -135,7 +135,7 @@ sequenceDiagram
     Note over Admin, DB: Reset Emergencial
     Admin->>API: POST /v1/password/admin-reset (ID)
     API->>DB: Gera hash temporário e marca como "Troca Obrigatória"
-    API-->>Admin: Retorna Senha Temporária em Texto Puro (Para comunicar o usuário)
+    API-->>Admin: Retorna Senha Temporária em Texto Puro
 ```
 
 ---
@@ -166,111 +166,104 @@ sequenceDiagram
 
 ## 🖥️ Módulo 5: Painel Administrativo (Frontend)
 
-O frontend foi desenvolvido como um SPA (Single Page Application) moderno, focado em alta performance e experiência do desenvolvedor.
+O frontend foi desenvolvido como um SPA (Single Page Application) moderno.
 
 ### Tecnologias:
+- **Vite + React + TypeScript**
+- **Storybook**: Documentação dinâmica em `npm run storybook`.
+- **Vitest**: Suíte de testes unitários.
 
-- **Vite + React + TypeScript**: Base do projeto.
-- **Storybook**: Documentação dinâmica e isolada de todos os componentes de UI.
-- **Vitest**: Suíte de testes unitários e de integração de componentes.
-
-### Comandos Úteis:
-
-Localizado no diretório `/frontend`:
-
+### Comandos Úteis (Diretório `/frontend`):
 - `npm run dev`: Inicia o servidor de desenvolvimento.
-- `npm run build`: Gera o pacote otimizado para produção.
-- **`npm run storybook`**: Abre o ambiente de documentação visual dos componentes.
+- `npm run build`: Gera o pacote de produção.
+- `npm run storybook`: Abre a documentação visual.
 - `npm run test`: Executa os testes unitários.
 
 ---
 
-## 🔗 Guia de Integração para Outros Backends
+## 🚀 Arquitetura Híbrida: API vs Forward Auth (SSO)
 
-Fluxo sugerido para aplicações externas que utilizam o Auth Server como Provedor de Identidade (IdP).
+O Auth Server suporta dois modos principais de operação para atender diferentes necessidades de integração.
+
+### 1. Modo API REST (Integração Direta)
+- O cliente chama `POST /v1/user/login`.
+- O servidor retorna o `accessToken` (JWT) no JSON.
+- O cliente envia o header `Authorization: Bearer <jwt>` nas chamadas.
+
+### 2. Modo Forward Auth (Traefik / SSO Web)
+Ideal para proteger múltiplos subdomínios sem alterar o código das aplicações de destino.
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant User as Usuário Final
-    participant MyApp as Sua API (Externo)
-    participant Auth as Auth Server (Este Projeto)
+    participant User as Usuário (Browser)
+    participant Proxy as Traefik / Proxy
+    participant Auth as Auth Server
+    participant App as App Interna (Ex: RH)
 
-    Note over User, MyApp: Início da Requisição
-    User->>MyApp: Chama recurso protegido (Envia JWT no Header)
-
-    Note over MyApp, Auth: Validação de Identidade (Auth Interceptor)
-    MyApp->>Auth: GET /v1/user/profile (Repassa o Token JWT)
-
-    alt Token é Válido
-        Auth-->>MyApp: 200 OK (JSON: id, email, roles, metadata)
-        Note left of MyApp: Aplica Lógica de Autorização Interna baseada nas Roles recebidas
-        MyApp->>User: 200 OK (Retorna os dados da sua API)
-    else Token Inválido/Expirado
-        Auth-->>MyApp: 401 Unauthorized
-        MyApp->>User: 401 Unauthorized (Exige novo login no Auth Server)
+    User->>Proxy: Acessa rh.dominio.com
+    Proxy->>Auth: GET /v1/auth/verify (Verifica Cookies/JWT)
+    
+    alt Não Autenticado
+        Auth-->>Proxy: 401 Unauthorized
+        Proxy-->>User: Redireciona para /login
+    else Autenticado
+        Auth-->>Proxy: 200 OK + Header(Authorization: Bearer JWT)
+        Proxy->>App: Repassa Requisição + JWT injetado
+        App-->>User: Renderiza Página
     end
 ```
 
-### Regras de Ouro para APIs Externas:
+### Exemplo de Configuração Traefik:
+```yaml
+services:
+  traefik:
+    image: traefik:v3.0
+    ports: ["80:80"]
+    volumes: ["/var/run/docker.sock:/var/run/docker.sock:ro"]
 
-1. **Não armazene senhas**: Deixe que o Painel Admin deste projeto cuide de toda a gestão de segurança.
-2. **Valide em cada request**: Utilize o endpoint de perfil do Auth Server como uma barreira de segurança (Introspecção de Token).
-3. **Roles Dinâmicas**: Use as roles retornadas pelo Auth Server para controlar o acesso granular às suas próprias rotas.
+  auth-server:
+    build: .
+    labels:
+      - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:8080/v1/auth/verify"
+      - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
+      - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"
+
+  app1-rh:
+    image: nginx:alpine
+    labels:
+      - "traefik.http.routers.app1.rule=Host(`rh.dominio.com`)"
+      - "traefik.http.routers.app1.middlewares=auth-forward"
+```
+
+---
+
+## 🔗 Guia de Integração para Desenvolvedores
+
+### 🚩 A "Regra de Ouro": Valide tudo no seu backend
+**Nunca valide apenas a assinatura do JWT localmente.** A melhor forma de validar se quem está mandando o request é o Auth Server e se o usuário continua ativo é usando a rota de profile.
+
+**Padrão Recomendado:**
+- **Endpoint**: `GET /v1/user/profile`
+- **Por que?** Garante que o usuário não foi desativado no banco após a emissão do token e retorna as `roles` atualizadas.
 
 ---
 
 ## 🛡️ Mecanismo de Segurança e Tokens
 
-O sistema utiliza uma arquitetura robusta de tokens para garantir segurança e rastreabilidade:
-
-### 1. Dual Token (Access & Refresh)
-
-- **Access Token (JWT)**: Vida curta (15 min), carregado no header `Authorization`. Contém as `roles` e `tokenVersion`.
-- **Refresh Token (Cookie HttpOnly)**: Vida longa (7 dias), persistido no banco e enviado via cookie seguro. Utilizado apenas para renovar o Access Token sem novo login.
-
-### 2. Versionamento e Rotação
-
-- Cada sessão possui uma **versão**. Quando um token é renovado, a versão no banco e no próximo JWT incrementa.
-- Se um token antigo for reutilizado (tentativa de roubo), o sistema detecta a divergência de versão e invalida a sessão.
-
-### 3. Isolamento de Sessão (Fingerprinting)
-
-As sessões são únicas por combinação de:
-
-- **Dispositivo**: `User-Agent`.
-- **Localização/Rede**: `IP Address`.
-- **Origem**: `Origin` e `Referer`.
-
-### 4. Rastreabilidade (Audit/MDC)
-
-Cada log gerado no backend inclui:
-
-- `requestId`: ID único para rastrear uma operação de ponta a ponta.
-- `userEmail`: Identificação do usuário que realizou a ação.
+1. **Dual Token**: Access (15 min) e Refresh (7 dias, HttpOnly).
+2. **Versionamento e Rotação**: Cada renovação incrementa a versão da sessão, invalidando tokens antigos.
+3. **Isolamento de Sessão (Fingerprinting)**: Sessões vinculadas a `User-Agent` e `IP Address`.
+4. **Rastreabilidade**: Logs com `requestId` e `userEmail` via MDC.
 
 ---
 
 ## ⚠️ Sistema de Erros Unificado
 
-O projeto possui um sistema híbrido de tratamento de erros que garante a melhor experiência tanto para desenvolvedores (API) quanto para usuários (Interface).
-
-### Fluxo de Redirecionamento:
-
-1. O Backend (`CustomErrorController`) intercepta erros de infraestrutura ou rotas não mapeadas.
-2. Se a requisição **não** for para `/v1/**` (ex: usuário digitou URL errada no browser):
-   - O backend responde com `302 Found` para `/?error_code={status}`.
-3. O Frontend intercepta o parâmetro via Router e renderiza a componente `ErrorPage`.
-4. Se for uma chamada de API (`/v1/**`), o backend retorna um JSON estruturado com a mensagem de erro.
-
-### Componente de UI (`ErrorPage`):
-
-Localizada em `frontend/src/app/errors/error.page.tsx`, esta página oferece:
-
-- Identificação visual do erro (404, 403, 500).
-- Detalhes técnicos opcionais para depuração.
-- Atalhos para "Voltar ao Início" ou "Página Anterior".
+1. **CustomErrorController**: Intercepta erros globais.
+2. **Redirecionamento**: Requisições de browser para rotas inválidas vão para `/?error_code={status}`.
+3. **ErrorPage**: Componente React em `frontend/src/app/errors/error.page.tsx` renderiza o erro visualmente.
+4. **API**: Chamadas em `/v1/**` recebem JSON estruturado.
 
 ---
-
-Desenvolvido por Vinícius Gabriel Pereira Leitão.
+Desenvolvido por Vinícius Gabriel Pereira Leitão. Licença BSD 3-Clause.

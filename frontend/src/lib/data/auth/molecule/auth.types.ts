@@ -39,11 +39,13 @@ export type UserSessionResponseDto = {
 export type AuthenticationResponseDto = {
   readonly session: UserSessionResponseDto;
   readonly user: UserResponseDto;
+  readonly redirectUri?: string;
 };
 
 export type AuthenticationRequestDto = {
   email: string;
   password: string;
+  redirectUri?: string;
 };
 
 export type DataObjectError = {

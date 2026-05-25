@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,9 +62,18 @@ public class JwtGeneratorService {
     public String generateToken(UserAuth user) {
         Map<String, Object> claims = new HashMap<>();
 
-        // NOTE: Versão do token
+        // NOTE: Versão do token e roles para facilitar verificações rápidas no filter
         claims.put("v", user.getTokenVersion());
+        claims.put("roles", user.getRoles().stream()
+                .map(role -> "ROLE_" + role.getRole())
+                .collect(Collectors.toList()));
+                
         return buildToken(claims, user.getEmail(), jwtExpiration);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> extractRoles(String token) {
+        return extractClaim(token, claims -> (List<String>) claims.get("roles"));
     }
 
     private String buildToken(Map<String, Object> extraClaims, String email, long expiration) {
@@ -83,8 +94,31 @@ public class JwtGeneratorService {
         // 1. O e-mail bater
         // 2. A versão no token for IGUAL à versão no banco
         // 3. Não estiver expirado
-        return (email.equals(user.getEmail())) && (version != null
-                && version.equals(user.getTokenVersion())) && !isTokenExpired(token);
+        return email.equals(user.getEmail()) && 
+               version != null && version.equals(user.getTokenVersion()) && 
+               !isTokenExpired(token);
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            return !isTokenExpired(token);
+        } catch (Exception exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Verifica se o token está próximo da expiração (ex: faltam menos de X minutos).
+     * Útil para Proactive Refresh.
+     */
+    public boolean isTokenAboutToExpire(String token, int thresholdMinutes) {
+        try {
+            Date expiration = extractExpiration(token);
+            long thresholdMillis = (long) thresholdMinutes * 60 * 1000;
+            return expiration.before(new Date(System.currentTimeMillis() + thresholdMillis));
+        } catch (Exception exception) {
+            return true; // Se não conseguir ler, assume que deve renovar
+        }
     }
 
     private boolean isTokenExpired(String token) {

@@ -8,26 +8,6 @@ import { Textarea } from "@lib/components/sh-textarea/textarea.component";
 /**
  * Grupo visual para inputs com addons (prefixo/sufixo) e botões inline. Use `InputGroupAddon` para ícones ou textos e `InputGroupButton` para ações internas.
  * O foco no grupo é gerenciado automaticamente. O estado de erro é propagado visualmente via `aria-invalid` no controle interno.
- * @param className - Classes CSS adicionais para personalizar o estilo do grupo
- * @param props - Demais propriedades HTML do elemento `div` subjacente
- * @example
- * // Prefixo com texto e input de usuário
- * <InputGroup className="w-72">
- *   <InputGroupAddon>
- *     <InputGroupText>@</InputGroupText>
- *   </InputGroupAddon>
- *   <InputGroupInput placeholder="usuário" />
- * </InputGroup>
- * @example
- * // Sufixo com botão de ação (ex.: revelar senha)
- * <InputGroup className="w-72">
- *   <InputGroupInput type="password" placeholder="Senha" />
- *   <InputGroupAddon align="inline-end">
- *     <InputGroupButton aria-label="Mostrar senha">
- *       <EyeIcon />
- *     </InputGroupButton>
- *   </InputGroupAddon>
- * </InputGroup>
  */
 function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -35,7 +15,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="input-group"
       role="group"
       className={cn(
-        "border-input dark:bg-input/30 has-[[data-slot=input-group-control]:focus-visible]:border-ring has-[[data-slot=input-group-control]:focus-visible]:ring-ring/50 has-[[data-slot][aria-invalid=true]]:ring-destructive/20 has-[[data-slot][aria-invalid=true]]:border-destructive dark:has-[[data-slot][aria-invalid=true]]:ring-destructive/40 has-disabled:bg-input/50 dark:has-disabled:bg-input/80 h-12 rounded-xl border transition-colors in-data-[slot=combobox-content]:focus-within:border-inherit in-data-[slot=combobox-content]:focus-within:ring-0 has-disabled:opacity-50 has-[[data-slot=input-group-control]:focus-visible]:ring-3 has-[[data-slot][aria-invalid=true]]:ring-3 has-[>[data-align=block-end]]:h-auto has-[>[data-align=block-end]]:flex-col has-[>[data-align=block-start]]:h-auto has-[>[data-align=block-start]]:flex-col has-[>[data-align=block-end]]:[&>input]:pt-3 has-[>[data-align=block-start]]:[&>input]:pb-3 has-[>[data-align=inline-end]]:[&>input]:pr-1.5 has-[>[data-align=inline-start]]:[&>input]:pl-1.5 group/input-group relative flex w-full min-w-0 items-center outline-none has-[>textarea]:h-auto",
+        "group/input-group relative flex w-full min-w-0 items-center h-12 rounded-md border border-black/5 dark:border-white/10 bg-white/60 dark:bg-white/5 backdrop-blur-md transition-all duration-300 has-[[data-slot=input-group-control]:focus]:border-primary/40 has-[[data-slot=input-group-control]:focus]:bg-white/80 dark:has-[[data-slot=input-group-control]:focus]:bg-white/10 has-[[data-slot][aria-invalid=true]]:border-destructive/50 overflow-hidden",
         className,
       )}
       {...props}
@@ -79,7 +59,7 @@ function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "text-muted-foreground gap-2 text-sm [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none",
+        "text-muted-foreground gap-2 text-sm [&_svg:not([class*='size-'])]:size-4 flex items-center [&_svg]:pointer-events-none px-3",
         className,
       )}
       {...props}
@@ -93,7 +73,8 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<"input">)
     <Input
       data-slot="input-group-control"
       className={cn(
-        "rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 disabled:bg-transparent aria-invalid:ring-0 dark:bg-transparent dark:disabled:bg-transparent flex-1",
+        "h-auto self-center rounded-none border-0 bg-transparent! shadow-none ring-0 focus-visible:ring-0 focus:bg-transparent! disabled:bg-transparent! aria-invalid:ring-0 dark:bg-transparent! dark:disabled:bg-transparent! dark:focus:bg-transparent! backdrop-blur-none! flex-1 px-3",
+        "[-webkit-text-fill-color:inherit] [transition:background-color_5000s_ease-in-out_0s]",
         className,
       )}
       {...rest}

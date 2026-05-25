@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
-import { ResetPasswordPage } from "@routes/auth/reset-password.page";
+import { ResetPasswordPage } from "@routes/auth/reset-password.component";
 import { useNavigate } from "@tanstack/react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useAuthStore } from "@lib/store/auth.store";
@@ -18,6 +18,10 @@ vi.mock("@tanstack/react-router", async (importOriginal) => {
 
 vi.mock("@tanstack/react-query", () => ({
   useMutation: vi.fn(),
+}));
+
+vi.mock("@lib/core/theme.provider", () => ({
+  useTheme: vi.fn().mockReturnValue({ theme: "light", toggleTheme: vi.fn() }),
 }));
 
 vi.mock("@lib/store/auth.store", () => ({
@@ -47,8 +51,8 @@ describe("ResetPasswordPage", () => {
 
   it("renders reset password form elements", () => {
     render(<ResetPasswordPage />);
-    expect(screen.getByText(/definir nova senha/i)).toBeInTheDocument();
+    expect(screen.getByText(/nova credencial/i)).toBeInTheDocument();
     expect(screen.getByText(/testuser/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /atualizar e sair/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /confirmar e sair/i })).toBeInTheDocument();
   });
 });
