@@ -115,6 +115,25 @@ class UpdateUserProfileUseCaseTest {
     }
 
     @Test
+    @DisplayName("Deve limpar o cargo se o campo no request for null")
+    void deveLimparCargoSeRequestNull() {
+        // Arrange
+        testUser.getUserData().setPosition("Current Position");
+        
+        UpdateUserProfileRequestDto request = UpdateUserProfileRequestDto.builder()
+                .position(null)
+                .build();
+        
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+
+        // Act
+        UserResponseDto response = updateUserProfileUseCase.execute(userId, request);
+
+        // Assert
+        assertNull(response.profile().position());
+    }
+
+    @Test
     @DisplayName("Deve lançar BadRequestException se a duração ultrapassar 365 dias")
     void deveLancarExceptionDuraçaoInvalida() {
         // Arrange

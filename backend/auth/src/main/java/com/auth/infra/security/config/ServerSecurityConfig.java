@@ -124,17 +124,17 @@ public class ServerSecurityConfig {
             String path = request.getRequestURI();
             if (publicRoutes.contains(path)) return false;
 
-            // Se existe o cookie de access_token, DEVEMOS aplicar CSRF, 
+            // Se tem Bearer Token, podemos ignorar CSRF (Bearer não é automático)
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                return false;
+            }
+
+            // Se existe o cookie de access_token e não tem Bearer, DEVEMOS aplicar CSRF, 
             // pois o navegador enviará esse cookie automaticamente.
-            boolean hasAccessTokenCookie = request.getCookies() != null && 
+            return request.getCookies() != null && 
                 Arrays.stream(request.getCookies())
                     .anyMatch(cookie -> "access_token".equals(cookie.getName()));
-
-            if (hasAccessTokenCookie) return true;
-
-            // Se não tem cookie, mas tem Bearer Token, podemos ignorar CSRF (Bearer não é automático)
-            String authHeader = request.getHeader("Authorization");
-            return authHeader == null || !authHeader.startsWith("Bearer ");
         }
     }
 }

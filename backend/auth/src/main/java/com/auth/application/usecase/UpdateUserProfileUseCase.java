@@ -35,12 +35,12 @@ public class UpdateUserProfileUseCase {
 
         UserData data = user.getUserData();
         
-        if (request.username() != null) data.setUserName(request.username());
-        if (request.position() != null) data.setPosition(request.position());
-        if (request.birthDate() != null) data.setBirthDate(request.birthDate());
-        if (request.workRegime() != null) data.setWorkRegime(request.workRegime());
-        if (request.registration() != null) data.setRegistration(request.registration());
-        if (request.livesElsewhere() != null) data.setLivesElsewhere(request.livesElsewhere());
+        data.setUserName(request.username());
+        data.setPosition(request.position());
+        data.setBirthDate(request.birthDate());
+        data.setWorkRegime(request.workRegime());
+        data.setRegistration(request.registration());
+        data.setLivesElsewhere(request.livesElsewhere());
         
         if (request.inPersonWorkPeriod() != null) {
             Integer cycles = request.inPersonWorkPeriod().frequencyCycleWeeks();
