@@ -56,4 +56,10 @@ public class UserPositionController {
     public ResponseEntity<List<UserPositionHistory>> getHistory(@PathVariable UUID userId) {
         return ResponseEntity.ok(historyRepository.findAllByUserIdOrderByStartDateDesc(userId));
     }
+
+    @GetMapping("/history")
+    @Operation(summary = "Histórico global de cargos", description = "Retorna todas as trocas de cargos realizadas no sistema (Auditoria Global).")
+    public ResponseEntity<List<UserPositionHistory>> getGlobalHistory() {
+        return ResponseEntity.ok(historyRepository.findAll()); // No futuro pode ser paginado
+    }
 }
