@@ -7,19 +7,23 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.*;
+import com.auth.api.dto.auth.InPersonWorkPeriodDto;
+import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.dto.auth.UserResponseDto;
+import com.auth.application.mapper.UserMapper;
+import com.auth.domain.model.Position;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
+import com.auth.domain.repository.PositionRepository;
 import com.auth.domain.repository.UserAuthRepository;
 import com.auth.domain.repository.UserDataRepository;
 import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,72 +31,49 @@ public class UpdateUserProfileUseCase {
 
     private final UserAuthRepository userRepository;
     private final UserDataRepository userDataRepository;
-
+    private final PositionRepository positionRepository;
+    private final UserMapper userMapper;
 
     public UserResponseDto execute(UUID userId, UpdateUserProfileRequestDto request) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 
-        UserData data = user.getUserData();
+        InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
         
-        data.setUserName(request.username());
-        data.setPosition(request.position());
-        data.setBirthDate(request.birthDate());
-        data.setWorkRegime(request.workRegime());
-        data.setRegistration(request.registration());
-        data.setLivesElsewhere(request.livesElsewhere());
-        
-        if (request.inPersonWorkPeriod() != null) {
-            Integer cycles = request.inPersonWorkPeriod().frequencyCycleWeeks();
-            Integer mask = request.inPersonWorkPeriod().frequencyWeekMask();
-            Integer duration = request.inPersonWorkPeriod().frequencyDurationDays();
+        try {
+            // 1. Atualiza dados do perfil via Aggregate Root
+            user.updateProfile(
+                request.username(),
+                request.registration(),
+                request.birthDate(),
+                request.workRegime(),
+                request.livesElsewhere(),
+                period != null ? period.frequencyCycleWeeks() : null,
+                period != null ? period.frequencyWeekMask() : null,
+                period != null ? period.frequencyDurationDays() : null
+            );
 
-            // NOTE: A mascara de dias da semanada ganha do tempo integral, caso ambos sejam informados
-            if (mask != null && mask > 0 && duration != null) {
-                duration = null;
-            }
-            
-            if (duration != null && duration > 365) {
-                throw new com.auth.infra.exception.custom.BadRequestException(ErrorCode.BAD_REQUEST, "A duração consecutiva não pode ultrapassar 365 dias");
+            // 2. Resolve lookup de cargo se enviado (Regra de Aplicação)
+            if (request.position() != null && !request.position().isBlank()) {
+                positionRepository.findAll().stream()
+                        .filter(positionItem -> positionItem.getName().equalsIgnoreCase(request.position()))
+                        .findFirst()
+                        .ifPresent(positionItem -> user.assignPosition(positionItem.getId(), false, null));
             }
 
-            data.setFrequencyCycleWeeks(cycles != null ? cycles : 1);
-            data.setFrequencyWeekMask(duration != null ? 0 : (mask != null ? mask : 0));
-            data.setFrequencyDurationDays(duration);
+            // 3. Persistência Segura
+            UserData profileToSave = user.getUserProfile();
+            if (profileToSave == null) {
+                throw new IllegalStateException("Falha crítica: O perfil do usuário desapareceu durante a atualização.");
+            }
+
+            userDataRepository.save(profileToSave);
+            userRepository.save(user);
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());
         }
 
-        data.touch();
-        userDataRepository.save(data);
-        userRepository.save(user);
-
-        // Build Response
-        UserProfileResponseDto profile = UserProfileResponseDto.builder()
-                .username(data.getUserName())
-                .registration(data.getRegistration())
-                .position(data.getPosition())
-                .birthDate(data.getBirthDate())
-                .workRegime(data.getWorkRegime())
-                .livesElsewhere(data.getLivesElsewhere() != null && data.getLivesElsewhere())
-                .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
-                        .frequencyCycleWeeks(data.getFrequencyCycleWeeks())
-                        .frequencyWeekMask(data.getFrequencyWeekMask())
-                        .frequencyDurationDays(data.getFrequencyDurationDays())
-                        .build())
-                .build();
-
-        UserAuditResponseDto audit = UserAuditResponseDto.builder()
-                .createdAt(user.getCreatedAt())
-                .updatedAt(data.getUpdatedAt())
-                .updatedBy(data.getUpdatedBy())
-                .build();
-
-        return UserResponseDto.builder()
-                .id(user.getUserId())
-                .email(user.getEmail())
-                .roles(user.getRoles().stream().map(roleItem -> "ROLE_" + roleItem.getRole()).collect(Collectors.toSet()))
-                .active(user.getActive() != null && user.getActive())
-                .profile(profile)
-                .audit(audit)
-                .build();
+        return userMapper.toResponse(user);
     }
 }

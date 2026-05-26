@@ -7,18 +7,17 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.*;
+import com.auth.api.dto.auth.AuthenticationResponseDto;
+import com.auth.api.dto.auth.UserSessionResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.application.dto.AuthenticationResult;
+import com.auth.application.mapper.UserMapper;
 import com.auth.application.service.RefreshTokenService;
-import com.auth.application.service.UserService;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +25,7 @@ public class RefreshTokenUseCase {
 
     private final RefreshTokenService refreshTokenService;
     private final JwtGeneratorService jwtService;
-    private final UserService userService;
+    private final UserMapper userMapper;
 
     public AuthenticationResult execute(RefreshTokenRequestDto request) {
         RefreshToken token = refreshTokenService.findByToken(request.refreshToken());
@@ -35,7 +34,6 @@ public class RefreshTokenUseCase {
         UserAuth user = token.getUser();
         String jwt = jwtService.generateToken(user);
 
-        // NOTE: Deleta o token de refresh ATUAL antes de gerar o novo (Rotação segura por sessão)
         refreshTokenService.deleteByToken(request.refreshToken());
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user,
                 token.getUserAgent(), token.getIpAddress(), token.getOrigin(), token.getReferer());
@@ -46,40 +44,11 @@ public class RefreshTokenUseCase {
                 .passwordResetRequired(user.isPasswordResetRequired())
                 .build();
 
-        UserProfileResponseDto profile = UserProfileResponseDto.builder()
-                .username(user.getUserData().getUserName())
-                .registration(user.getUserData().getRegistration())
-                .position(user.getUserData().getPosition())
-                .birthDate(user.getUserData().getBirthDate())
-                .workRegime(user.getUserData().getWorkRegime())
-                .livesElsewhere(user.getUserData().getLivesElsewhere() != null && user.getUserData().getLivesElsewhere())
-                .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
-                        .frequencyCycleWeeks(user.getUserData().getFrequencyCycleWeeks())
-                        .frequencyWeekMask(user.getUserData().getFrequencyWeekMask())
-                        .frequencyDurationDays(user.getUserData().getFrequencyDurationDays())
-                        .build())
-                .build();
-
-        UserAuditResponseDto audit = UserAuditResponseDto.builder()
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUserData().getUpdatedAt())
-                .updatedBy(user.getUserData().getUpdatedBy())
-                .build();
-
-        UserResponseDto userDto = UserResponseDto.builder()
-                .id(user.getUserId())
-                .email(user.getEmail())
-                .roles(user.getRoles().stream().map(role -> "ROLE_" + role.getRole()).collect(Collectors.toSet()))
-                .active(user.getActive() != null && user.getActive())
-                .profile(profile)
-                .audit(audit)
-                .build();
-
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
-                .user(userDto)
+                .user(userMapper.toResponse(user))
                 .build();
-                
+
         return new AuthenticationResult(responseDto, newRefreshToken.getToken());
     }
 }

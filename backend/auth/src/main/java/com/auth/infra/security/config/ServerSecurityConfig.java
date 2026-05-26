@@ -78,6 +78,7 @@ public class ServerSecurityConfig {
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v1/user/activate", "/v1/user/deactivate").hasRole(Role.ADMIN.name())
+                            .requestMatchers("/v1/positions/**", "/v1/user/positions/**").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/change", "/v1/user/profile/**", "/v1/password/first-change").authenticated()
 
                             // NOTE: Swagger

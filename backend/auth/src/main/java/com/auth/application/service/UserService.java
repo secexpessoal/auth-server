@@ -61,10 +61,10 @@ public class UserService {
         
         userData = userDataRepository.save(userData);
         
-        user.setUserData(userData);
+        user.setUserProfile(userData);
 
         return userRepository.save(user);
-    }
+        }
 
     /**
      * Incrementa a versão do token para invalidar Access Tokens (JWT) antigos.

@@ -67,12 +67,19 @@ public class UserAuth implements UserDetails {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     @DocumentReference(lazy = true)
-    private UserData userData;
+    @Field("user_profile")
+    private UserData userProfile;
 
     @NonNull
     @Override
     public String getUsername() {
-        return this.userData != null ? this.userData.getUserName() : this.email;
+        if (this.userProfile != null && this.userProfile.getUserName() != null) {
+            return this.userProfile.getUserName();
+        }
+
+        return this.email != null
+                ? this.email
+                : "UNKNOWN_USER";
     }
 
     @Override
@@ -104,10 +111,51 @@ public class UserAuth implements UserDetails {
         if (userId == null) return null;
         long timestamp = userId.getMostSignificantBits() >>> 16;
         if (timestamp == 0) return Instant.now();
+
         return Instant.ofEpochMilli(timestamp);
     }
 
     public Integer getTokenVersion() {
-        return tokenVersion == null ? 0 : tokenVersion;
+        return tokenVersion == null
+                ? 0
+                : tokenVersion;
     }
-}
+
+    /**
+     * Atualiza os papéis (roles) do usuário.
+     * Segue os princípios de DDD ao manter a lógica de alteração de estado dentro do modelo.
+     */
+    public void updateRoles(Set<Role> newRoles) {
+        if (newRoles == null || newRoles.isEmpty()) {
+            throw new IllegalArgumentException("O usuário deve possuir pelo menos uma Role");
+        }
+        this.roles.clear();
+        this.roles.addAll(newRoles);
+    }
+
+    /**
+     * Orquestra a atualização do perfil do usuário.
+     */
+    public void updateProfile(String name, String registration, Instant birthDate, WorkRegime regime, 
+                              Boolean livesElsewhere, Integer cycleWeeks, Integer weekMask, Integer durationDays) {
+        UserData profile = getProfileOrThrow();
+        profile.updateBasicInfo(name, registration, birthDate, regime, livesElsewhere);
+        profile.updateInPersonWorkPeriod(cycleWeeks, weekMask, durationDays);
+        profile.touch();
+    }
+
+    /**
+     * Atribui um cargo através do Aggregate Root.
+     */
+    public void assignPosition(UUID positionId, boolean temporary, Instant endDate) {
+        getProfileOrThrow().assignPosition(positionId, temporary, endDate);
+    }
+
+    private UserData getProfileOrThrow() {
+        if (this.userProfile == null) {
+            throw new IllegalStateException("O usuário não possui um perfil (UserProfile) vinculado. Operação cancelada.");
+        }
+        return this.userProfile;
+    }
+    }
+

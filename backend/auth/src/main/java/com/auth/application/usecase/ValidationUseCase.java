@@ -7,18 +7,22 @@
  */
 package com.auth.application.usecase;
 
-import com.auth.api.dto.auth.*;
+import com.auth.api.dto.auth.UserResponseDto;
+import com.auth.application.mapper.UserMapper;
 import com.auth.domain.model.UserAuth;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ValidationUseCase {
+
+    private final UserMapper userMapper;
 
     public UserResponseDto execute(Authentication authentication) {
         UserAuth user = (UserAuth) Optional.ofNullable(authentication)
@@ -26,33 +30,6 @@ public class ValidationUseCase {
                 .filter(principal -> principal instanceof UserAuth)
                 .orElseThrow(() -> new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário não autenticado ou sessão inválida"));
 
-        UserProfileResponseDto profile = UserProfileResponseDto.builder()
-                .username(user.getUserData().getUserName())
-                .registration(user.getUserData().getRegistration())
-                .position(user.getUserData().getPosition())
-                .birthDate(user.getUserData().getBirthDate())
-                .workRegime(user.getUserData().getWorkRegime())
-                .livesElsewhere(user.getUserData().getLivesElsewhere() != null && user.getUserData().getLivesElsewhere())
-                .inPersonWorkPeriod(InPersonWorkPeriodDto.builder()
-                        .frequencyCycleWeeks(user.getUserData().getFrequencyCycleWeeks())
-                        .frequencyWeekMask(user.getUserData().getFrequencyWeekMask())
-                        .frequencyDurationDays(user.getUserData().getFrequencyDurationDays())
-                        .build())
-                .build();
-
-        UserAuditResponseDto audit = UserAuditResponseDto.builder()
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUserData().getUpdatedAt())
-                .updatedBy(user.getUserData().getUpdatedBy())
-                .build();
-
-        return UserResponseDto.builder()
-                .id(user.getUserId())
-                .email(user.getEmail())
-                .roles(user.getRoles().stream().map(roleItem -> "ROLE_" + roleItem.getRole()).collect(Collectors.toSet()))
-                .active(user.getActive() != null && user.getActive())
-                .profile(profile)
-                .audit(audit)
-                .build();
+        return userMapper.toResponse(user);
     }
 }
