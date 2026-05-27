@@ -7,21 +7,22 @@
  */
 package com.auth.api.controller.v2;
 
-import com.auth.api.dto.auth.UserPositionChangeRequestDto;
+import com.auth.api.v2.dto.auth.UserPositionChangeRequestDto;
+import com.auth.api.v2.dto.auth.UserPositionHistoryResponseDto;
+import com.auth.api.v2.mapper.UserPositionMapper;
 import com.auth.application.service.UserPositionService;
 import com.auth.domain.model.UserAuth;
-import com.auth.domain.model.UserPositionHistory;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController("userPositionControllerV2")
 @RequiredArgsConstructor
@@ -30,6 +31,7 @@ import java.util.UUID;
 public class UserPositionController {
 
     private final UserPositionService userPositionService;
+    private final UserPositionMapper userPositionMapper;
 
     @PostMapping("/{userId}")
     @Operation(summary = "Altera o cargo de um usuário", description = "Atribui um novo cargo (definitivo ou temporário) a um usuário.")
@@ -53,13 +55,19 @@ public class UserPositionController {
 
     @GetMapping("/{userId}/history")
     @Operation(summary = "Lista o histórico de cargos", description = "Retorna o histórico completo de cargos de um usuário.")
-    public ResponseEntity<List<UserPositionHistory>> getHistory(@PathVariable UUID userId) {
-        return ResponseEntity.ok(userPositionService.getByUser(userId));
+    public ResponseEntity<List<UserPositionHistoryResponseDto>> getHistory(@PathVariable UUID userId) {
+        List<UserPositionHistoryResponseDto> history = userPositionService.getByUser(userId).stream()
+                .map(userPositionMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(history);
     }
 
     @GetMapping("/history")
     @Operation(summary = "Histórico global de cargos", description = "Retorna todas as trocas de cargos realizadas no sistema (Auditoria Global).")
-    public ResponseEntity<List<UserPositionHistory>> getGlobalHistory() {
-        return ResponseEntity.ok(userPositionService.getGlobalHistory()); // No futuro pode ser paginado
+    public ResponseEntity<List<UserPositionHistoryResponseDto>> getGlobalHistory() {
+        List<UserPositionHistoryResponseDto> history = userPositionService.getGlobalHistory().stream()
+                .map(userPositionMapper::toResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(history);
     }
 }

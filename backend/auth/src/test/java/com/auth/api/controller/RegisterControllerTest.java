@@ -7,8 +7,8 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.api.dto.auth.RegisterRequestDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.RegisterRequestDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;

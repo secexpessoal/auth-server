@@ -7,9 +7,9 @@
  */
 package com.auth.api.controller.v1;
 
-import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
-import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
 import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

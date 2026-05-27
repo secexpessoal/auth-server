@@ -7,12 +7,14 @@
  */
 package com.auth.api.controller.v1;
 
-import com.auth.api.dto.auth.AuthenticationRequestDto;
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.api.dto.token.RefreshTokenRequestDto;
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.AuthenticationResult;
+import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
+import com.auth.api.v1.dto.auth.AuthenticationResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserSessionResponseDto;
+import com.auth.api.v1.dto.token.RefreshTokenRequestDto;
+import com.auth.api.v1.mapper.UserMapper;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.AuthenticationResult;
 import com.auth.application.service.CookieService;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
@@ -43,6 +45,7 @@ public class AuthController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final CookieService cookieService;
+    private final UserMapper userMapper;
 
     // NOTE: Rota publica
     @PostMapping("/login")
@@ -57,16 +60,28 @@ public class AuthController {
         AuthMetadata metadata = new AuthMetadata(userAgent, RequestUtil.getClientIP(request), origin, referer);
         AuthenticationResult result = userService.login(loginRequest, metadata);
 
+        UserSessionResponseDto session = UserSessionResponseDto.builder()
+                .accessToken(result.accessToken())
+                .tokenVersion(result.tokenVersion())
+                .passwordResetRequired(result.passwordResetRequired())
+                .build();
+
+        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
+                .session(session)
+                .user(userMapper.toResponse(result.user()))
+                .redirectUri(result.redirectUri())
+                .build();
+
         List<ResponseCookie> cookies = cookieService.buildAuthCookies(
             result.refreshToken(), 
-            result.responseDto().session().accessToken(), 
-            result.responseDto().redirectUri()
+            session.accessToken(), 
+            result.redirectUri()
         );
 
         var responseBuilder = ResponseEntity.ok();
         cookies.forEach(cookie -> responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
 
-        return responseBuilder.body(result.responseDto());
+        return responseBuilder.body(responseDto);
     }
 
     // NOTE: Rota publica
@@ -76,15 +91,27 @@ public class AuthController {
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshTokenCookie);
         AuthenticationResult result = refreshTokenService.refreshToken(refreshRequest);
 
+        UserSessionResponseDto session = UserSessionResponseDto.builder()
+                .accessToken(result.accessToken())
+                .tokenVersion(result.tokenVersion())
+                .passwordResetRequired(result.passwordResetRequired())
+                .build();
+
+        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
+                .session(session)
+                .user(userMapper.toResponse(result.user()))
+                .redirectUri(result.redirectUri())
+                .build();
+
         List<ResponseCookie> cookies = cookieService.buildAuthCookies(
             result.refreshToken(), 
-            result.responseDto().session().accessToken()
+            session.accessToken()
         );
 
         var responseBuilder = ResponseEntity.ok();
         cookies.forEach(cookie -> responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
 
-        return responseBuilder.body(result.responseDto());
+        return responseBuilder.body(responseDto);
     }
 
     @PostMapping("/logout")

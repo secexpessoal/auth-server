@@ -7,9 +7,9 @@
  */
 package com.auth.api.controller.v1;
 
-import com.auth.api.dto.password.ChangePasswordRequestDto;
-import com.auth.api.dto.password.FirstChangePasswordRequestDto;
-import com.auth.api.dto.password.ResetPasswordRequestDto;
+import com.auth.api.v1.dto.password.ChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.FirstChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.ResetPasswordRequestDto;
 import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

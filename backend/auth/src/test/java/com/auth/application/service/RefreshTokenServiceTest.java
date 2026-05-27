@@ -7,10 +7,10 @@
  */
 package com.auth.application.service;
 
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.VerifyAuthResult;
-import com.auth.application.dto.VerifyAuthStatus;
-import com.auth.application.mapper.UserMapper;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.VerifyAuthResult;
+import com.auth.application.payload.VerifyAuthStatus;
+import com.auth.api.v1.mapper.UserMapper;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.RefreshTokenRepository;

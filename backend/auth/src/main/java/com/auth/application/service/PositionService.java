@@ -7,7 +7,7 @@
  */
 package com.auth.application.service;
 
-import com.auth.api.dto.auth.PositionUpdateDto;
+import com.auth.api.v2.dto.auth.PositionUpdateDto;
 import com.auth.domain.model.Position;
 import com.auth.domain.repository.PositionRepository;
 import com.auth.infra.exception.custom.NotFoundException;

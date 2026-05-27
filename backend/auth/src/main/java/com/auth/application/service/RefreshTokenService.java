@@ -7,14 +7,12 @@
  */
 package com.auth.application.service;
 
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.UserSessionResponseDto;
-import com.auth.api.dto.token.RefreshTokenRequestDto;
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.dto.VerifyAuthResult;
-import com.auth.application.dto.VerifyAuthStatus;
-import com.auth.application.mapper.UserMapper;
+import com.auth.api.v1.dto.token.RefreshTokenRequestDto;
+import com.auth.api.v1.mapper.UserMapper;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.AuthenticationResult;
+import com.auth.application.payload.VerifyAuthResult;
+import com.auth.application.payload.VerifyAuthStatus;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.RefreshTokenRepository;
@@ -116,18 +114,13 @@ public class RefreshTokenService {
         RefreshToken newRefreshToken = createRefreshToken(user,
                 token.getUserAgent(), token.getIpAddress(), token.getOrigin(), token.getReferer());
 
-        UserSessionResponseDto session = UserSessionResponseDto.builder()
+        return AuthenticationResult.builder()
+                .user(user)
                 .accessToken(jwt)
+                .refreshToken(newRefreshToken.getToken())
                 .tokenVersion(newRefreshToken.getVersion())
                 .passwordResetRequired(user.isPasswordResetRequired())
                 .build();
-
-        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .session(session)
-                .user(userMapper.toResponse(user))
-                .build();
-
-        return new AuthenticationResult(responseDto, newRefreshToken.getToken());
     }
 
     /**

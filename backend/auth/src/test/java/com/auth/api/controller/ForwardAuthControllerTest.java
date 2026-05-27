@@ -1,8 +1,8 @@
 package com.auth.api.controller;
 
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.VerifyAuthResult;
-import com.auth.application.dto.VerifyAuthStatus;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.VerifyAuthResult;
+import com.auth.application.payload.VerifyAuthStatus;
 import com.auth.application.service.CookieService;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.infra.exception.ErrorCode;

@@ -7,22 +7,22 @@
  */
 package com.auth.application.service;
 
-import com.auth.api.dto.auth.AuthenticationRequestDto;
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.InPersonWorkPeriodDto;
-import com.auth.api.dto.auth.RegisterRequestDto;
-import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
-import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.api.dto.auth.UserSessionResponseDto;
-import com.auth.api.dto.common.PaginatedResponseDto;
-import com.auth.api.dto.common.PaginationMetaDto;
-import com.auth.api.dto.password.ChangePasswordRequestDto;
-import com.auth.api.dto.password.FirstChangePasswordRequestDto;
-import com.auth.api.dto.password.ResetPasswordRequestDto;
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.mapper.UserMapper;
+import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
+import com.auth.api.v1.dto.auth.InPersonWorkPeriodDto;
+import com.auth.api.v1.dto.auth.RegisterRequestDto;
+import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.common.PaginatedResponseDto;
+import com.auth.api.v1.dto.common.PaginationMetaDto;
+import com.auth.api.v1.dto.password.ChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.FirstChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.ResetPasswordRequestDto;
+import com.auth.api.v1.mapper.UserMapper;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.AuthenticationResult;
+import com.auth.application.payload.VerifyAuthResult;
+import com.auth.application.payload.VerifyAuthStatus;
 import com.auth.domain.model.Position;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
@@ -130,19 +130,14 @@ public class UserService {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, 
                 metadata.userAgent(), metadata.ipAddress(), metadata.origin(), metadata.referer());
 
-        UserSessionResponseDto session = UserSessionResponseDto.builder()
+        return AuthenticationResult.builder()
+                .user(user)
                 .accessToken(jwt)
+                .refreshToken(refreshToken.getToken())
                 .tokenVersion(refreshToken.getVersion())
                 .passwordResetRequired(user.isPasswordResetRequired())
-                .build();
-
-        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .session(session)
-                .user(userMapper.toResponse(user))
                 .redirectUri(validatedRedirect)
                 .build();
-
-        return new AuthenticationResult(responseDto, refreshToken.getToken());
     }
 
     public UserResponseDto validateToken(Authentication authentication) {

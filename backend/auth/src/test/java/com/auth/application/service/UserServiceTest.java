@@ -7,19 +7,19 @@
  */
 package com.auth.application.service;
 
-import com.auth.api.dto.auth.AuthenticationRequestDto;
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.RegisterRequestDto;
-import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
-import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.api.dto.common.PaginatedResponseDto;
-import com.auth.api.dto.password.ChangePasswordRequestDto;
-import com.auth.api.dto.password.FirstChangePasswordRequestDto;
-import com.auth.api.dto.password.ResetPasswordRequestDto;
-import com.auth.application.dto.AuthMetadata;
-import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.mapper.UserMapper;
+import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
+import com.auth.api.v1.dto.auth.AuthenticationResponseDto;
+import com.auth.api.v1.dto.auth.RegisterRequestDto;
+import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.common.PaginatedResponseDto;
+import com.auth.api.v1.dto.password.ChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.FirstChangePasswordRequestDto;
+import com.auth.api.v1.dto.password.ResetPasswordRequestDto;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.AuthenticationResult;
+import com.auth.api.v1.mapper.UserMapper;
 import com.auth.domain.model.Position;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
@@ -159,7 +159,7 @@ class UserServiceTest {
             AuthenticationResult result = userService.login(request, new AuthMetadata("Mozilla", "127.0.0.1", "origin", "referer"));
 
             assertNotNull(result);
-            assertEquals("fake-jwt", result.responseDto().session().accessToken());
+            assertEquals("fake-jwt", result.accessToken());
             assertEquals("fake-refresh", result.refreshToken());
         }
 

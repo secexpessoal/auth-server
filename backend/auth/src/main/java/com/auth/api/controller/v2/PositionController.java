@@ -7,10 +7,10 @@
  */
 package com.auth.api.controller.v2;
 
-import com.auth.api.dto.auth.PositionRequestDto;
-import com.auth.api.dto.auth.PositionResponseDto;
-import com.auth.api.dto.auth.PositionUpdateDto;
-import com.auth.api.dto.common.EnumTypeResponseDto;
+import com.auth.api.v2.dto.auth.PositionRequestDto;
+import com.auth.api.v2.dto.auth.PositionResponseDto;
+import com.auth.api.v2.dto.auth.PositionUpdateDto;
+import com.auth.api.v2.dto.common.EnumTypeResponseDto;
 import com.auth.application.service.PositionService;
 import com.auth.domain.model.Position;
 import com.auth.domain.model.UserPositionEventType;

@@ -7,8 +7,8 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.api.dto.common.PaginatedResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.common.PaginatedResponseDto;
 import com.auth.application.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
