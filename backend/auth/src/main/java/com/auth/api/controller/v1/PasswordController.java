@@ -10,7 +10,7 @@ package com.auth.api.controller.v1;
 import com.auth.api.dto.password.ChangePasswordRequestDto;
 import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
-import com.auth.application.usecase.PasswordUseCase;
+import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,13 +31,13 @@ import java.util.Map;
 @Tag(name = "Senhas V1", description = "Endpoints para troca e reset de senhas")
 public class PasswordController {
 
-    private final PasswordUseCase passwordUseCase;
+    private final UserService userService;
 
     // NOTE: Rota autenticada
     @Operation(summary = "Troca voluntária de senha", description = "Altera a senha do usuário logado mediante confirmação da senha antiga.")
     @PostMapping("/change")
     public ResponseEntity<@NonNull Map<String, String>> changePassword(Authentication authentication, @Valid @RequestBody ChangePasswordRequestDto request) {
-        passwordUseCase.changePassword(authentication, request);
+        userService.changePassword(authentication, request);
         return ResponseEntity.ok(Map.of("status", "Senha alterada com sucesso"));
     }
 
@@ -45,7 +45,7 @@ public class PasswordController {
     @Operation(summary = "Troca de senha de primeiro acesso", description = "Define uma nova senha definitiva após o primeiro login ou reset administrativo.")
     @PostMapping("/first-change")
     public ResponseEntity<@NonNull Map<String, String>> firstChange(Authentication authentication, @Valid @RequestBody FirstChangePasswordRequestDto request) {
-        passwordUseCase.changeFirstPassword(authentication, request);
+        userService.changeFirstPassword(authentication, request);
         return ResponseEntity.ok(Map.of("status", "Senha de primeiro acesso atualizada com sucesso"));
     }
 
@@ -53,7 +53,7 @@ public class PasswordController {
     @Operation(summary = "Reset de senha pelo próprio usuário", description = "Verifica o e-mail e envia uma senha temporária via Resend.")
     @PostMapping("/user-reset")
     public ResponseEntity<@NonNull Map<String, String>> resetByUser(@Valid @RequestBody ResetPasswordRequestDto request) {
-        passwordUseCase.resetByUser(request);
+        userService.resetByUser(request);
         return ResponseEntity.ok(Map.of(
                 "status", "Se o e-mail existir em nossa base, uma nova senha foi enviada"
         ));
@@ -63,7 +63,7 @@ public class PasswordController {
     @Operation(summary = "Reset administrativo de senha", description = "Gera uma senha temporária para um usuário. Requer cargo ADMIN.")
     @PostMapping("/admin-reset")
     public ResponseEntity<@NonNull Map<String, String>> resetByAdmin(@Valid @RequestBody ResetPasswordRequestDto request) {
-        String tempPass = passwordUseCase.resetByAdmin(request);
+        String tempPass = userService.resetByAdmin(request);
         return ResponseEntity.ok(Map.of(
                 "status", "Senha resetada pelo administrador",
                 "tempPassword", tempPass

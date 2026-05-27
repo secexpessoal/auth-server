@@ -1,7 +1,7 @@
 package com.auth.api.controller.v1;
 
 import com.auth.application.dto.VerifyAuthResult;
-import com.auth.application.usecase.AuthUseCase;
+import com.auth.application.service.RefreshTokenService;
 import com.auth.infra.security.service.JwtGeneratorService;
 import com.auth.infra.util.RequestUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -28,7 +28,7 @@ import java.util.List;
 @Tag(name = "Forward Auth V1", description = "Endpoints para verificação de sessão via Proxy Reverso")
 public class ForwardAuthController {
 
-    private final AuthUseCase authUseCase;
+    private final RefreshTokenService refreshTokenService;
     private final JwtGeneratorService jwtService;
 
     @Value("${app.auth-url}")
@@ -64,9 +64,9 @@ public class ForwardAuthController {
                     String origin = request.getHeader(HttpHeaders.ORIGIN);
                     String referer = request.getHeader(HttpHeaders.REFERER);
 
-                    VerifyAuthResult result = authUseCase.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
+                    VerifyAuthResult result = refreshTokenService.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
                     
-                    List<ResponseCookie> cookies = authUseCase.buildAuthCookies(result.refreshToken(), result.accessToken());
+                    List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(result.refreshToken(), result.accessToken());
 
                     var responseBuilder = ResponseEntity.ok();
                     for (ResponseCookie cookie : cookies) {
@@ -97,9 +97,9 @@ public class ForwardAuthController {
                 String origin = request.getHeader(HttpHeaders.ORIGIN);
                 String referer = request.getHeader(HttpHeaders.REFERER);
 
-                VerifyAuthResult result = authUseCase.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
+                VerifyAuthResult result = refreshTokenService.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
                 
-                List<ResponseCookie> cookies = authUseCase.buildAuthCookies(result.refreshToken(), result.accessToken());
+                List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(result.refreshToken(), result.accessToken());
 
                 var responseBuilder = ResponseEntity.ok();
                 for (ResponseCookie cookie : cookies) {

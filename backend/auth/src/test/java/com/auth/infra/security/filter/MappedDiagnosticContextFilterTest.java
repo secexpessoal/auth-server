@@ -28,9 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.*;
 
-class MdcFilterTest {
+class MappedDiagnosticContextFilterTest {
 
-    private MdcFilter mdcFilter;
+    private MappedDiagnosticContextFilter mappedDiagnosticContextFilter;
 
     @Mock
     private HttpServletRequest request;
@@ -49,7 +49,7 @@ class MdcFilterTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        mdcFilter = new MdcFilter();
+        mappedDiagnosticContextFilter = new MappedDiagnosticContextFilter();
         SecurityContextHolder.clearContext();
         MDC.clear();
     }
@@ -65,7 +65,7 @@ class MdcFilterTest {
     @DisplayName("Deve adicionar requestId ao MDC")
     void deveAdicionarRequestIdAoMdc() throws ServletException, IOException {
         // Act
-        mdcFilter.doFilterInternal(request, response, filterChain);
+        mappedDiagnosticContextFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
         verify(filterChain).doFilter(request, response);
@@ -83,7 +83,7 @@ class MdcFilterTest {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         // Act
-        mdcFilter.doFilterInternal(request, response, filterChain);
+        mappedDiagnosticContextFilter.doFilterInternal(request, response, filterChain);
 
         // Assert
         verify(filterChain).doFilter(request, response);

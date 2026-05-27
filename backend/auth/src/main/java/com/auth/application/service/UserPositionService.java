@@ -143,4 +143,12 @@ public class UserPositionService {
                 .build();
         historyRepository.save(history);
     }
+
+    public List<UserPositionHistory> getGlobalHistory() {
+        return historyRepository.findAll();
+    }
+
+    public List<UserPositionHistory> getByUser(UUID userId) {
+        return historyRepository.findAllByUserIdOrderByOccurredAtDesc(userId);
+    }
 }

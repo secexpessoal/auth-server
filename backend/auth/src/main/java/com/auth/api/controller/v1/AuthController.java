@@ -12,7 +12,8 @@ import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.usecase.AuthUseCase;
+import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.UserService;
 import com.auth.infra.util.RequestUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,7 +38,8 @@ import java.util.List;
 @Tag(name = "Autenticação V1", description = "Endpoints para login, renovação de token e perfil")
 public class AuthController {
 
-    private final AuthUseCase authUseCase;
+    private final UserService userService;
+    private final RefreshTokenService refreshTokenService;
 
     // NOTE: Rota publica
     @PostMapping("/login")
@@ -50,9 +52,9 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest request) {
 
         String ipAddress = RequestUtil.getClientIP(request);
-        AuthenticationResult result = authUseCase.login(loginRequest, userAgent, ipAddress, origin, referer);
+        AuthenticationResult result = userService.login(loginRequest, userAgent, ipAddress, origin, referer);
 
-        List<ResponseCookie> cookies = authUseCase.buildAuthCookies(
+        List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(
             result.refreshToken(), 
             result.responseDto().session().accessToken(), 
             result.responseDto().redirectUri()
@@ -71,9 +73,9 @@ public class AuthController {
     @Operation(summary = "Renova o token de acesso", description = "Lê o Refresh Token do cookie HttpOnly e retorna um novo Access Token.")
     public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = true) String refreshTokenCookie) {
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshTokenCookie);
-        AuthenticationResult result = authUseCase.refreshToken(refreshRequest);
+        AuthenticationResult result = refreshTokenService.refreshToken(refreshRequest);
 
-        List<ResponseCookie> cookies = authUseCase.buildAuthCookies(
+        List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(
             result.refreshToken(), 
             result.responseDto().session().accessToken()
         );
@@ -89,7 +91,7 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
     public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
-        List<ResponseCookie> cookies = authUseCase.logout(refreshToken);
+        List<ResponseCookie> cookies = refreshTokenService.logout(refreshToken);
 
         var responseBuilder = ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, "/login");
@@ -105,7 +107,7 @@ public class AuthController {
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
     public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
-        UserResponseDto response = authUseCase.validateToken(authentication);
+        UserResponseDto response = userService.validateToken(authentication);
         return ResponseEntity.ok(response);
     }
 }

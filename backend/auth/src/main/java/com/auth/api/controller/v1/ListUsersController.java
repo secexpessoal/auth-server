@@ -9,12 +9,11 @@ package com.auth.api.controller.v1;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
-import com.auth.application.usecase.UserUseCase;
+import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,29 +21,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller responsável por listar usuários cadastrados.
+ * Controller responsável pela listagem de usuários com paginação e filtros.
  */
 @RestController("listUsersControllerV1")
 @RequiredArgsConstructor
-@RequestMapping(value = "/user", version = "1")
-@Tag(name = "Usuários V1", description = "Endpoints para gestão de contas de usuário")
+@RequestMapping(value = "/users", version = "1")
+@Tag(name = "Usuários V1", description = "Endpoints para consulta e listagem de usuários")
 public class ListUsersController {
 
-    private final UserUseCase userUseCase;
+    private final UserService userService;
 
-    // NOTE: Rota privada e só para ADMIN
     @GetMapping
-    @Operation(summary = "Lista usuários com paginação", description = "Retorna uma lista de usuários cadastrados no formato paginado. Apenas para ADMIN.")
-    public ResponseEntity<@NonNull PaginatedResponseDto<UserResponseDto>> listUsers(
+    @Operation(summary = "Lista usuários com filtros e paginação", description = "Retorna uma lista paginada de usuários. Permite filtrar por e-mail, nome e cargo.")
+    public ResponseEntity<PaginatedResponseDto<UserResponseDto>> listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int limit,
             @RequestParam(required = false) String email,
             @RequestParam(required = false) String userName,
             @RequestParam(required = false) String position,
-            HttpServletRequest request
-    ) {
+            HttpServletRequest request) {
+
         String requestUrl = request.getRequestURL().toString();
-        PaginatedResponseDto<UserResponseDto> response = userUseCase.listUsers(page, limit, requestUrl, email, userName, position);
+        PaginatedResponseDto<UserResponseDto> response = userService.listUsers(page, limit, requestUrl, email, userName, position);
+
         return ResponseEntity.ok(response);
     }
 }

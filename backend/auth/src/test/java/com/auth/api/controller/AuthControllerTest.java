@@ -11,7 +11,8 @@ import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.usecase.AuthUseCase;
+import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.UserService;
 import com.auth.domain.repository.UserAuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +49,10 @@ class AuthControllerTest {
     private UserAuthRepository userRepository;
 
     @MockitoBean
-    private AuthUseCase authUseCase;
+    private UserService userService;
+
+    @MockitoBean
+    private RefreshTokenService refreshTokenService;
 
 @BeforeEach
     void setUp() {
@@ -67,7 +71,7 @@ class AuthControllerTest {
 
         AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
 
-        when(authUseCase.login(any(), any(), any(), any(), any())).thenReturn(result);
+        when(userService.login(any(), any(), any(), any(), any())).thenReturn(result);
 
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)

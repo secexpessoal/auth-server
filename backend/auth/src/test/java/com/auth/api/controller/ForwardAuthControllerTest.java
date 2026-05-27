@@ -2,7 +2,7 @@ package com.auth.api.controller;
 
 import com.auth.application.dto.VerifyAuthResult;
 import com.auth.application.service.CookieService;
-import com.auth.application.usecase.AuthUseCase;
+import com.auth.application.service.RefreshTokenService;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -21,6 +21,8 @@ import org.springframework.web.context.WebApplicationContext;
 
 import jakarta.servlet.http.Cookie;
 
+import java.util.List;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -38,7 +40,7 @@ class ForwardAuthControllerTest {
     private WebApplicationContext context;
 
     @MockitoBean
-    private AuthUseCase authUseCase;
+    private RefreshTokenService refreshTokenService;
 
     @MockitoBean
     private JwtGeneratorService jwtService;
@@ -85,24 +87,23 @@ class ForwardAuthControllerTest {
         String userAgent = "Mozilla/5.0";
 
         when(jwtService.isTokenValid(oldToken)).thenReturn(false);
-        when(authUseCase.verifyAuth(eq(refreshToken), eq(userAgent), anyString(), any(), any()))
+        when(refreshTokenService.verifyAuth(eq(refreshToken), eq(userAgent), any(), any(), any()))
                 .thenReturn(new VerifyAuthResult(newToken, newRefreshToken));
         
         ResponseCookie newAccessCookie = ResponseCookie.from("access_token", newToken).build();
         ResponseCookie newRefreshCookie = ResponseCookie.from("refresh_token", newRefreshToken).build();
         
-        when(cookieService.buildAccessTokenCookie(newToken)).thenReturn(newAccessCookie);
-        when(cookieService.buildRefreshTokenCookie(newRefreshToken)).thenReturn(newRefreshCookie);
+        when(refreshTokenService.buildAuthCookies(anyString(), anyString())).thenReturn(List.of(newRefreshCookie, newAccessCookie));
 
         mockMvc.perform(get("/v1/auth/verify")
                 .header(HttpHeaders.USER_AGENT, userAgent)
                 .cookie(new Cookie("access_token", oldToken), new Cookie("refresh_token", refreshToken)))
                 .andExpect(status().isOk())
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("access_token")))
-                .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refresh_token")))
+                .andExpect(cookie().value("access_token", newToken))
+                .andExpect(cookie().value("refresh_token", newRefreshToken))
                 .andExpect(header().string(HttpHeaders.AUTHORIZATION, "Bearer " + newToken));
         
-        verify(authUseCase).verifyAuth(eq(refreshToken), eq(userAgent), anyString(), any(), any());
+        verify(refreshTokenService).verifyAuth(eq(refreshToken), eq(userAgent), any(), any(), any());
     }
 
     @Test
@@ -123,7 +124,7 @@ class ForwardAuthControllerTest {
         String refreshToken = "valid-refresh";
 
         when(jwtService.isTokenValid(anyString())).thenReturn(false);
-        when(authUseCase.verifyAuth(anyString(), anyString(), anyString(), any(), any()))
+        when(refreshTokenService.verifyAuth(any(), any(), any(), any(), any()))
                 .thenThrow(new BadRequestException(ErrorCode.UNAUTHORIZED, "IP divergente"));
 
         mockMvc.perform(get("/v1/auth/verify")

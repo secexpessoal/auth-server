@@ -25,7 +25,7 @@ import java.util.UUID;
 import static com.auth.infra.config.MdcConfig.*;
 
 @Component
-public class MdcFilter extends OncePerRequestFilter {
+public class MappedDiagnosticContextFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {

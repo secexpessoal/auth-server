@@ -9,7 +9,7 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
-import com.auth.application.usecase.UserUseCase;
+import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +44,7 @@ class RegisterControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private UserUseCase userUseCase;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -55,7 +55,7 @@ class RegisterControllerTest {
     @DisplayName("POST /v1/user/register - Deve registrar novo usuário")
     void shouldRegisterUser() throws Exception {
         RegisterRequestDto request = new RegisterRequestDto("newuser", "new@example.com", Role.USER);
-        when(userUseCase.register(any(), eq(Role.USER))).thenReturn(UserResponseDto.builder().build());
+        when(userService.register(any(), eq(Role.USER))).thenReturn(UserResponseDto.builder().build());
 
         mockMvc.perform(post("/v1/user/register")
                 .contentType(MediaType.APPLICATION_JSON)

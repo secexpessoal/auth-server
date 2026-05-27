@@ -44,7 +44,7 @@ public class ServerSecurityConfig {
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final RateLimitingFilter rateLimitingFilter;
-    private final MdcFilter mdcFilter;
+    private final MappedDiagnosticContextFilter mappedDiagnosticContextFilter;
     private final SsoRedirectFilter ssoRedirectFilter;
 
     @Bean
@@ -56,8 +56,8 @@ public class ServerSecurityConfig {
         CsrfCookieFilter csrfCookieFilter = new CsrfCookieFilter();
 
         httpSecurity
-                .addFilterBefore(mdcFilter, UsernamePasswordAuthenticationFilter.class) // NOTE: MDC em primeiro para rastrear tudo
-                .addFilterAfter(ssoRedirectFilter, MdcFilter.class)
+                .addFilterBefore(mappedDiagnosticContextFilter, UsernamePasswordAuthenticationFilter.class) // NOTE: MDC em primeiro para rastrear tudo
+                .addFilterAfter(ssoRedirectFilter, MappedDiagnosticContextFilter.class)
                 .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) // NOTE: Permite o JS ler o cookie XSRF-TOKEN

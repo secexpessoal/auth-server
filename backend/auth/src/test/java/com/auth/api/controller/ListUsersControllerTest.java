@@ -9,7 +9,7 @@ package com.auth.api.controller;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
-import com.auth.application.usecase.UserUseCase;
+import com.auth.application.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -43,7 +43,7 @@ class ListUsersControllerTest {
     private WebApplicationContext context;
 
     @MockitoBean
-    private UserUseCase userUseCase;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -60,9 +60,9 @@ class ListUsersControllerTest {
                 .links(Map.of())
                 .build();
 
-        when(userUseCase.listUsers(anyInt(), anyInt(), anyString(), any(), any(), any())).thenReturn(response);
+        when(userService.listUsers(anyInt(), anyInt(), any(), any(), any(), any())).thenReturn(response);
 
-        mockMvc.perform(get("/v1/user")
+        mockMvc.perform(get("/v1/users")
                 .param("page", "0")
                 .param("limit", "10")
                 .contentType(MediaType.APPLICATION_JSON))
