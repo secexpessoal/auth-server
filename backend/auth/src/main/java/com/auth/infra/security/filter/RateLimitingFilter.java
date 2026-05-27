@@ -72,7 +72,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
 
     private void sendRateLimitErrorResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String uri = request.getRequestURI();
-        boolean isApiRoute = uri != null && uri.startsWith("/v1/");
+        boolean isApiRoute = uri != null && uri.matches("/v\\d+/.*");
 
         if (!isApiRoute) {
             response.sendRedirect("/?error_code=429");

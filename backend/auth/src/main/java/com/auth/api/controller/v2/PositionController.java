@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.PositionRequestDto;
 import com.auth.api.dto.auth.PositionResponseDto;
@@ -21,10 +21,10 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-@RestController
+@RestController("positionControllerV2")
 @RequiredArgsConstructor
-@RequestMapping("/v1/positions")
-@Tag(name = "Cargos", description = "Endpoints para gestão do catálogo de cargos")
+@RequestMapping(value = "/positions", version = "2")
+@Tag(name = "Cargos V2", description = "Endpoints para gestão do catálogo de cargos")
 public class PositionController {
 
     private final PositionService positionService;

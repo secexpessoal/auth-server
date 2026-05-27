@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v1;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
@@ -26,10 +26,10 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Controller responsável pelo registro de novos usuários.
  */
-@RestController
+@RestController("registerControllerV1")
 @RequiredArgsConstructor
-@RequestMapping("/v1/user/register")
-@Tag(name = "Registro", description = "Endpoints para criação de novas contas de usuário")
+@RequestMapping(value = "/user/register", version = "1")
+@Tag(name = "Registro V1", description = "Endpoints para criação de novas contas de usuário")
 public class RegisterController {
 
     private final RegisterUseCase registerUseCase;

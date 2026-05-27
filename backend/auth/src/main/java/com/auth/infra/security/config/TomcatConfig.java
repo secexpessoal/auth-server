@@ -59,7 +59,7 @@ public class TomcatConfig implements WebServerFactoryCustomizer<ConfigurableServ
                     uri = "Unknown Path";
                 }
 
-                boolean isApiRoute = uri.startsWith("/v1/");
+                boolean isApiRoute = uri.matches("/v\\d+/.*");
                 if (!isApiRoute) {
                     response.setContentType("text/html");
                     response.setCharacterEncoding("UTF-8");

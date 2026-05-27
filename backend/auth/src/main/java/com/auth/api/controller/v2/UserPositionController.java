@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.UserPositionChangeRequestDto;
 import com.auth.application.service.UserPositionService;
@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
+@RestController("userPositionControllerV2")
 @RequiredArgsConstructor
-@RequestMapping("/v1/user/positions")
-@Tag(name = "Cargos do Usuário", description = "Endpoints para atribuição de cargos e histórico")
+@RequestMapping(value = "/user/positions", version = "2")
+@Tag(name = "Cargos do Usuário V2", description = "Endpoints para atribuição de cargos e histórico")
 public class UserPositionController {
 
     private final UserPositionService userPositionService;

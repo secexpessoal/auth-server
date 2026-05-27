@@ -20,7 +20,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.springframework.util.AntPathMatcher;
+
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Filtro que impede o acesso a qualquer recurso (exceto logout e troca de senha)
@@ -29,6 +32,14 @@ import java.io.IOException;
 public class PasswordResetFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final AntPathMatcher pathMatcher = new AntPathMatcher();
+
+    private static final List<String> ALLOWED_PATTERNS = List.of(
+            "/v*/password/first-change",
+            "/v*/user/logout",
+            "/v*/user/refresh",
+            "/v*/password/user-reset"
+    );
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
@@ -40,9 +51,8 @@ public class PasswordResetFilter extends OncePerRequestFilter {
             authentication.getPrincipal() instanceof UserAuth user) {
             String path = request.getRequestURI();
 
-            // Permitir apenas logout, troca de senha, primeira troca e reset solicitado pelo usuário
-            boolean isAllowedPath = path.equals("/v1/password/first-change") || path.equals("/v1/user/logout") ||
-                                    path.equals("/v1/user/refresh") || path.equals("/v1/password/user-reset");
+            boolean isAllowedPath = ALLOWED_PATTERNS.stream()
+                    .anyMatch(pattern -> pathMatcher.match(pattern, path));
 
             if (user.isPasswordResetRequired() && !isAllowedPath) {
                 sendErrorResponse(response);

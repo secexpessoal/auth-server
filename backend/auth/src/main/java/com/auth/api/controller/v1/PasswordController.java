@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v1;
 
 import com.auth.api.dto.password.ChangePasswordRequestDto;
 import com.auth.api.dto.password.FirstChangePasswordRequestDto;
@@ -25,10 +25,10 @@ import java.util.Map;
 /**
  * Controller responsável pela gestão de senhas e recuperação de acesso.
  */
-@RestController
+@RestController("passwordControllerV1")
 @RequiredArgsConstructor
-@RequestMapping("/v1/password")
-@Tag(name = "Senhas", description = "Endpoints para troca e reset de senhas")
+@RequestMapping(value = "/password", version = "1")
+@Tag(name = "Senhas V1", description = "Endpoints para troca e reset de senhas")
 public class PasswordController {
 
     private final PasswordUseCase passwordUseCase;

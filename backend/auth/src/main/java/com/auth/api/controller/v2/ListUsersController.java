@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
@@ -22,12 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Controller responsável por listar usuários cadastrados.
+ * Controller responsável por listar usuários cadastrados (V2).
  */
-@RestController
+@RestController("listUsersControllerV2")
 @RequiredArgsConstructor
-@RequestMapping("/v1/user")
-@Tag(name = "Usuários", description = "Endpoints para gestão de contas de usuário")
+@RequestMapping(value = "/user", version = "2")
+@Tag(name = "Usuários V2", description = "Endpoints para gestão de contas de usuário")
 public class ListUsersController {
 
     private final ListUsersUseCase listUsersUseCase;

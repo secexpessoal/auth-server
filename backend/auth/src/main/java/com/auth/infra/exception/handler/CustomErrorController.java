@@ -21,7 +21,7 @@ import java.util.Date;
 
 /**
  * Controller personalizado para lidar com erros mapeados para /error.
- * Garante que rotas de API (/v1/**) sempre retornem JSON, mesmo para erros de infraestrutura.
+ * Garante que rotas de API (/v1/** e /v2/**) sempre retornem JSON, mesmo para erros de infraestrutura.
  */
 @Controller
 public class CustomErrorController implements ErrorController {

@@ -30,6 +30,7 @@ import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHe
 import org.springframework.security.web.header.writers.CrossOriginResourcePolicyHeaderWriter.CrossOriginResourcePolicy;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.util.AntPathMatcher;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -64,7 +65,7 @@ public class ServerSecurityConfig {
                         .requireCsrfProtectionMatcher(new CsrfProtectionMatcher())
 
                         // NOTE: Ignorar endpoints públicos que não exigem proteção CSRF
-                        .ignoringRequestMatchers("/v1/user/login", "/v1/user/refresh", "/v1/user/logout", "/v1/password/user-reset")
+                        .ignoringRequestMatchers("/v*/user/login", "/v*/user/refresh", "/v*/user/logout", "/v1/password/user-reset")
                 )
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(authenticationEntryPoint)
@@ -72,14 +73,14 @@ public class ServerSecurityConfig {
                 )
                 .authorizeHttpRequests((matcherRegistry) -> {
                     matcherRegistry
-                            .requestMatchers("/v1/user/login", "/v1/user/logout", "/v1/user/refresh", "/v1/password/user-reset").permitAll()
-                            .requestMatchers("/v1/auth/verify").permitAll()
-                            .requestMatchers(HttpMethod.GET, "/v1/user").hasRole(Role.ADMIN.name())
-                            .requestMatchers(HttpMethod.PATCH, "/v1/user/*/roles").hasRole(Role.ADMIN.name())
-                            .requestMatchers("/v1/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
-                            .requestMatchers(HttpMethod.PATCH, "/v1/user/activate", "/v1/user/deactivate").hasRole(Role.ADMIN.name())
-                            .requestMatchers("/v1/positions/**", "/v1/user/positions/**").hasRole(Role.ADMIN.name())
-                            .requestMatchers("/v1/password/change", "/v1/user/profile/**", "/v1/password/first-change").authenticated()
+                            .requestMatchers("/v*/user/login", "/v*/user/logout", "/v*/user/refresh", "/v1/password/user-reset").permitAll()
+                            .requestMatchers("/v*/auth/verify").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/v*/user").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.PATCH, "/v*/user/*/roles").hasRole(Role.ADMIN.name())
+                            .requestMatchers("/v*/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.PATCH, "/v*/user/activate", "/v*/user/deactivate").hasRole(Role.ADMIN.name())
+                            .requestMatchers("/v*/positions/**", "/v*/user/positions/**").hasRole(Role.ADMIN.name())
+                            .requestMatchers("/v1/password/change", "/v*/user/profile/**", "/v1/password/first-change").authenticated()
 
                             // NOTE: Swagger
                             .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
@@ -116,14 +117,20 @@ public class ServerSecurityConfig {
 
     private static class CsrfProtectionMatcher implements RequestMatcher {
         private final Set<String> allowedMethods = Set.of("GET", "HEAD", "TRACE", "OPTIONS");
-        private final Set<String> publicRoutes = Set.of("/v1/user/login", "/v1/user/refresh", "/v1/user/logout", "/v1/password/user-reset");
+        private final AntPathMatcher pathMatcher = new AntPathMatcher();
+        private final Set<String> publicRoutes = Set.of(
+                "/v*/user/login",
+                "/v*/user/refresh",
+                "/v*/user/logout",
+                "/v1/password/user-reset"
+        );
 
         @Override
         public boolean matches(HttpServletRequest request) {
             if (allowedMethods.contains(request.getMethod())) return false;
 
             String path = request.getRequestURI();
-            if (publicRoutes.contains(path)) return false;
+            if (publicRoutes.stream().anyMatch(pattern -> pathMatcher.match(pattern, path))) return false;
 
             // Se tem Bearer Token, podemos ignorar CSRF (Bearer não é automático)
             String authHeader = request.getHeader("Authorization");
@@ -133,9 +140,9 @@ public class ServerSecurityConfig {
 
             // Se existe o cookie de access_token e não tem Bearer, DEVEMOS aplicar CSRF, 
             // pois o navegador enviará esse cookie automaticamente.
-            return request.getCookies() != null && 
-                Arrays.stream(request.getCookies())
-                    .anyMatch(cookie -> "access_token".equals(cookie.getName()));
+            return request.getCookies() != null &&
+                   Arrays.stream(request.getCookies())
+                           .anyMatch(cookie -> "access_token".equals(cookie.getName()));
         }
     }
 }

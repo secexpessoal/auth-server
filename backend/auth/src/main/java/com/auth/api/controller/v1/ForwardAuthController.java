@@ -1,4 +1,4 @@
-package com.auth.api.controller;
+package com.auth.api.controller.v1;
 
 import com.auth.application.dto.VerifyAuthResult;
 import com.auth.application.service.CookieService;
@@ -22,10 +22,10 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-@RestController
+@RestController("forwardAuthControllerV1")
 @RequiredArgsConstructor
-@RequestMapping("/v1/auth")
-@Tag(name = "Forward Auth", description = "Endpoints para verificação de sessão via Proxy Reverso")
+@RequestMapping(value = "/auth", version = "1")
+@Tag(name = "Forward Auth V1", description = "Endpoints para verificação de sessão via Proxy Reverso")
 public class ForwardAuthController {
 
     private final VerifyAuthUseCase verifyAuthUseCase;

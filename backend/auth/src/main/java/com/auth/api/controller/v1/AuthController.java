@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v1;
 
 import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
@@ -33,10 +33,10 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Controller responsável pela autenticação e gestão de sessão.
  */
-@RestController
+@RestController("authControllerV1")
 @RequiredArgsConstructor
-@RequestMapping("/v1/user")
-@Tag(name = "Autenticação", description = "Endpoints para login, renovação de token e perfil")
+@RequestMapping(value = "/user", version = "1")
+@Tag(name = "Autenticação V1", description = "Endpoints para login, renovação de token e perfil")
 public class AuthController {
 
     private final LoginUseCase loginUseCase;

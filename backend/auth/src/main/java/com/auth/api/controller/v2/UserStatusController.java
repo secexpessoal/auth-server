@@ -5,7 +5,7 @@
  * Licensed under the BSD 3-Clause License.
  * See LICENSE file in the project root for full license information.
  */
-package com.auth.api.controller;
+package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
@@ -24,12 +24,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 /**
- * Controller responsável por atualizar o status de usuários.
+ * Controller responsável por atualizar o status de usuários (V2).
  */
-@RestController
+@RestController("userStatusControllerV2")
 @RequiredArgsConstructor
-@RequestMapping("/v1/user")
-@Tag(name = "Usuários", description = "Endpoints para gestão de status de contas de usuário")
+@RequestMapping(value = "/user", version = "2")
+@Tag(name = "Usuários V2", description = "Endpoints para gestão de status de contas de usuário")
 public class UserStatusController {
 
     private final ActivateUserUseCase activateUserUseCase;
