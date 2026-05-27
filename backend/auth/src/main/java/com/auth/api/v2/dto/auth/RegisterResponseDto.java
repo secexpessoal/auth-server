@@ -7,14 +7,13 @@
  */
 package com.auth.api.v2.dto.auth;
 
-import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
 @Builder
 public record RegisterResponseDto(
-        @JsonProperty("user")
-        UserResponseDtoV1 user,
+        @JsonProperty("email")
+        String email,
 
         @JsonProperty("tempPassword")
         String tempPassword

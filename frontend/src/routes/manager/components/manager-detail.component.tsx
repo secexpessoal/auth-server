@@ -190,91 +190,93 @@ export function ManagerDetailsModal({
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative max-w-full">
               <div className="flex-1 overflow-y-auto px-10 py-12 md:px-16 md:py-16 relative w-full">
                 <TabsContent value="profile" className="m-0 space-y-10 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center gap-6 border-b border-white/5 pb-8 mb-12">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                      <UserCircle className="w-7 h-7 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black text-foreground tracking-tight">Informações Pessoais</h3>
-                      <p className="text-sm text-muted-foreground font-medium">Dados de identificação e registro corporativo.</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-                    <div className="sm:col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Nome Completo</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10"
-                                    placeholder="Nome do colaborador"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
+                  <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 sm:p-10 shadow-neumorph-pressed space-y-10 relative overflow-hidden">
+                    <div className="flex items-center gap-6 border-b border-white/5 pb-8 mb-12">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <UserCircle className="w-7 h-7 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-foreground tracking-tight">Informações Pessoais</h3>
+                        <p className="text-sm text-muted-foreground font-medium">Dados de identificação e registro corporativo.</p>
+                      </div>
                     </div>
 
-                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
-                      <FormField
-                        control={form.control}
-                        name="registration"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Matrícula</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    maxLength={6}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10 font-mono tracking-widest"
-                                    placeholder="000000"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
+                      <div className="sm:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Nome Completo</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10"
+                                      placeholder="Nome do colaborador"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
-                      <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Cargo Atual</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10"
-                                    placeholder="Ex: Desenvolvedor Senior"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
+                      <div className="sm:col-span-1 border-t border-white/5 pt-8">
+                        <FormField
+                          control={form.control}
+                          name="registration"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Matrícula</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      maxLength={6}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10 font-mono tracking-widest"
+                                      placeholder="000000"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1 border-t border-white/5 pt-8">
+                        <FormField
+                          control={form.control}
+                          name="position"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Cargo Atual</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10"
+                                      placeholder="Ex: Desenvolvedor Senior"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 </TabsContent>

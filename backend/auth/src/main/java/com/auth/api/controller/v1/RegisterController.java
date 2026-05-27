@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller.v1;
 
-import com.auth.api.v1.dto.auth.UserResponseDtoV1;
+import com.auth.api.v1.dto.auth.RegisterResponseDtoV1;
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
@@ -37,22 +37,22 @@ public class RegisterController {
     // NOTE: Rota privada e só para ADMIN
     @PostMapping
     @Operation(summary = "Registra um novo usuário comum", description = "Cria uma conta com o cargo USER ou MANAGER.")
-    public ResponseEntity<@NonNull UserResponseDtoV1> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
+    public ResponseEntity<@NonNull RegisterResponseDtoV1> register(@Valid @RequestBody RegisterRequestDto registerRequest) {
         Role requestedRole = registerRequest.role();
         
         if (requestedRole == Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        UserResponseDtoV1 result = userService.register(registerRequest, requestedRole);
+        RegisterResponseDtoV1 result = userService.register(registerRequest, requestedRole);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
     // NOTE: Rota privada e só para ADMIN
     @PostMapping("/admin")
     @Operation(summary = "Registra um novo administrador", description = "Cria uma conta com o cargo ADMIN. Requer token de administrador.")
-    public ResponseEntity<@NonNull UserResponseDtoV1> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {
-        UserResponseDtoV1 result = userService.register(registerRequest, Role.ADMIN);
+    public ResponseEntity<@NonNull RegisterResponseDtoV1> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {
+        RegisterResponseDtoV1 result = userService.register(registerRequest, Role.ADMIN);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }

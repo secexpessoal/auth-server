@@ -10,6 +10,7 @@ package com.auth.application.service;
 import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
 import com.auth.api.v1.dto.auth.InPersonWorkPeriodDto;
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
+import com.auth.api.v1.dto.auth.RegisterResponseDtoV1;
 import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
 import com.auth.api.v1.dto.auth.UserResponseDtoV1;
@@ -36,6 +37,7 @@ import com.auth.infra.exception.custom.NotFoundException;
 import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -202,19 +204,19 @@ public class UserService {
     }
 
     public PaginatedResponseDto<UserResponseDtoV1> listUsers(int page, int limit, String requestUrl, String email, String userName, String positionName) {
-        Page<UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
+        Page<@NonNull UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
         Map<UUID, String> positionNameCache = positionRepository.findAll().stream().collect(Collectors.toMap(Position::getId, Position::getName));
         List<UserResponseDtoV1> data = usersPage.getContent().stream().map(userItem -> userMapper.toResponse(userItem, positionNameCache)).toList();
         return buildPaginatedResponse(usersPage, data, requestUrl, email, userName, positionName);
     }
 
     public PaginatedResponseDto<UserResponseDtoV2> listUsersV2(int page, int limit, String requestUrl, String email, String userName, String positionName) {
-        Page<UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
+        Page<@NonNull UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
         List<UserResponseDtoV2> data = usersPage.getContent().stream().map(userMapper::toResponseV2).toList();
         return buildPaginatedResponseV2(usersPage, data, requestUrl, email, userName, positionName);
     }
 
-    private Page<UserAuth> listUsersCore(int page, int limit, String email, String userName, String positionName) {
+    private Page<@NonNull UserAuth> listUsersCore(int page, int limit, String email, String userName, String positionName) {
         Pageable pageable = PageRequest.of(page, limit);
         List<UUID> matchingUserIds = null;
 
@@ -269,7 +271,7 @@ public class UserService {
         return mongoTemplate.find(dataQuery, UserData.class).stream().map(UserData::getUserId).toList();
     }
 
-    private PaginatedResponseDto<UserResponseDtoV1> buildPaginatedResponse(Page<UserAuth> page, List<UserResponseDtoV1> data, String url, String email, String name, String pos) {
+    private PaginatedResponseDto<UserResponseDtoV1> buildPaginatedResponse(Page<@NonNull UserAuth> page, List<UserResponseDtoV1> data, String url, String email, String name, String pos) {
         PaginationMetaDto meta = PaginationMetaDto.builder()
                 .page(page.getNumber())
                 .limit(page.getSize())
@@ -305,7 +307,7 @@ public class UserService {
         return params.toString();
     }
 
-    private PaginatedResponseDto<UserResponseDtoV2> buildPaginatedResponseV2(Page<UserAuth> page, List<UserResponseDtoV2> data, String url, String email, String name, String pos) {
+    private PaginatedResponseDto<UserResponseDtoV2> buildPaginatedResponseV2(Page<@NonNull UserAuth> page, List<UserResponseDtoV2> data, String url, String email, String name, String pos) {
         PaginationMetaDto meta = PaginationMetaDto.builder()
                 .page(page.getNumber())
                 .limit(page.getSize())
@@ -349,13 +351,16 @@ public class UserService {
                 .build();
     }
 
-    public UserResponseDtoV1 register(RegisterRequestDto request, Role role) {
+    public RegisterResponseDtoV1 register(RegisterRequestDto request, Role role) {
         String tempPassword = passwordGeneratorService.generateTemporaryPassword();
 
         UserAuth user = Optional.ofNullable(userRegister(request, role, tempPassword))
                 .orElseThrow(() -> new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao registrar usuário"));
 
-        return userMapper.toResponse(user, tempPassword);
+        return RegisterResponseDtoV1.builder()
+                .email(user.getEmail())
+                .tempPassword(tempPassword)
+                .build();
     }
 
     public UserResponseDtoV1 updateProfile(UUID userId, UpdateUserProfileRequestDto request) {

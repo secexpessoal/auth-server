@@ -10,27 +10,15 @@ package com.auth.api.v1.dto.auth;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 
-import java.util.Set;
-import java.util.UUID;
-
+/**
+ * DTO simplificado para a resposta de registro de usuário.
+ */
 @Builder
-public record UserResponseDtoV1(
-        @JsonProperty("id")
-        UUID id,
-
+public record RegisterResponseDtoV1(
         @JsonProperty("email")
         String email,
 
-        @JsonProperty("active")
-        boolean active,
-
-        @JsonProperty("roles")
-        Set<String> roles,
-
-        @JsonProperty("profile")
-        UserProfileResponseDto profile,
-
-        @JsonProperty("audit")
-        UserAuditResponseDto audit
+        @JsonProperty("tempPassword")
+        String tempPassword
 ) {
 }

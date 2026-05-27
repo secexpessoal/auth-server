@@ -8,7 +8,6 @@
 package com.auth.api.controller.v2;
 
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v2.dto.auth.RegisterResponseDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
@@ -34,15 +33,33 @@ public class RegisterController {
 
     @PostMapping("/register")
     @PreAuthorize("hasRole('ADMIN')")
-    @Operation(summary = "Registra um novo usuário V2", description = "Cria um usuário com papel USER e retorna a senha temporária em um objeto separado.")
+    @Operation(summary = "Registra um novo usuário V2", description = "Cria um usuário com o papel especificado (USER ou MANAGER) e retorna a senha temporária.")
     public ResponseEntity<@NonNull RegisterResponseDto> register(@Valid @RequestBody RegisterRequestDto request) {
-        // O UserService.register da V1 já gera a senha e retorna o DTO V1 com a senha.
-        // Vamos extrair a senha do DTO V1 para o novo contrato V2.
-        UserResponseDtoV1 v1Response = userService.register(request, Role.USER);
+        Role requestedRole = request.role();
+
+        if (requestedRole == Role.ADMIN) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        var result = userService.register(request, requestedRole);
         
         RegisterResponseDto v2Response = RegisterResponseDto.builder()
-                .user(v1Response)
-                .tempPassword(v1Response.tempPassword())
+                .email(result.email())
+                .tempPassword(result.tempPassword())
+                .build();
+
+        return ResponseEntity.ok(v2Response);
+    }
+
+    @PostMapping("/register/admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Registra um novo administrador V2", description = "Cria um usuário com o papel ADMIN e retorna a senha temporária.")
+    public ResponseEntity<@NonNull RegisterResponseDto> registerAdmin(@Valid @RequestBody RegisterRequestDto request) {
+        var result = userService.register(request, Role.ADMIN);
+
+        RegisterResponseDto v2Response = RegisterResponseDto.builder()
+                .email(result.email())
+                .tempPassword(result.tempPassword())
                 .build();
 
         return ResponseEntity.ok(v2Response);

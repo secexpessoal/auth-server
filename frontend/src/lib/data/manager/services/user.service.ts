@@ -7,7 +7,7 @@ import type { PaginatedResponseDto, RegisterRequestDto, RegisterResponseDto } fr
  * Registra um novo administrador. Somente usuários com Role.ADMIN podem fazer isso.
  */
 export async function registerAdminAttempt(payload: RegisterRequestDto): Promise<RegisterResponseDto> {
-  const { data } = await axiosClient.post<RegisterResponseDto>("/v1/user/register/admin", payload);
+  const { data } = await axiosClient.post<RegisterResponseDto>("/v2/user/register", { ...payload, role: "ADMIN" });
   return data;
 }
 
@@ -15,7 +15,7 @@ export async function registerAdminAttempt(payload: RegisterRequestDto): Promise
  * Registra um novo usuário comum.
  */
 export async function registerUserAttempt(payload: RegisterRequestDto): Promise<RegisterResponseDto> {
-  const { data } = await axiosClient.post<RegisterResponseDto>("/v1/user/register", payload);
+  const { data } = await axiosClient.post<RegisterResponseDto>("/v2/user/register", payload);
   return data;
 }
 
