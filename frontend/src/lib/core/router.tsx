@@ -5,6 +5,7 @@ import { LoginPage } from "@routes/auth/login.component";
 import { ResetPasswordPage } from "@routes/auth/reset-password.component";
 import { ErrorPage } from "./errors/error.component";
 import { ManagerPage } from "@routes/manager/manager.component";
+import { PositionsPage } from "@routes/manager/positions.component";
 import toast from "react-hot-toast";
 
 export const rootRoute = createRootRoute({
@@ -107,10 +108,16 @@ export const resetPasswordRoute = createRoute({
   getParentRoute: () => protectedLayout,
 });
 
+export const positionsRoute = createRoute({
+  path: "/positions",
+  component: PositionsPage,
+  getParentRoute: () => protectedLayout,
+});
+
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
-  protectedLayout.addChildren([dashboardRoute, resetPasswordRoute]),
+  protectedLayout.addChildren([dashboardRoute, positionsRoute, resetPasswordRoute]),
 ]);
 
 export const router = createRouter({

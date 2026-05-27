@@ -1,11 +1,11 @@
-import { LogOut, Users, Shield, BookOpen } from "lucide-react";
+import { LogOut, Users, Shield, BookOpen, Briefcase } from "lucide-react";
 import { useAuthStore } from "@lib/store/auth.store";
 import { logoutAttempt } from "@lib/data/auth/services/auth.service";
 import { Button } from "@lib/components/sh-button/button.component";
 import { ManagerFormDialog } from "./components/manager-form.component";
 import { ManagerTableComponent } from "./components/manager-table.component";
 import { ChangePasswordDialog } from "./components/change-password-dialog.component";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
 export function ManagerPage() {
@@ -42,6 +42,16 @@ export function ManagerPage() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <ChangePasswordDialog />
+
+            <Link to="/positions">
+              <Button
+                variant="outline"
+                className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm border-primary/20 text-primary hover:bg-primary/5"
+              >
+                Cargos
+                <Briefcase className="w-4 h-4 ml-2 opacity-70" />
+              </Button>
+            </Link>
 
             <Button
               variant="success"

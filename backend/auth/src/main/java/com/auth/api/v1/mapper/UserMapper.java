@@ -27,7 +27,7 @@ public class UserMapper {
     private final PositionRepository positionRepository;
 
     public UserResponseDtoV1 toResponse(UserAuth user) {
-        return toResponse(user, null, null);
+        return toResponse(user, null);
     }
 
     public com.auth.api.v2.dto.auth.UserResponseDtoV2 toResponseV2(UserAuth user) {
@@ -83,15 +83,7 @@ public class UserMapper {
                 .build();
     }
 
-    public UserResponseDtoV1 toResponse(UserAuth user, String tempPassword) {
-        return toResponse(user, tempPassword, null);
-    }
-
     public UserResponseDtoV1 toResponse(UserAuth user, Map<UUID, String> positionCache) {
-        return toResponse(user, null, positionCache);
-    }
-
-    private UserResponseDtoV1 toResponse(UserAuth user, String tempPassword, Map<UUID, String> positionCache) {
         UserData profileData = user.getUserProfile();
         
         UserProfileResponseDto profile = null;
@@ -144,7 +136,6 @@ public class UserMapper {
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)
-                .tempPassword(tempPassword)
                 .build();
     }
 }

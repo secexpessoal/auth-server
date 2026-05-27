@@ -6,9 +6,24 @@ import { Input } from "@lib/components/sh-input/input.component";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
 import { Popover, PopoverContent, PopoverTrigger } from "@lib/components/sh-popover/popover.component";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@lib/components/sh-select/select.component";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@lib/components/sh-select/select.component";
 import { Spinner } from "@lib/components/sh-spinner/spinner.component";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@lib/components/sh-tabs/tabs.component";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@lib/components/sh-tooltip/tooltip.component";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@lib/components/sh-input-group/input-group.component";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@lib/utils/cn/cn.util";
 import { format, parseISO } from "date-fns";
@@ -27,6 +42,11 @@ import {
   UserCheck,
   UserCircle,
   UserX,
+  Briefcase,
+  History,
+  ChevronRight,
+  Plus,
+  ArrowLeft,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -34,6 +54,11 @@ import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
 import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@lib/data/manager/molecule/user.schema";
 import { updateUserRoles } from "@lib/data/manager/services/user.service";
+import { getUserPositionHistory, changeUserPosition } from "@lib/data/manager/services/user-position.service";
+import { getActivePositions, createPosition, getPositionEventTypes } from "@lib/data/manager/services/position.service";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@lib/infra/query/query.util";
+import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
 
 export function ManagerDetailsModal({
   open,
@@ -97,7 +122,7 @@ export function ManagerDetailsModal({
   if (currentSignature !== prevSignature) {
     setPrevSignature(currentSignature);
     if (open && user) {
-      setHybridMode(user.profile.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
+      setHybridMode(user.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
       setSelectedRoles(user.roles);
     }
   }
@@ -105,20 +130,80 @@ export function ManagerDetailsModal({
   useEffect(() => {
     if (open && user) {
       form.reset({
-        position: user.profile.position,
-        workRegime: user.profile.workRegime,
-        username: user.profile.username || "",
-        birthDate: user.profile.birthDate || null,
-        registration: user.profile.registration || "",
-        livesElsewhere: user.profile.livesElsewhere || false,
+        position: user.profile?.position?.name || "",
+        workRegime: user.profile?.workRegime,
+        username: user.profile?.username || "",
+        birthDate: user.profile?.birthDate || null,
+        registration: user.profile?.registration || "",
+        livesElsewhere: user.profile?.livesElsewhere || false,
         inPersonWorkPeriod: {
-          frequencyCycleWeeks: user.profile.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
-          frequencyWeekMask: user.profile.inPersonWorkPeriod?.frequencyWeekMask || 0,
-          frequencyDurationDays: user.profile.inPersonWorkPeriod?.frequencyDurationDays || null,
+          frequencyCycleWeeks: user.profile?.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
+          frequencyWeekMask: user.profile?.inPersonWorkPeriod?.frequencyWeekMask || 0,
+          frequencyDurationDays: user.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
         },
       });
     }
   }, [open, user, form]);
+
+  const { data: history, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ["user-position-history", user?.id],
+    queryFn: () => getUserPositionHistory(user!.id),
+    enabled: !!user?.id && open,
+  });
+
+  const { data: activePositions } = useQuery({
+    queryKey: ["active-positions"],
+    queryFn: getActivePositions,
+    enabled: open,
+  });
+
+  const { data: eventTypes } = useQuery({
+    queryKey: ["position-event-types"],
+    queryFn: getPositionEventTypes,
+    enabled: open,
+  });
+
+  const [newPositionId, setNewPositionId] = useState("");
+  const [changeReason, setChangeReason] = useState("");
+  const [eventType, setEventType] = useState("PROMOTION");
+  const [isCreatingNewPosition, setIsCreatingNewPosition] = useState(false);
+  const [newPositionName, setNewPositionName] = useState("");
+
+  useEffect(() => {
+    if (eventTypes && eventTypes.length > 0 && !eventType) {
+      setEventType(eventTypes[0].value);
+    }
+  }, [eventTypes, eventType]);
+
+  const createPositionMutation = useMutation({
+    mutationFn: () => createPosition({ name: newPositionName }),
+    onSuccess: (data) => {
+      toast.success("Novo cargo cadastrado!");
+      void queryClient.invalidateQueries({ queryKey: ["active-positions"] });
+      setNewPositionId(data.id);
+      setIsCreatingNewPosition(false);
+      setNewPositionName("");
+    },
+    onError: (error) => toast.error(getErrorMessage(error, "Erro ao cadastrar cargo")),
+  });
+
+  const changePositionMutation = useMutation({
+    mutationFn: () =>
+      changeUserPosition(user!.id, {
+        positionId: newPositionId,
+        eventType,
+        isTemporary: false,
+        reason: changeReason,
+      }),
+    onSuccess: () => {
+      toast.success("Cargo alterado com sucesso!");
+      void queryClient.invalidateQueries({ queryKey: ["user-position-history", user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+      setNewPositionId("");
+      setChangeReason("");
+    },
+    onError: (error) => toast.error(getErrorMessage(error, "Erro ao alterar cargo")),
+  });
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
 
@@ -127,7 +212,7 @@ export function ManagerDetailsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-full sm:max-w-7xl h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
+        className="w-full sm:max-w-400 h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
         showCloseButton
       >
         <Tabs orientation="vertical" defaultValue="profile" className="flex flex-col md:flex-row h-full w-full items-stretch">
@@ -164,6 +249,14 @@ export function ManagerDetailsModal({
                 </TabsTrigger>
 
                 <TabsTrigger
+                  value="career"
+                  className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
+                >
+                  <Briefcase className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
+                  Carreira & Cargos
+                </TabsTrigger>
+
+                <TabsTrigger
                   value="governance"
                   className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
                 >
@@ -190,91 +283,93 @@ export function ManagerDetailsModal({
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col h-full overflow-hidden bg-transparent relative max-w-full">
               <div className="flex-1 overflow-y-auto px-10 py-12 md:px-16 md:py-16 relative w-full">
                 <TabsContent value="profile" className="m-0 space-y-10 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="flex items-center gap-6 border-b border-white/5 pb-8 mb-12">
-                    <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
-                      <UserCircle className="w-7 h-7 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-black text-foreground tracking-tight">Informações Pessoais</h3>
-                      <p className="text-sm text-muted-foreground font-medium">Dados de identificação e registro corporativo.</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
-                    <div className="sm:col-span-2">
-                      <FormField
-                        control={form.control}
-                        name="username"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Nome Completo</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10"
-                                    placeholder="Nome do colaborador"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
+                  <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 sm:p-10 shadow-neumorph-pressed space-y-10 relative overflow-hidden">
+                    <div className="flex items-center gap-6 border-b border-white/5 pb-8 mb-12">
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                        <UserCircle className="w-7 h-7 text-primary" />
+                      </div>
+                      <div>
+                        <h3 className="text-2xl font-black text-foreground tracking-tight">Informações Pessoais</h3>
+                        <p className="text-sm text-muted-foreground font-medium">Dados de identificação e registro corporativo.</p>
+                      </div>
                     </div>
 
-                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
-                      <FormField
-                        control={form.control}
-                        name="registration"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Matrícula</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    maxLength={6}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10 font-mono tracking-widest"
-                                    placeholder="000000"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-8">
+                      <div className="sm:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name="username"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Nome Completo</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10"
+                                      placeholder="Nome do colaborador"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="sm:col-span-1 border-t border-white/5 pt-8">
-                      <FormField
-                        control={form.control}
-                        name="position"
-                        render={({ field }) => (
-                          <FormItem>
-                            <Field>
-                              <FormLabel className="font-bold ml-1">Cargo Atual</FormLabel>
-                              <FieldContent>
-                                <FormControl>
-                                  <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    className="bg-black/5 dark:bg-white/5 border-white/10"
-                                    placeholder="Ex: Desenvolvedor Senior"
-                                  />
-                                </FormControl>
-                              </FieldContent>
-                              <FormMessage />
-                            </Field>
-                          </FormItem>
-                        )}
-                      />
+                      <div className="sm:col-span-1 border-t border-white/5 pt-8">
+                        <FormField
+                          control={form.control}
+                          name="registration"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Matrícula</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      maxLength={6}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10 font-mono tracking-widest"
+                                      placeholder="000000"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="sm:col-span-1 border-t border-white/5 pt-8">
+                        <FormField
+                          control={form.control}
+                          name="position"
+                          render={({ field }) => (
+                            <FormItem>
+                              <Field>
+                                <FormLabel className="font-bold ml-1">Cargo Atual</FormLabel>
+                                <FieldContent>
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      value={field.value || ""}
+                                      className="bg-black/5 dark:bg-white/5 border-white/10"
+                                      placeholder="Ex: Desenvolvedor Senior"
+                                    />
+                                  </FormControl>
+                                </FieldContent>
+                                <FormMessage />
+                              </Field>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
                   </div>
                 </TabsContent>
@@ -530,6 +625,215 @@ export function ManagerDetailsModal({
                       </div>
                     </div>
                   )}
+                </TabsContent>
+
+                {/* --- CAREER SECTION --- */}
+                <TabsContent value="career" className="m-0 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-10">
+                  <TooltipProvider>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                      {/* Alterar Cargo Form */}
+                      <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8 h-full">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                            <RefreshCw className="w-6 h-6 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-black text-foreground">Alterar Cargo</h3>
+                        </div>
+
+                        <div className="space-y-6 flex-1">
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Novo Cargo</label>
+                            {isCreatingNewPosition ? (
+                              <InputGroup className="h-12 border-primary/20 bg-primary/5">
+                                <InputGroupAddon>
+                                  <InputGroupButton
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={() => {
+                                      setIsCreatingNewPosition(false);
+                                      setNewPositionName("");
+                                    }}
+                                    title="Voltar para seleção"
+                                  >
+                                    <ArrowLeft className="w-4 h-4" />
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                                <InputGroupInput
+                                  placeholder="Nome do novo cargo..."
+                                  value={newPositionName}
+                                  onChange={(e) => setNewPositionName(e.target.value)}
+                                  className="font-bold"
+                                  autoFocus
+                                />
+                                <InputGroupAddon align="inline-end">
+                                  <InputGroupButton
+                                    variant="default"
+                                    size="icon-sm"
+                                    disabled={!newPositionName.trim() || createPositionMutation.isPending}
+                                    onClick={() => createPositionMutation.mutate()}
+                                  >
+                                    {createPositionMutation.isPending ? <Spinner className="w-3 h-3" /> : <Plus className="w-4 h-4" />}
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                              </InputGroup>
+                            ) : (
+                              <Select onValueChange={setNewPositionId} value={newPositionId}>
+                                <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                  <SelectValue placeholder="Selecione o cargo..." />
+                                </SelectTrigger>
+                                <SelectContent className="bg-card border-white/20">
+                                  <SelectGroup>
+                                    {activePositions?.map((pos) => (
+                                      <SelectItem key={pos.id} value={pos.id} className="font-bold">
+                                        {pos.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                  <SelectSeparator className="opacity-20" />
+                                  <div
+                                    className="flex items-center gap-2 p-2 px-3 text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/10 cursor-pointer transition-colors"
+                                    onClick={() => setIsCreatingNewPosition(true)}
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    Cadastrar novo cargo
+                                  </div>
+                                </SelectContent>
+                              </Select>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
+                            <Select onValueChange={setEventType} value={eventType}>
+                              <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-card border-white/20">
+                                {eventTypes?.map((type) => (
+                                  <SelectItem key={type.value} value={type.value} className="font-bold">
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Motivo / Observação</label>
+                            <textarea
+                              value={changeReason}
+                              onChange={(e) => setChangeReason(e.target.value)}
+                              className="w-full min-h-70 p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none h-full max-h-62.5"
+                              placeholder="Descreva o motivo da alteração..."
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={() => changePositionMutation.mutate()}
+                          disabled={!newPositionId || changePositionMutation.isPending}
+                          className="w-full h-12 font-black uppercase tracking-widest mt-auto"
+                        >
+                          {changePositionMutation.isPending ? <Spinner className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                          Confirmar Mudança
+                        </Button>
+                      </div>
+
+                      {/* Histórico */}
+                      <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8 h-full">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                            <History className="w-6 h-6 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-black text-foreground">Histórico de Transições</h3>
+                        </div>
+
+                        <div className="max-h-150 overflow-y-auto pr-4 custom-scrollbar relative pl-8 flex-1 before:absolute before:left-3.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-linear-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
+                          {isLoadingHistory ? (
+                            <div className="flex justify-center p-10">
+                              <Spinner className="w-6 h-6" />
+                            </div>
+                          ) : history?.length === 0 ? (
+                            <p className="text-muted-foreground font-medium text-center py-10">Nenhuma transição registrada.</p>
+                          ) : (
+                            <div className="space-y-10">
+                              {history?.map((entry) => {
+                                const typeMeta = eventTypes?.find((t) => t.value === entry.eventType);
+                                return (
+                                  <div key={entry.id} className="relative group">
+                                    <div className="absolute -left-6.25 top-1.5 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-[0_0_10px_rgba(var(--primary),0.3)] z-10 group-hover:scale-125 transition-transform duration-300" />
+
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between gap-4">
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <span
+                                              className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border cursor-help",
+                                                entry.eventType === "PROMOTION"
+                                                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                                  : entry.eventType === "DEMOTION"
+                                                    ? "bg-destructive/10 text-destructive border-destructive/20"
+                                                    : "bg-primary/10 text-primary border-primary/20",
+                                              )}
+                                            >
+                                              {typeMeta?.label || entry.eventType}
+                                            </span>
+                                          </TooltipTrigger>
+                                          {typeMeta?.description && <TooltipContent side="top">{typeMeta.description}</TooltipContent>}
+                                        </Tooltip>
+                                        <span className="text-[10px] font-bold text-muted-foreground/60 whitespace-nowrap">
+                                          {format(new Date(entry.occurredAt), "dd MMM yyyy • HH:mm")}
+                                        </span>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:border-white/10 transition-colors overflow-hidden">
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Anterior</p>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <p className="font-bold text-sm text-foreground/80 truncate block cursor-help">
+                                                {entry.fromPositionName || "—"}
+                                              </p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{entry.fromPositionName || "—"}</TooltipContent>
+                                          </Tooltip>
+                                        </div>
+                                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 shrink-0 sm:rotate-0 rotate-90">
+                                          <ChevronRight className="w-4 h-4 text-primary" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Novo Cargo</p>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <p className="font-bold text-sm text-primary truncate block cursor-help">{entry.toPositionName}</p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{entry.toPositionName}</TooltipContent>
+                                          </Tooltip>
+                                        </div>
+                                      </div>
+
+                                      {entry.reason && (
+                                        <div className="relative pl-4 py-1">
+                                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white/10 rounded-full" />
+                                          <p className="text-xs font-medium text-muted-foreground leading-relaxed italic break-words">
+                                            &quot;{entry.reason}&quot;
+                                          </p>
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-2 text-muted-foreground/40 px-1">
+                                        <User className="w-3 h-3" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Por: {entry.changedBy}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </TooltipProvider>
                 </TabsContent>
 
                 {/* --- GOVERNANCE SECTION --- */}
