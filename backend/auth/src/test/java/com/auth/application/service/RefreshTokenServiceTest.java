@@ -7,7 +7,9 @@
  */
 package com.auth.application.service;
 
+import com.auth.application.dto.AuthMetadata;
 import com.auth.application.dto.VerifyAuthResult;
+import com.auth.application.dto.VerifyAuthStatus;
 import com.auth.application.mapper.UserMapper;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
@@ -45,9 +47,12 @@ class RefreshTokenServiceTest {
     @InjectMocks
     private RefreshTokenService refreshTokenService;
 
+    private AuthMetadata metadata;
+
     @BeforeEach
     void setUp() {
         ReflectionTestUtils.setField(refreshTokenService, "refreshTokenExpiration", 3600000L);
+        metadata = new AuthMetadata("ua", "ip", null, null);
     }
 
     @Test
@@ -73,19 +78,15 @@ class RefreshTokenServiceTest {
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando o token for nulo no verifyAuth")
-    void shouldThrowWhenTokenIsNull() {
-        BadRequestException exception = assertThrows(
-                BadRequestException.class,
-                () -> refreshTokenService.verifyAuth(null, "ua", "ip", null, null)
-        );
-
-        assertEquals("O token é inválido ou ausente.", exception.getMessage());
+    @DisplayName("Deve retornar UNAUTHORIZED quando os tokens forem nulos no verifyAuth")
+    void shouldReturnUnauthorizedWhenTokensAreNull() {
+        VerifyAuthResult result = refreshTokenService.verifyAuth(null, null, metadata);
+        assertEquals(VerifyAuthStatus.UNAUTHORIZED, result.status());
     }
 
     @Test
-    @DisplayName("Deve lançar exceção quando o usuário estiver inativo no verifyAuth")
-    void shouldThrowWhenUserIsInactive() {
+    @DisplayName("Deve retornar UNAUTHORIZED quando o usuário estiver inativo no verifyAuth")
+    void shouldReturnUnauthorizedWhenUserIsInactive() {
         String tokenString = "valid-token";
         UserAuth inactiveUser = new UserAuth();
         inactiveUser.setActive(false);
@@ -100,17 +101,14 @@ class RefreshTokenServiceTest {
 
         when(refreshTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(token));
 
-        BadRequestException exception = assertThrows(
-                BadRequestException.class,
-                () -> refreshTokenService.verifyAuth(tokenString, "ua", "ip", null, null)
-        );
+        VerifyAuthResult result = refreshTokenService.verifyAuth(null, tokenString, metadata);
 
-        assertEquals("O token é inválido ou o usuário está inativo.", exception.getMessage());
+        assertEquals(VerifyAuthStatus.UNAUTHORIZED, result.status());
     }
 
     @Test
-    @DisplayName("Deve retornar novos tokens quando válidos no verifyAuth")
-    void shouldReturnNewTokensWhenValid() {
+    @DisplayName("Deve retornar RENEWED quando o refresh token for válido no verifyAuth")
+    void shouldReturnRenewedWhenValid() {
         String tokenString = "old-refresh";
         UserAuth user = new UserAuth();
         user.setEmail("user@test.com");
@@ -130,8 +128,9 @@ class RefreshTokenServiceTest {
         when(jwtService.generateToken(user)).thenReturn("new-jwt");
         when(refreshTokenRepository.save(any())).thenReturn(newToken);
 
-        VerifyAuthResult result = refreshTokenService.verifyAuth(tokenString, "ua", "ip", null, null);
+        VerifyAuthResult result = refreshTokenService.verifyAuth(null, tokenString, metadata);
 
+        assertEquals(VerifyAuthStatus.RENEWED, result.status());
         assertEquals("new-jwt", result.accessToken());
         assertEquals("new-refresh", result.refreshToken());
         verify(refreshTokenRepository).deleteByToken(tokenString);

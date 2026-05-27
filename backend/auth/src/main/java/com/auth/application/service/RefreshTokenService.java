@@ -10,8 +10,10 @@ package com.auth.application.service;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.UserSessionResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
+import com.auth.application.dto.AuthMetadata;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.dto.VerifyAuthResult;
+import com.auth.application.dto.VerifyAuthStatus;
 import com.auth.application.mapper.UserMapper;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.UserAuth;
@@ -22,11 +24,9 @@ import com.auth.infra.security.service.JwtGeneratorService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -36,7 +36,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
-    private final CookieService cookieService;
     private final JwtGeneratorService jwtService;
     private final UserMapper userMapper;
 
@@ -100,15 +99,10 @@ public class RefreshTokenService {
         refreshTokenRepository.deleteByUser(user);
     }
 
-    public List<ResponseCookie> logout(String refreshToken) {
+    public void logout(String refreshToken) {
         if (refreshToken != null) {
             deleteByToken(refreshToken);
         }
-
-        ResponseCookie refreshTokenLogoutCookie = cookieService.buildRefreshTokenLogoutCookie();
-        ResponseCookie accessTokenLogoutCookie = cookieService.buildAccessTokenLogoutCookie();
-
-        return List.of(refreshTokenLogoutCookie, accessTokenLogoutCookie);
     }
 
     public AuthenticationResult refreshToken(RefreshTokenRequestDto request) {
@@ -136,59 +130,83 @@ public class RefreshTokenService {
         return new AuthenticationResult(responseDto, newRefreshToken.getToken());
     }
 
-    public VerifyAuthResult verifyAuth(String refreshToken, String userAgent, String ipAddress, String origin, String referer) {
-        if (refreshToken == null || refreshToken.isBlank()) {
-            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "O token é inválido ou ausente.");
+    /**
+     * Processa a verificação de sessão para Forward Auth.
+     * Toma todas as decisões de negócio: validação, renovação proativa ou silenciosa.
+     */
+    public VerifyAuthResult verifyAuth(String accessToken, String refreshToken, AuthMetadata metadata) {
+        // 1. Valida o access_token se presente
+        if (accessToken != null && !accessToken.isBlank() && jwtService.isTokenValid(accessToken)) {
+            
+            // PROACTIVE REFRESH: Se o token é válido mas expira em menos de 5 minutos
+            if (jwtService.isTokenAboutToExpire(accessToken, 5) && refreshToken != null && !refreshToken.isBlank()) {
+                log.info("Access token próximo da expiração. Tentando Proactive Refresh.");
+                try {
+                    return performSilentRenewal(refreshToken, metadata, true);
+                } catch (Exception exception) {
+                    log.warn("Falha no Proactive Refresh, mantendo token atual: {}", exception.getMessage());
+                }
+            }
+
+            return VerifyAuthResult.builder()
+                    .status(VerifyAuthStatus.AUTHORIZED)
+                    .accessToken(accessToken)
+                    .build();
         }
-        
+
+        // 2. Se access_token for inválido/ausente, tenta renovar usando o refresh_token
+        if (refreshToken != null && !refreshToken.isBlank()) {
+            try {
+                log.info("Access token inválido ou ausente. Tentando renovação silenciosa.");
+                return performSilentRenewal(refreshToken, metadata, false);
+            } catch (Exception exception) {
+                log.warn("Falha na renovação silenciosa: {}", exception.getMessage());
+            }
+        }
+
+        // 3. Se tudo falhar, redireciona
+        return VerifyAuthResult.builder()
+                .status(VerifyAuthStatus.UNAUTHORIZED)
+                .build();
+    }
+
+    private VerifyAuthResult performSilentRenewal(String refreshToken, AuthMetadata metadata, boolean proactive) {
         RefreshToken token = findByToken(refreshToken);
         verifyExpiration(token);
         
-        validateMetadata(token, userAgent, ipAddress);
+        validateMetadata(token, metadata.userAgent(), metadata.ipAddress());
         
         UserAuth userAuth = token.getUser();
         if (!Boolean.TRUE.equals(userAuth.getActive())) {
-            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "O token é inválido ou o usuário está inativo.");
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário inativo.");
         }
         
         String newAccessToken = jwtService.generateToken(userAuth);
         
         deleteByToken(refreshToken);
-        RefreshToken newRefreshToken = createRefreshToken(userAuth, userAgent, ipAddress, origin, referer);
+        RefreshToken newRefreshToken = createRefreshToken(userAuth, 
+                metadata.userAgent(), metadata.ipAddress(), metadata.origin(), metadata.referer());
         
-        log.info("Renovação silenciosa concluída para usuário: {}. Novo Refresh Token gerado.", userAuth.getEmail());
+        log.info("{} concluída para: {}.", proactive ? "Renovação proativa" : "Renovação silenciosa", userAuth.getEmail());
         
-        return new VerifyAuthResult(newAccessToken, newRefreshToken.getToken());
+        return VerifyAuthResult.builder()
+                .status(VerifyAuthStatus.RENEWED)
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken.getToken())
+                .build();
     }
 
     private void validateMetadata(RefreshToken token, String userAgent, String ipAddress) {
         if (token.getUserAgent() != null && !token.getUserAgent().equals(userAgent)) {
-            log.warn("Tentativa de renovação com User-Agent diferente! Esperado: {}, Recebido: {}", token.getUserAgent(), userAgent);
+            log.warn("User-Agent divergente! Esperado: {}, Recebido: {}", token.getUserAgent(), userAgent);
             deleteByToken(token.getToken());
-            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Segurança da sessão comprometida (User-Agent divergente).");
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Segurança da sessão comprometida (User-Agent).");
         }
 
         if (token.getIpAddress() != null && !token.getIpAddress().equals(ipAddress)) {
-            log.warn("Tentativa de renovação com IP diferente! Esperado: {}, Recebido: {}", token.getIpAddress(), ipAddress);
+            log.warn("IP divergente! Esperado: {}, Recebido: {}", token.getIpAddress(), ipAddress);
             deleteByToken(token.getToken());
-            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Segurança da sessão comprometida (IP divergente).");
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Segurança da sessão comprometida (IP).");
         }
-    }
-
-    public List<ResponseCookie> buildAuthCookies(String refreshToken, String accessToken, String redirectUri) {
-        List<ResponseCookie> cookies = new ArrayList<>();
-        
-        cookies.add(cookieService.buildRefreshTokenCookie(refreshToken));
-        cookies.add(cookieService.buildAccessTokenCookie(accessToken));
-
-        if (redirectUri != null) {
-            cookies.add(cookieService.buildSsoRedirectCookie(redirectUri));
-        }
-
-        return cookies;
-    }
-    
-    public List<ResponseCookie> buildAuthCookies(String refreshToken, String accessToken) {
-        return buildAuthCookies(refreshToken, accessToken, null);
     }
 }

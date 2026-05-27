@@ -28,6 +28,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -54,6 +55,9 @@ class AuthControllerTest {
     @MockitoBean
     private RefreshTokenService refreshTokenService;
 
+    @MockitoBean
+    private com.auth.application.service.CookieService cookieService;
+
 @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
@@ -71,7 +75,8 @@ class AuthControllerTest {
 
         AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
 
-        when(userService.login(any(), any(), any(), any(), any())).thenReturn(result);
+        when(userService.login(any(), any(com.auth.application.dto.AuthMetadata.class))).thenReturn(result);
+        when(cookieService.buildAuthCookies(anyString(), anyString(), any())).thenReturn(java.util.List.of());
 
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -11,7 +11,9 @@ import com.auth.api.dto.auth.AuthenticationRequestDto;
 import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
+import com.auth.application.dto.AuthMetadata;
 import com.auth.application.dto.AuthenticationResult;
+import com.auth.application.service.CookieService;
 import com.auth.application.service.RefreshTokenService;
 import com.auth.application.service.UserService;
 import com.auth.infra.util.RequestUtil;
@@ -40,6 +42,7 @@ public class AuthController {
 
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
+    private final CookieService cookieService;
 
     // NOTE: Rota publica
     @PostMapping("/login")
@@ -51,19 +54,17 @@ public class AuthController {
             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent,
             jakarta.servlet.http.HttpServletRequest request) {
 
-        String ipAddress = RequestUtil.getClientIP(request);
-        AuthenticationResult result = userService.login(loginRequest, userAgent, ipAddress, origin, referer);
+        AuthMetadata metadata = new AuthMetadata(userAgent, RequestUtil.getClientIP(request), origin, referer);
+        AuthenticationResult result = userService.login(loginRequest, metadata);
 
-        List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(
+        List<ResponseCookie> cookies = cookieService.buildAuthCookies(
             result.refreshToken(), 
             result.responseDto().session().accessToken(), 
             result.responseDto().redirectUri()
         );
 
         var responseBuilder = ResponseEntity.ok();
-        for (ResponseCookie cookie : cookies) {
-            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
-        }
+        cookies.forEach(cookie -> responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
 
         return responseBuilder.body(result.responseDto());
     }
@@ -75,15 +76,13 @@ public class AuthController {
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshTokenCookie);
         AuthenticationResult result = refreshTokenService.refreshToken(refreshRequest);
 
-        List<ResponseCookie> cookies = refreshTokenService.buildAuthCookies(
+        List<ResponseCookie> cookies = cookieService.buildAuthCookies(
             result.refreshToken(), 
             result.responseDto().session().accessToken()
         );
 
         var responseBuilder = ResponseEntity.ok();
-        for (ResponseCookie cookie : cookies) {
-            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
-        }
+        cookies.forEach(cookie -> responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
 
         return responseBuilder.body(result.responseDto());
     }
@@ -91,14 +90,13 @@ public class AuthController {
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
     public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
-        List<ResponseCookie> cookies = refreshTokenService.logout(refreshToken);
+        refreshTokenService.logout(refreshToken);
+        List<ResponseCookie> cookies = cookieService.buildLogoutCookies();
 
         var responseBuilder = ResponseEntity.status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, "/login");
         
-        for (ResponseCookie cookie : cookies) {
-            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
-        }
+        cookies.forEach(cookie -> responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString()));
         
         return responseBuilder.build();
     }

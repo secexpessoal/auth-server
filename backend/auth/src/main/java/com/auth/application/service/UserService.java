@@ -20,6 +20,7 @@ import com.auth.api.dto.common.PaginationMetaDto;
 import com.auth.api.dto.password.ChangePasswordRequestDto;
 import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
+import com.auth.application.dto.AuthMetadata;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.mapper.UserMapper;
 import com.auth.domain.model.Position;
@@ -111,7 +112,7 @@ public class UserService {
 
 
 
-    public AuthenticationResult login(AuthenticationRequestDto loginRequest, String userAgent, String ipAddress, String origin, String referer) {
+    public AuthenticationResult login(AuthenticationRequestDto loginRequest, AuthMetadata metadata) {
         String validatedRedirect = redirectService.validateRedirectUri(loginRequest.redirectUri());
 
         Authentication auth = authManager.authenticate(
@@ -123,10 +124,11 @@ public class UserService {
             throw new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao recuperar dados do usuário autenticado");
         }
 
-        log.info("Usuário {} autenticado com sucesso via IP {}. Roles: {}", user.getEmail(), ipAddress, user.getRoles());
+        log.info("Usuário {} autenticado com sucesso via IP {}. Roles: {}", user.getEmail(), metadata.ipAddress(), user.getRoles());
 
         String jwt = jwtService.generateToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, userAgent, ipAddress, origin, referer);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, 
+                metadata.userAgent(), metadata.ipAddress(), metadata.origin(), metadata.referer());
 
         UserSessionResponseDto session = UserSessionResponseDto.builder()
                 .accessToken(jwt)

@@ -17,6 +17,7 @@ import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.api.dto.password.ChangePasswordRequestDto;
 import com.auth.api.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.dto.password.ResetPasswordRequestDto;
+import com.auth.application.dto.AuthMetadata;
 import com.auth.application.dto.AuthenticationResult;
 import com.auth.application.mapper.UserMapper;
 import com.auth.domain.model.Position;
@@ -155,7 +156,7 @@ class UserServiceTest {
             
             when(userMapper.toResponse(any())).thenReturn(UserResponseDto.builder().email("test@example.com").build());
 
-            AuthenticationResult result = userService.login(request, "Mozilla", "127.0.0.1", "origin", "referer");
+            AuthenticationResult result = userService.login(request, new AuthMetadata("Mozilla", "127.0.0.1", "origin", "referer"));
 
             assertNotNull(result);
             assertEquals("fake-jwt", result.responseDto().session().accessToken());
@@ -169,7 +170,7 @@ class UserServiceTest {
             when(redirectService.validateRedirectUri(any())).thenReturn(null);
             when(authManager.authenticate(any())).thenThrow(new BadCredentialsException("Invalid"));
 
-            assertThrows(BadCredentialsException.class, () -> userService.login(request, "Mozilla", "127.0.0.1", "origin", "referer"));
+            assertThrows(BadCredentialsException.class, () -> userService.login(request, new AuthMetadata("Mozilla", "127.0.0.1", "origin", "referer")));
         }
     }
 
