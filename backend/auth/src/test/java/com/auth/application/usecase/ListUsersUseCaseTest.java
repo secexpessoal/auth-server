@@ -32,13 +32,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ListUsersUseCaseTest {
+class ListUsersUseCas {
 
     @Mock
     private MongoTemplate mongoTemplate;
 
     @InjectMocks
-    private ListUsersUseCase listUsersUseCase;
+    private UserUseCase userUseCase;
 
     private UserAuth testUser;
 
@@ -65,7 +65,7 @@ class ListUsersUseCaseTest {
         when(mongoTemplate.find(any(Query.class), eq(UserAuth.class))).thenReturn(List.of(testUser));
 
         // Act
-        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);
+        PaginatedResponseDto<UserResponseDto> result = userUseCase.listUsers(0, 10, "/v1/user", null, null, null);
 
         // Assert
         assertNotNull(result);
@@ -82,7 +82,7 @@ class ListUsersUseCaseTest {
         when(mongoTemplate.find(any(Query.class), eq(UserAuth.class))).thenReturn(List.of(testUser));
 
         // Act
-        PaginatedResponseDto<UserResponseDto> result = listUsersUseCase.execute(0, 10, "/v1/user", null, null, null);
+        PaginatedResponseDto<UserResponseDto> result = userUseCase.listUsers(0, 10, "/v1/user", null, null, null);
 
         // Assert
         assertNotNull(result.meta());

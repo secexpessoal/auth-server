@@ -9,7 +9,7 @@ package com.auth.api.controller.v1;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.auth.RegisterRequestDto;
-import com.auth.application.usecase.RegisterUseCase;
+import com.auth.application.usecase.UserUseCase;
 import com.auth.domain.model.Role;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Registro V1", description = "Endpoints para criação de novas contas de usuário")
 public class RegisterController {
 
-    private final RegisterUseCase registerUseCase;
+    private final UserUseCase userUseCase;
 
     // NOTE: Rota privada e só para ADMIN
     @PostMapping
@@ -44,7 +44,7 @@ public class RegisterController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
 
-        UserResponseDto result = registerUseCase.execute(registerRequest, requestedRole);
+        UserResponseDto result = userUseCase.register(registerRequest, requestedRole);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 
@@ -52,7 +52,7 @@ public class RegisterController {
     @PostMapping("/admin")
     @Operation(summary = "Registra um novo administrador", description = "Cria uma conta com o cargo ADMIN. Requer token de administrador.")
     public ResponseEntity<@NonNull UserResponseDto> registerAdmin(@Valid @RequestBody RegisterRequestDto registerRequest) {
-        UserResponseDto result = registerUseCase.execute(registerRequest, Role.ADMIN);
+        UserResponseDto result = userUseCase.register(registerRequest, Role.ADMIN);
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
     }
 }

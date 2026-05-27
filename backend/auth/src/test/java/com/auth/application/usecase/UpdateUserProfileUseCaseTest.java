@@ -35,7 +35,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UpdateUserProfileUseCaseTest {
+class UpdateUserProfileUseCas {
 
     @Mock
     private UserAuthRepository userRepository;
@@ -44,7 +44,7 @@ class UpdateUserProfileUseCaseTest {
     private UserDataRepository userDataRepository;
 
     @InjectMocks
-    private UpdateUserProfileUseCase updateUserProfileUseCase;
+    private UserUseCase userUseCase;
 
     private UserAuth testUser;
     private UUID userId;
@@ -78,7 +78,7 @@ class UpdateUserProfileUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        UserResponseDto response = updateUserProfileUseCase.execute(userId, request);
+        UserResponseDto response = userUseCase.updateProfile(userId, request);
 
         // Assert
         assertEquals("newuser", response.profile().username());
@@ -105,7 +105,7 @@ class UpdateUserProfileUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        UserResponseDto response = updateUserProfileUseCase.execute(userId, request);
+        UserResponseDto response = userUseCase.updateProfile(userId, request);
 
         // Assert
         assertNull(response.profile().inPersonWorkPeriod().frequencyDurationDays());
@@ -127,7 +127,7 @@ class UpdateUserProfileUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        UserResponseDto response = updateUserProfileUseCase.execute(userId, request);
+        UserResponseDto response = userUseCase.updateProfile(userId, request);
 
         // Assert
         assertNull(response.profile().position());
@@ -148,6 +148,6 @@ class UpdateUserProfileUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> updateUserProfileUseCase.execute(userId, request));
+        assertThrows(BadRequestException.class, () -> userUseCase.updateProfile(userId, request));
     }
 }

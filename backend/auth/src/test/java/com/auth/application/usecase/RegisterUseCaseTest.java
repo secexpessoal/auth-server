@@ -28,7 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RegisterUseCaseTest {
+class RegisterUseCas {
 
     @Mock
     private UserService userService;
@@ -37,7 +37,7 @@ class RegisterUseCaseTest {
     private PasswordGeneratorService passwordGeneratorService;
 
     @InjectMocks
-    private RegisterUseCase registerUseCase;
+    private UserUseCase userUseCase;
 
     private UserAuth testUser;
     private RegisterRequestDto registerRequest;
@@ -67,7 +67,7 @@ class RegisterUseCaseTest {
         when(userService.userRegister(eq(registerRequest), eq(Role.USER), eq(mockTempPass))).thenReturn(testUser);
 
         // Act
-        UserResponseDto response = registerUseCase.execute(registerRequest, Role.USER);
+        UserResponseDto response = userUseCase.register(registerRequest, Role.USER);
 
         // Assert
         assertNotNull(response);

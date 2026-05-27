@@ -34,13 +34,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UpdateUserRolesUseCaseTest {
+class UpdateUserRolesUseCas {
 
     @Mock
     private UserAuthRepository userRepository;
 
     @InjectMocks
-    private UpdateUserRolesUseCase updateUserRolesUseCase;
+    private UserUseCase userUseCase;
 
     private UserAuth testUser;
     private UUID userId;
@@ -72,7 +72,7 @@ class UpdateUserRolesUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        UserResponseDto response = updateUserRolesUseCase.execute(userId, request);
+        UserResponseDto response = userUseCase.updateRoles(userId, request);
 
         // Assert
         assertNotNull(response);
@@ -95,7 +95,7 @@ class UpdateUserRolesUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> updateUserRolesUseCase.execute(userId, request));
+        assertThrows(BadRequestException.class, () -> userUseCase.updateRoles(userId, request));
         verify(userRepository, never()).save(any());
     }
 
@@ -110,7 +110,7 @@ class UpdateUserRolesUseCaseTest {
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> updateUserRolesUseCase.execute(userId, request));
+        assertThrows(NotFoundException.class, () -> userUseCase.updateRoles(userId, request));
         verify(userRepository, never()).save(any());
     }
 }

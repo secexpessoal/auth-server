@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class VerifyAuthUseCaseTest {
+class VerifyAuthUseCas {
 
     @Mock
     private RefreshTokenService refreshTokenService;
@@ -27,14 +27,14 @@ class VerifyAuthUseCaseTest {
     private JwtGeneratorService jwtService;
 
     @InjectMocks
-    private VerifyAuthUseCase verifyAuthUseCase;
+    private AuthUseCase authUseCase;
 
     @Test
     @DisplayName("Deve lançar exceção quando o token for nulo")
     void shouldThrowWhenTokenIsNull() {
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> verifyAuthUseCase.execute(null, "ua", "ip", null, null)
+                () -> authUseCase.verifyAuth(null, "ua", "ip", null, null)
         );
 
         assertEquals("O token é inválido ou ausente.", exception.getMessage());
@@ -63,7 +63,7 @@ class VerifyAuthUseCaseTest {
         // Act & Assert
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> verifyAuthUseCase.execute(tokenString, ua, ip, null, null)
+                () -> authUseCase.verifyAuth(tokenString, ua, ip, null, null)
         );
 
         assertEquals("O token é inválido ou o usuário está inativo.", exception.getMessage());
@@ -96,7 +96,7 @@ class VerifyAuthUseCaseTest {
         when(refreshTokenService.createRefreshToken(eq(user), eq(ua), eq(ip), any(), any())).thenReturn(newToken);
 
         // Act
-        VerifyAuthResult result = verifyAuthUseCase.execute(tokenString, ua, ip, null, null);
+        VerifyAuthResult result = authUseCase.verifyAuth(tokenString, ua, ip, null, null);
 
         // Assert
         assertEquals("new-jwt", result.accessToken());
@@ -121,7 +121,7 @@ class VerifyAuthUseCaseTest {
         // Act & Assert
         assertThrows(
                 BadRequestException.class,
-                () -> verifyAuthUseCase.execute(tokenString, "Attacker-Agent", "127.0.0.1", null, null)
+                () -> authUseCase.verifyAuth(tokenString, "Attacker-Agent", "127.0.0.1", null, null)
         );
         
         verify(refreshTokenService).deleteByToken(tokenString);

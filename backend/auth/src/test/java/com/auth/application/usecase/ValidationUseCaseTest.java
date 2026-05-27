@@ -28,10 +28,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-class ValidationUseCaseTest {
+class ValidationUseCas {
 
     @InjectMocks
-    private ValidationUseCase validationUseCase;
+    private AuthUseCase authUseCase;
 
     private UserAuth testUser;
 
@@ -57,7 +57,7 @@ class ValidationUseCaseTest {
         when(auth.getPrincipal()).thenReturn(testUser);
 
         // Act
-        UserResponseDto response = validationUseCase.execute(auth);
+        UserResponseDto response = authUseCase.validateToken(auth);
 
         // Assert
         assertNotNull(response);
@@ -73,13 +73,13 @@ class ValidationUseCaseTest {
         when(auth.getPrincipal()).thenReturn("not-a-userauth");
 
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> validationUseCase.execute(auth));
+        assertThrows(BadRequestException.class, () -> authUseCase.validateToken(auth));
     }
 
     @Test
     @DisplayName("Deve lançar BadRequestException quando a autenticação for nula")
     void deveLancarExceptionQuandoAuthNula() {
         // Act & Assert
-        assertThrows(BadRequestException.class, () -> validationUseCase.execute(null));
+        assertThrows(BadRequestException.class, () -> authUseCase.validateToken(null));
     }
 }

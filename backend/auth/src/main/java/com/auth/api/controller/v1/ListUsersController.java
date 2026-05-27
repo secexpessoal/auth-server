@@ -9,7 +9,7 @@ package com.auth.api.controller.v1;
 
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
-import com.auth.application.usecase.ListUsersUseCase;
+import com.auth.application.usecase.UserUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Usuários V1", description = "Endpoints para gestão de contas de usuário")
 public class ListUsersController {
 
-    private final ListUsersUseCase listUsersUseCase;
+    private final UserUseCase userUseCase;
 
     // NOTE: Rota privada e só para ADMIN
     @GetMapping
@@ -44,7 +44,7 @@ public class ListUsersController {
             HttpServletRequest request
     ) {
         String requestUrl = request.getRequestURL().toString();
-        PaginatedResponseDto<UserResponseDto> response = listUsersUseCase.execute(page, limit, requestUrl, email, userName, position);
+        PaginatedResponseDto<UserResponseDto> response = userUseCase.listUsers(page, limit, requestUrl, email, userName, position);
         return ResponseEntity.ok(response);
     }
 }

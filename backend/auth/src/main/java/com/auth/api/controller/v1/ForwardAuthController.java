@@ -1,8 +1,7 @@
 package com.auth.api.controller.v1;
 
 import com.auth.application.dto.VerifyAuthResult;
-import com.auth.application.service.CookieService;
-import com.auth.application.usecase.VerifyAuthUseCase;
+import com.auth.application.usecase.AuthUseCase;
 import com.auth.infra.security.service.JwtGeneratorService;
 import com.auth.infra.util.RequestUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Slf4j
 @RestController("forwardAuthControllerV1")
@@ -28,9 +28,8 @@ import java.nio.charset.StandardCharsets;
 @Tag(name = "Forward Auth V1", description = "Endpoints para verificação de sessão via Proxy Reverso")
 public class ForwardAuthController {
 
-    private final VerifyAuthUseCase verifyAuthUseCase;
+    private final AuthUseCase authUseCase;
     private final JwtGeneratorService jwtService;
-    private final CookieService cookieService;
 
     @Value("${app.auth-url}")
     private String authUrl;
@@ -65,14 +64,16 @@ public class ForwardAuthController {
                     String origin = request.getHeader(HttpHeaders.ORIGIN);
                     String referer = request.getHeader(HttpHeaders.REFERER);
 
-                    VerifyAuthResult result = verifyAuthUseCase.execute(refreshToken, userAgent, ipAddress, origin, referer);
+                    VerifyAuthResult result = authUseCase.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
                     
-                    ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.accessToken());
-                    ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+                    List<ResponseCookie> cookies = authUseCase.buildAuthCookies(result.refreshToken(), result.accessToken());
 
-                    return ResponseEntity.ok()
-                            .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                    var responseBuilder = ResponseEntity.ok();
+                    for (ResponseCookie cookie : cookies) {
+                        responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
+                    }
+
+                    return responseBuilder
                             .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", result.accessToken()))
                             .build();
                 } catch (Exception exception) {
@@ -96,14 +97,16 @@ public class ForwardAuthController {
                 String origin = request.getHeader(HttpHeaders.ORIGIN);
                 String referer = request.getHeader(HttpHeaders.REFERER);
 
-                VerifyAuthResult result = verifyAuthUseCase.execute(refreshToken, userAgent, ipAddress, origin, referer);
+                VerifyAuthResult result = authUseCase.verifyAuth(refreshToken, userAgent, ipAddress, origin, referer);
                 
-                ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.accessToken());
-                ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
+                List<ResponseCookie> cookies = authUseCase.buildAuthCookies(result.refreshToken(), result.accessToken());
 
-                return ResponseEntity.ok()
-                        .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-                        .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                var responseBuilder = ResponseEntity.ok();
+                for (ResponseCookie cookie : cookies) {
+                    responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
+                }
+
+                return responseBuilder
                         .header(HttpHeaders.AUTHORIZATION, String.format("Bearer %s", result.accessToken()))
                         .build();
             } catch (Exception exception) {

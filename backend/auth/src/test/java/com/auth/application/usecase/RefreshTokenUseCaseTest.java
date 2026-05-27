@@ -31,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RefreshTokenUseCaseTest {
+class RefreshTokenUseCas {
 
     @Mock
     private RefreshTokenService refreshTokenService;
@@ -41,7 +41,7 @@ class RefreshTokenUseCaseTest {
     private UserService userService;
 
     @InjectMocks
-    private RefreshTokenUseCase refreshTokenUseCase;
+    private AuthUseCase authUseCase;
 
     private UserAuth testUser;
     private RefreshToken oldToken;
@@ -78,7 +78,7 @@ class RefreshTokenUseCaseTest {
         when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(newToken);
 
         // Act
-        AuthenticationResult result = refreshTokenUseCase.execute(request);
+        AuthenticationResult result = authUseCase.refreshToken(request);
         AuthenticationResponseDto response = result.responseDto();
 
         // Assert

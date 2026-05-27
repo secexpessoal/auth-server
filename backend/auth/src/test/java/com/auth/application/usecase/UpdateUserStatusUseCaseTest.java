@@ -30,13 +30,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UpdateUserStatusUseCaseTest {
+class UpdateUserStatusUseCas {
 
     @Mock
     private UserAuthRepository userRepository;
 
     @InjectMocks
-    private UpdateUserStatusUseCase updateUserStatusUseCase;
+    private UserUseCase userUseCase;
 
     private UserAuth testUser;
     private UUID userId;
@@ -63,7 +63,7 @@ class UpdateUserStatusUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        updateUserStatusUseCase.execute(userId, true);
+        userUseCase.updateStatus(userId, true);
 
         // Assert
         assertTrue(testUser.getActive());
@@ -78,7 +78,7 @@ class UpdateUserStatusUseCaseTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        updateUserStatusUseCase.execute(userId, false);
+        userUseCase.updateStatus(userId, false);
 
         // Assert
         assertFalse(testUser.getActive());
@@ -92,7 +92,7 @@ class UpdateUserStatusUseCaseTest {
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> updateUserStatusUseCase.execute(userId, true));
+        assertThrows(NotFoundException.class, () -> userUseCase.updateStatus(userId, true));
         verify(userRepository, never()).save(any());
     }
 }

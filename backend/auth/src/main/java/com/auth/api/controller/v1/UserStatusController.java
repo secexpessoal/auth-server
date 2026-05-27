@@ -10,9 +10,7 @@ package com.auth.api.controller.v1;
 import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
 import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.application.usecase.UpdateUserStatusUseCase;
-import com.auth.application.usecase.UpdateUserProfileUseCase;
-import com.auth.application.usecase.UpdateUserRolesUseCase;
+import com.auth.application.usecase.UserUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -31,15 +29,13 @@ import java.util.UUID;
 @Tag(name = "Usuários V1", description = "Endpoints para gestão de status de contas de usuário")
 public class UserStatusController {
 
-    private final UpdateUserStatusUseCase updateUserStatusUseCase;
-    private final UpdateUserProfileUseCase updateUserProfileUseCase;
-    private final UpdateUserRolesUseCase updateUserRolesUseCase;
+    private final UserUseCase userUseCase;
 
     // NOTE: Rota privada e só para ADMIN
     @PatchMapping("/deactivate")
     @Operation(summary = "Desativa um usuário", description = "Altera o status do usuário para inativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> deactivateUser(@RequestParam UUID id) {
-        updateUserStatusUseCase.execute(id, false);
+        userUseCase.updateStatus(id, false);
         return ResponseEntity.noContent().build();
     }
 
@@ -47,7 +43,7 @@ public class UserStatusController {
     @PatchMapping("/activate")
     @Operation(summary = "Ativa um usuário", description = "Altera o status do usuário para ativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> activateUser(@RequestParam UUID id) {
-        updateUserStatusUseCase.execute(id, true);
+        userUseCase.updateStatus(id, true);
         return ResponseEntity.noContent().build();
     }
 
@@ -57,7 +53,7 @@ public class UserStatusController {
     public ResponseEntity<UserResponseDto> updateProfile(
             @PathVariable UUID id,
             @RequestBody UpdateUserProfileRequestDto request) {
-        return ResponseEntity.ok(updateUserProfileUseCase.execute(id, request));
+        return ResponseEntity.ok(userUseCase.updateProfile(id, request));
     }
 
     // NOTE: Rota privada e só para ADMIN
@@ -66,6 +62,6 @@ public class UserStatusController {
     public ResponseEntity<UserResponseDto> updateRoles(
             @PathVariable UUID id,
             @RequestBody UpdateUserRolesRequestDto request) {
-        return ResponseEntity.ok(updateUserRolesUseCase.execute(id, request));
+        return ResponseEntity.ok(userUseCase.updateRoles(id, request));
     }
 }

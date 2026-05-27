@@ -12,11 +12,7 @@ import com.auth.api.dto.auth.AuthenticationResponseDto;
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.token.RefreshTokenRequestDto;
 import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.service.CookieService;
-import com.auth.application.service.RefreshTokenService;
-import com.auth.application.usecase.LoginUseCase;
-import com.auth.application.usecase.RefreshTokenUseCase;
-import com.auth.application.usecase.ValidationUseCase;
+import com.auth.application.usecase.AuthUseCase;
 import com.auth.infra.util.RequestUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,6 +26,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 /**
  * Controller responsável pela autenticação e gestão de sessão.
  */
@@ -39,12 +37,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Autenticação V1", description = "Endpoints para login, renovação de token e perfil")
 public class AuthController {
 
-    private final LoginUseCase loginUseCase;
-    private final ValidationUseCase validationUseCase;
-    private final RefreshTokenUseCase refreshTokenUseCase;
-
-    private final CookieService cookieService;
-    private final RefreshTokenService refreshTokenService;
+    private final AuthUseCase authUseCase;
 
     // NOTE: Rota publica
     @PostMapping("/login")
@@ -57,19 +50,17 @@ public class AuthController {
             jakarta.servlet.http.HttpServletRequest request) {
 
         String ipAddress = RequestUtil.getClientIP(request);
-        AuthenticationResult result = loginUseCase.execute(loginRequest, userAgent, ipAddress, origin, referer);
+        AuthenticationResult result = authUseCase.login(loginRequest, userAgent, ipAddress, origin, referer);
 
-        ResponseCookie refreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
-        ResponseCookie accessTokenCookie = cookieService.buildAccessTokenCookie(result.responseDto().session().accessToken());
+        List<ResponseCookie> cookies = authUseCase.buildAuthCookies(
+            result.refreshToken(), 
+            result.responseDto().session().accessToken(), 
+            result.responseDto().redirectUri()
+        );
 
-        var responseBuilder = ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString());
-
-        // Se houver redirectUri, enviamos o cookie de controle para o SsoRedirectFilter
-        if (result.responseDto().redirectUri() != null) {
-            ResponseCookie ssoCookie = cookieService.buildSsoRedirectCookie(result.responseDto().redirectUri());
-            responseBuilder.header(HttpHeaders.SET_COOKIE, ssoCookie.toString());
+        var responseBuilder = ResponseEntity.ok();
+        for (ResponseCookie cookie : cookies) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
         }
 
         return responseBuilder.body(result.responseDto());
@@ -80,40 +71,41 @@ public class AuthController {
     @Operation(summary = "Renova o token de acesso", description = "Lê o Refresh Token do cookie HttpOnly e retorna um novo Access Token.")
     public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = true) String refreshTokenCookie) {
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshTokenCookie);
-        AuthenticationResult result = refreshTokenUseCase.execute(refreshRequest);
+        AuthenticationResult result = authUseCase.refreshToken(refreshRequest);
 
-        // NOTE: Renova (roda) o cookie do refresh token
-        ResponseCookie newRefreshTokenCookie = cookieService.buildRefreshTokenCookie(result.refreshToken());
-        ResponseCookie newAccessTokenCookie = cookieService.buildAccessTokenCookie(result.responseDto().session().accessToken());
+        List<ResponseCookie> cookies = authUseCase.buildAuthCookies(
+            result.refreshToken(), 
+            result.responseDto().session().accessToken()
+        );
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, newRefreshTokenCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, newAccessTokenCookie.toString())
-                .body(result.responseDto());
+        var responseBuilder = ResponseEntity.ok();
+        for (ResponseCookie cookie : cookies) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
+        }
+
+        return responseBuilder.body(result.responseDto());
     }
 
     @PostMapping("/logout")
     @Operation(summary = "Logout do usuário", description = "Invalida a sessão destruindo o cookie no navegador e removendo o token do banco.")
     public ResponseEntity<Void> logout(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
-        if (refreshToken != null) {
-            refreshTokenService.deleteByToken(refreshToken);
+        List<ResponseCookie> cookies = authUseCase.logout(refreshToken);
+
+        var responseBuilder = ResponseEntity.status(HttpStatus.FOUND)
+                .header(HttpHeaders.LOCATION, "/login");
+        
+        for (ResponseCookie cookie : cookies) {
+            responseBuilder.header(HttpHeaders.SET_COOKIE, cookie.toString());
         }
-
-        ResponseCookie refreshTokenLogoutCookie = cookieService.buildRefreshTokenLogoutCookie();
-        ResponseCookie accessTokenLogoutCookie = cookieService.buildAccessTokenLogoutCookie();
-
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .header(HttpHeaders.LOCATION, "/login")
-                .header(HttpHeaders.SET_COOKIE, refreshTokenLogoutCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, accessTokenLogoutCookie.toString())
-                .build();
+        
+        return responseBuilder.build();
     }
 
     // NOTE: Rota privada, usuário precisa mandar o token
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
     public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
-        UserResponseDto response = validationUseCase.execute(authentication);
+        UserResponseDto response = authUseCase.validateToken(authentication);
         return ResponseEntity.ok(response);
     }
 }

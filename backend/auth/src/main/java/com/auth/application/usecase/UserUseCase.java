@@ -7,14 +7,26 @@
  */
 package com.auth.application.usecase;
 
+import com.auth.api.dto.auth.InPersonWorkPeriodDto;
+import com.auth.api.dto.auth.RegisterRequestDto;
+import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
+import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
 import com.auth.api.dto.auth.UserResponseDto;
 import com.auth.api.dto.common.PaginatedResponseDto;
 import com.auth.api.dto.common.PaginationMetaDto;
 import com.auth.application.mapper.UserMapper;
+import com.auth.application.service.PasswordGeneratorService;
+import com.auth.application.service.UserService;
 import com.auth.domain.model.Position;
+import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
 import com.auth.domain.repository.PositionRepository;
+import com.auth.domain.repository.UserAuthRepository;
+import com.auth.domain.repository.UserDataRepository;
+import com.auth.infra.exception.ErrorCode;
+import com.auth.infra.exception.custom.BadRequestException;
+import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -27,28 +39,28 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * Caso de Uso responsável por listar os usuários com paginação e filtros.
- * Implementa a lógica de busca relacional para o MongoDB.
- */
 @Service
 @RequiredArgsConstructor
-public class ListUsersUseCase {
+public class UserUseCase {
 
     private final MongoTemplate mongoTemplate;
     private final PositionRepository positionRepository;
     private final UserMapper userMapper;
+    private final UserService userService;
+    private final PasswordGeneratorService passwordGeneratorService;
+    private final UserAuthRepository userRepository;
+    private final UserDataRepository userDataRepository;
 
-    public PaginatedResponseDto<UserResponseDto> execute(int page, int limit, String requestUrl, String email, String userName, String positionName) {
+    public PaginatedResponseDto<UserResponseDto> listUsers(int page, int limit, String requestUrl, String email, String userName, String positionName) {
         Pageable pageable = PageRequest.of(page, limit);
 
         List<UUID> matchingUserIds = null;
 
-        // Se houver filtros que pertencem à coleção 'user_profiles' (UserData)
         if (isProfileFilterPresent(userName, positionName)) {
             matchingUserIds = findUserIdsByProfileFilters(userName, positionName);
 
@@ -57,7 +69,6 @@ public class ListUsersUseCase {
             }
         }
 
-        // Constrói a query principal na coleção 'users' (UserAuth)
         Query query = new Query();
         if (email != null && !email.isBlank()) {
             query.addCriteria(Criteria.where("email").regex(Pattern.quote(email), "i"));
@@ -73,7 +84,6 @@ public class ListUsersUseCase {
         List<UserAuth> users = mongoTemplate.find(query, UserAuth.class);
         Page<UserAuth> usersPage = new PageImpl<>(users, pageable, totalCount);
 
-        // Pre-cache de cargos para otimizar o mapeamento (Evita N+1 de lookup)
         Map<UUID, String> positionNameCache = positionRepository.findAll().stream().collect(Collectors.toMap(Position::getId, Position::getName));
 
         List<UserResponseDto> data = usersPage.getContent().stream().map(userItem -> userMapper.toResponse(userItem, positionNameCache)).toList();
@@ -103,7 +113,6 @@ public class ListUsersUseCase {
                 return List.of();
             }
 
-            // Busca pelo campo mapeado como snake_case no MongoDB
             dataQuery.addCriteria(Criteria.where("current_position.position_id").in(matchingPositionIds));
         }
 
@@ -161,5 +170,76 @@ public class ListUsersUseCase {
                 .meta(Map.of("pagination", meta))
                 .links(Map.of("next", "", "prev", ""))
                 .build();
+    }
+
+    public UserResponseDto register(RegisterRequestDto request, Role role) {
+        String tempPassword = passwordGeneratorService.generateTemporaryPassword();
+
+        UserAuth user = Optional.ofNullable(userService.userRegister(request, role, tempPassword))
+                .orElseThrow(() -> new BadRequestException(ErrorCode.INTERNAL_SERVER_ERROR, "Erro ao registrar usuário"));
+
+        return userMapper.toResponse(user, tempPassword);
+    }
+
+    public UserResponseDto updateProfile(UUID userId, UpdateUserProfileRequestDto request) {
+        UserAuth user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
+
+        InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
+        
+        try {
+            user.updateProfile(
+                request.username(),
+                request.registration(),
+                request.birthDate(),
+                request.workRegime(),
+                request.livesElsewhere(),
+                period != null ? period.frequencyCycleWeeks() : null,
+                period != null ? period.frequencyWeekMask() : null,
+                period != null ? period.frequencyDurationDays() : null
+            );
+
+            if (request.position() != null && !request.position().isBlank()) {
+                positionRepository.findAll().stream()
+                        .filter(positionItem -> positionItem.getName().equalsIgnoreCase(request.position()))
+                        .findFirst()
+                        .ifPresent(positionItem -> user.assignPosition(positionItem.getId(), false, null));
+            }
+
+            UserData profileToSave = user.getUserProfile();
+            if (profileToSave == null) {
+                throw new IllegalStateException("Falha crítica: O perfil do usuário desapareceu durante a atualização.");
+            }
+
+            userDataRepository.save(profileToSave);
+            userRepository.save(user);
+
+        } catch (IllegalArgumentException | IllegalStateException exception) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());
+        }
+
+        return userMapper.toResponse(user);
+    }
+
+    public UserResponseDto updateRoles(UUID userId, UpdateUserRolesRequestDto request) {
+        UserAuth user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
+
+        try {
+            user.updateRoles(request.roles());
+            userRepository.save(user);
+        } catch (IllegalArgumentException exception) {
+            throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());
+        }
+
+        return userMapper.toResponse(user);
+    }
+
+    public void updateStatus(UUID userId, boolean active) {
+        UserAuth user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado com o ID: " + userId));
+
+        user.setActive(active);
+        userRepository.save(user);
     }
 }

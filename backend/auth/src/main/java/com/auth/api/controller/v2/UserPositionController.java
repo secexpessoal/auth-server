@@ -8,10 +8,10 @@
 package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.UserPositionChangeRequestDto;
-import com.auth.application.service.UserPositionService;
+import com.auth.application.usecase.UserPositionUseCase;
+import com.auth.application.usecase.UserPositionHistoryUseCase;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserPositionHistory;
-import com.auth.domain.repository.UserPositionHistoryRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -30,8 +30,8 @@ import java.util.UUID;
 @Tag(name = "Cargos do Usuário V2", description = "Endpoints para atribuição de cargos e histórico")
 public class UserPositionController {
 
-    private final UserPositionService userPositionService;
-    private final UserPositionHistoryRepository historyRepository;
+    private final UserPositionUseCase userPositionUseCase;
+    private final UserPositionHistoryUseCase userPositionHistoryUseCase;
 
     @PostMapping("/{userId}")
     @Operation(summary = "Altera o cargo de um usuário", description = "Atribui um novo cargo (definitivo ou temporário) a um usuário.")
@@ -40,7 +40,7 @@ public class UserPositionController {
             @Valid @RequestBody UserPositionChangeRequestDto request,
             @AuthenticationPrincipal UserAuth admin) {
 
-        userPositionService.changePosition(
+        userPositionUseCase.changePosition(
                 userId,
                 request.positionId(),
                 request.eventType(),
@@ -56,12 +56,12 @@ public class UserPositionController {
     @GetMapping("/{userId}/history")
     @Operation(summary = "Lista o histórico de cargos", description = "Retorna o histórico completo de cargos de um usuário.")
     public ResponseEntity<List<UserPositionHistory>> getHistory(@PathVariable UUID userId) {
-        return ResponseEntity.ok(historyRepository.findAllByUserIdOrderByOccurredAtDesc(userId));
+        return ResponseEntity.ok(userPositionHistoryUseCase.getByUser(userId));
     }
 
     @GetMapping("/history")
     @Operation(summary = "Histórico global de cargos", description = "Retorna todas as trocas de cargos realizadas no sistema (Auditoria Global).")
     public ResponseEntity<List<UserPositionHistory>> getGlobalHistory() {
-        return ResponseEntity.ok(historyRepository.findAll()); // No futuro pode ser paginado
+        return ResponseEntity.ok(userPositionHistoryUseCase.getGlobalHistory()); // No futuro pode ser paginado
     }
 }

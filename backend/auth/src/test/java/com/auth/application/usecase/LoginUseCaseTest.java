@@ -39,7 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class LoginUseCaseTest {
+class LoginUseCas {
 
     @Mock
     private AuthenticationManager authManager;
@@ -53,7 +53,7 @@ class LoginUseCaseTest {
     private RedirectService redirectService;
 
     @InjectMocks
-    private LoginUseCase loginUseCase;
+    private AuthUseCase authUseCase;
 
     private UserAuth testUser;
     private AuthenticationRequestDto loginRequest;
@@ -92,7 +92,7 @@ class LoginUseCaseTest {
         when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(refreshToken);
 
         // Act
-        AuthenticationResult result = loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer");
+        AuthenticationResult result = authUseCase.login(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer");
         AuthenticationResponseDto response = result.responseDto();
 
         // Assert
@@ -116,7 +116,7 @@ class LoginUseCaseTest {
                 .thenThrow(new BadCredentialsException("Usuário ou senha inválidos"));
 
         // Act & Assert
-        assertThrows(BadCredentialsException.class, () -> loginUseCase.execute(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer"));
+        assertThrows(BadCredentialsException.class, () -> authUseCase.login(loginRequest, "Mozilla", "127.0.0.1", "origin", "referer"));
     }
 
     @Test
@@ -132,7 +132,7 @@ class LoginUseCaseTest {
         // Act & Assert
         BadRequestException exception = assertThrows(
                 BadRequestException.class,
-                () -> loginUseCase.execute(invalidRedirectRequest, "Mozilla", "127.0.0.1", "origin", "referer")
+                () -> authUseCase.login(invalidRedirectRequest, "Mozilla", "127.0.0.1", "origin", "referer")
         );
 
         assertEquals("O site que você quer acessar não é permitido.", exception.getMessage());

@@ -7,8 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.application.usecase.UpdateUserStatusUseCase;
-import com.auth.application.usecase.UpdateUserProfileUseCase;
+import com.auth.application.usecase.UserUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -38,12 +37,9 @@ class UserStatusControllerTest {
     private WebApplicationContext context;
 
     @MockitoBean
-    private UpdateUserStatusUseCase updateUserStatusUseCase;
+    private UserUseCase userUseCase;
 
-    @MockitoBean
-    private UpdateUserProfileUseCase updateUserProfileUseCase;
-
-    @BeforeEach
+@BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
@@ -59,7 +55,7 @@ class UserStatusControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(updateUserStatusUseCase).execute(id, true);
+        verify(userUseCase).updateStatus(id, true);
     }
 
     @Test
@@ -73,6 +69,6 @@ class UserStatusControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(updateUserStatusUseCase).execute(id, false);
+        verify(userUseCase).updateStatus(id, false);
     }
 }

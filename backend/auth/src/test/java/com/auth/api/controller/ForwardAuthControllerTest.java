@@ -2,7 +2,7 @@ package com.auth.api.controller;
 
 import com.auth.application.dto.VerifyAuthResult;
 import com.auth.application.service.CookieService;
-import com.auth.application.usecase.VerifyAuthUseCase;
+import com.auth.application.usecase.AuthUseCase;
 import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -38,7 +38,7 @@ class ForwardAuthControllerTest {
     private WebApplicationContext context;
 
     @MockitoBean
-    private VerifyAuthUseCase verifyAuthUseCase;
+    private AuthUseCase authUseCase;
 
     @MockitoBean
     private JwtGeneratorService jwtService;
@@ -85,7 +85,7 @@ class ForwardAuthControllerTest {
         String userAgent = "Mozilla/5.0";
 
         when(jwtService.isTokenValid(oldToken)).thenReturn(false);
-        when(verifyAuthUseCase.execute(eq(refreshToken), eq(userAgent), anyString(), any(), any()))
+        when(authUseCase.verifyAuth(eq(refreshToken), eq(userAgent), anyString(), any(), any()))
                 .thenReturn(new VerifyAuthResult(newToken, newRefreshToken));
         
         ResponseCookie newAccessCookie = ResponseCookie.from("access_token", newToken).build();
@@ -102,7 +102,7 @@ class ForwardAuthControllerTest {
                 .andExpect(header().string(HttpHeaders.SET_COOKIE, containsString("refresh_token")))
                 .andExpect(header().string(HttpHeaders.AUTHORIZATION, "Bearer " + newToken));
         
-        verify(verifyAuthUseCase).execute(eq(refreshToken), eq(userAgent), anyString(), any(), any());
+        verify(authUseCase).verifyAuth(eq(refreshToken), eq(userAgent), anyString(), any(), any());
     }
 
     @Test
@@ -123,7 +123,7 @@ class ForwardAuthControllerTest {
         String refreshToken = "valid-refresh";
 
         when(jwtService.isTokenValid(anyString())).thenReturn(false);
-        when(verifyAuthUseCase.execute(anyString(), anyString(), anyString(), any(), any()))
+        when(authUseCase.verifyAuth(anyString(), anyString(), anyString(), any(), any()))
                 .thenThrow(new BadRequestException(ErrorCode.UNAUTHORIZED, "IP divergente"));
 
         mockMvc.perform(get("/v1/auth/verify")
