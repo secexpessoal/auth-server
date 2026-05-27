@@ -6,10 +6,24 @@ import { Input } from "@lib/components/sh-input/input.component";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
 import { Popover, PopoverContent, PopoverTrigger } from "@lib/components/sh-popover/popover.component";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@lib/components/sh-select/select.component";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@lib/components/sh-select/select.component";
 import { Spinner } from "@lib/components/sh-spinner/spinner.component";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@lib/components/sh-tabs/tabs.component";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@lib/components/sh-tooltip/tooltip.component";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from "@lib/components/sh-input-group/input-group.component";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@lib/utils/cn/cn.util";
 import { format, parseISO } from "date-fns";
@@ -31,6 +45,8 @@ import {
   Briefcase,
   History,
   ChevronRight,
+  Plus,
+  ArrowLeft,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -38,8 +54,8 @@ import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
 import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@lib/data/manager/molecule/user.schema";
 import { updateUserRoles } from "@lib/data/manager/services/user.service";
-import { getUserPositionHistory, changeUserPosition, type UserPositionHistoryResponseDto } from "@lib/data/manager/services/user-position.service";
-import { getActivePositions } from "@lib/data/manager/services/position.service";
+import { getUserPositionHistory, changeUserPosition } from "@lib/data/manager/services/user-position.service";
+import { getActivePositions, createPosition, getPositionEventTypes } from "@lib/data/manager/services/position.service";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@lib/infra/query/query.util";
 import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
@@ -106,7 +122,7 @@ export function ManagerDetailsModal({
   if (currentSignature !== prevSignature) {
     setPrevSignature(currentSignature);
     if (open && user) {
-      setHybridMode(user.profile.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
+      setHybridMode(user.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
       setSelectedRoles(user.roles);
     }
   }
@@ -141,10 +157,35 @@ export function ManagerDetailsModal({
     enabled: open,
   });
 
-  const [isChangingPosition, setIsChangingPosition] = useState(false);
+  const { data: eventTypes } = useQuery({
+    queryKey: ["position-event-types"],
+    queryFn: getPositionEventTypes,
+    enabled: open,
+  });
+
   const [newPositionId, setNewPositionId] = useState("");
   const [changeReason, setChangeReason] = useState("");
   const [eventType, setEventType] = useState("PROMOTION");
+  const [isCreatingNewPosition, setIsCreatingNewPosition] = useState(false);
+  const [newPositionName, setNewPositionName] = useState("");
+
+  useEffect(() => {
+    if (eventTypes && eventTypes.length > 0 && !eventType) {
+      setEventType(eventTypes[0].value);
+    }
+  }, [eventTypes, eventType]);
+
+  const createPositionMutation = useMutation({
+    mutationFn: () => createPosition({ name: newPositionName }),
+    onSuccess: (data) => {
+      toast.success("Novo cargo cadastrado!");
+      void queryClient.invalidateQueries({ queryKey: ["active-positions"] });
+      setNewPositionId(data.id);
+      setIsCreatingNewPosition(false);
+      setNewPositionName("");
+    },
+    onError: (error) => toast.error(getErrorMessage(error, "Erro ao cadastrar cargo")),
+  });
 
   const changePositionMutation = useMutation({
     mutationFn: () =>
@@ -158,7 +199,6 @@ export function ManagerDetailsModal({
       toast.success("Cargo alterado com sucesso!");
       void queryClient.invalidateQueries({ queryKey: ["user-position-history", user?.id] });
       void queryClient.invalidateQueries({ queryKey: ["users"] });
-      setIsChangingPosition(false);
       setNewPositionId("");
       setChangeReason("");
     },
@@ -603,18 +643,63 @@ export function ManagerDetailsModal({
                         <div className="space-y-6 flex-1">
                           <div className="space-y-2">
                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Novo Cargo</label>
-                            <Select onValueChange={setNewPositionId} value={newPositionId}>
-                              <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
-                                <SelectValue placeholder="Selecione o cargo..." />
-                              </SelectTrigger>
-                              <SelectContent className="bg-card border-white/20">
-                                {activePositions?.map((pos) => (
-                                  <SelectItem key={pos.id} value={pos.id} className="font-bold">
-                                    {pos.name}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                            {isCreatingNewPosition ? (
+                              <InputGroup className="h-12 border-primary/20 bg-primary/5">
+                                <InputGroupAddon>
+                                  <InputGroupButton
+                                    variant="ghost"
+                                    size="icon-sm"
+                                    onClick={() => {
+                                      setIsCreatingNewPosition(false);
+                                      setNewPositionName("");
+                                    }}
+                                    title="Voltar para seleção"
+                                  >
+                                    <ArrowLeft className="w-4 h-4" />
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                                <InputGroupInput
+                                  placeholder="Nome do novo cargo..."
+                                  value={newPositionName}
+                                  onChange={(e) => setNewPositionName(e.target.value)}
+                                  className="font-bold"
+                                  autoFocus
+                                />
+                                <InputGroupAddon align="inline-end">
+                                  <InputGroupButton
+                                    variant="default"
+                                    size="icon-sm"
+                                    disabled={!newPositionName.trim() || createPositionMutation.isPending}
+                                    onClick={() => createPositionMutation.mutate()}
+                                  >
+                                    {createPositionMutation.isPending ? <Spinner className="w-3 h-3" /> : <Plus className="w-4 h-4" />}
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                              </InputGroup>
+                            ) : (
+                              <Select onValueChange={setNewPositionId} value={newPositionId}>
+                                <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                  <SelectValue placeholder="Selecione o cargo..." />
+                                </SelectTrigger>
+                                <SelectContent className="bg-card border-white/20">
+                                  <SelectGroup>
+                                    {activePositions?.map((pos) => (
+                                      <SelectItem key={pos.id} value={pos.id} className="font-bold">
+                                        {pos.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectGroup>
+                                  <SelectSeparator className="opacity-20" />
+                                  <div
+                                    className="flex items-center gap-2 p-2 px-3 text-xs font-black uppercase tracking-widest text-primary hover:bg-primary/10 cursor-pointer transition-colors"
+                                    onClick={() => setIsCreatingNewPosition(true)}
+                                  >
+                                    <Plus className="w-3 h-3" />
+                                    Cadastrar novo cargo
+                                  </div>
+                                </SelectContent>
+                              </Select>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
@@ -623,18 +708,11 @@ export function ManagerDetailsModal({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="bg-card border-white/20">
-                                <SelectItem value="PROMOTION" className="font-bold">
-                                  Promoção
-                                </SelectItem>
-                                <SelectItem value="LATERAL_MOVE" className="font-bold">
-                                  Movimentação Lateral
-                                </SelectItem>
-                                <SelectItem value="DEMOTION" className="font-bold">
-                                  Rebaixamento
-                                </SelectItem>
-                                <SelectItem value="HIRING" className="font-bold">
-                                  Contratação
-                                </SelectItem>
+                                {eventTypes?.map((type) => (
+                                  <SelectItem key={type.value} value={type.value} className="font-bold">
+                                    {type.label}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
@@ -643,7 +721,7 @@ export function ManagerDetailsModal({
                             <textarea
                               value={changeReason}
                               onChange={(e) => setChangeReason(e.target.value)}
-                              className="w-full min-h-[280px] p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none h-full max-h-[250px]"
+                              className="w-full min-h-70 p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none h-full max-h-62.5"
                               placeholder="Descreva o motivo da alteração..."
                             />
                           </div>
@@ -669,7 +747,7 @@ export function ManagerDetailsModal({
                           <h3 className="text-xl font-black text-foreground">Histórico de Transições</h3>
                         </div>
 
-                        <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar relative pl-8 flex-1 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
+                        <div className="max-h-150 overflow-y-auto pr-4 custom-scrollbar relative pl-8 flex-1 before:absolute before:left-3.75 before:top-2 before:bottom-2 before:w-0.5 before:bg-linear-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
                           {isLoadingHistory ? (
                             <div className="flex justify-center p-10">
                               <Spinner className="w-6 h-6" />
@@ -678,75 +756,78 @@ export function ManagerDetailsModal({
                             <p className="text-muted-foreground font-medium text-center py-10">Nenhuma transição registrada.</p>
                           ) : (
                             <div className="space-y-10">
-                              {history?.map((entry) => (
-                                <div key={entry.id} className="relative group">
-                                  <div className="absolute -left-[25px] top-1.5 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-[0_0_10px_rgba(var(--primary),0.3)] z-10 group-hover:scale-125 transition-transform duration-300" />
+                              {history?.map((entry) => {
+                                const typeMeta = eventTypes?.find((t) => t.value === entry.eventType);
+                                return (
+                                  <div key={entry.id} className="relative group">
+                                    <div className="absolute -left-6.25 top-1.5 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-[0_0_10px_rgba(var(--primary),0.3)] z-10 group-hover:scale-125 transition-transform duration-300" />
 
-                                  <div className="space-y-4">
-                                    <div className="flex items-center justify-between gap-4">
-                                      <span
-                                        className={cn(
-                                          "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border",
-                                          entry.eventType === "PROMOTION"
-                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                                            : entry.eventType === "DEMOTION"
-                                              ? "bg-destructive/10 text-destructive border-destructive/20"
-                                              : "bg-primary/10 text-primary border-primary/20",
-                                        )}
-                                      >
-                                        {entry.eventType === "PROMOTION"
-                                          ? "Promoção"
-                                          : entry.eventType === "DEMOTION"
-                                            ? "Rebaixamento"
-                                            : entry.eventType === "HIRING"
-                                              ? "Contratação"
-                                              : "Movimentação"}
-                                      </span>
-                                      <span className="text-[10px] font-bold text-muted-foreground/60 whitespace-nowrap">
-                                        {format(new Date(entry.occurredAt), "dd MMM yyyy • HH:mm")}
-                                      </span>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:border-white/10 transition-colors overflow-hidden">
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Anterior</p>
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between gap-4">
                                         <Tooltip>
                                           <TooltipTrigger asChild>
-                                            <p className="font-bold text-sm text-foreground/80 truncate block cursor-help">
-                                              {entry.fromPositionName || "—"}
-                                            </p>
+                                            <span
+                                              className={cn(
+                                                "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border cursor-help",
+                                                entry.eventType === "PROMOTION"
+                                                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                                  : entry.eventType === "DEMOTION"
+                                                    ? "bg-destructive/10 text-destructive border-destructive/20"
+                                                    : "bg-primary/10 text-primary border-primary/20",
+                                              )}
+                                            >
+                                              {typeMeta?.label || entry.eventType}
+                                            </span>
                                           </TooltipTrigger>
-                                          <TooltipContent side="top">{entry.fromPositionName || "—"}</TooltipContent>
+                                          {typeMeta?.description && <TooltipContent side="top">{typeMeta.description}</TooltipContent>}
                                         </Tooltip>
+                                        <span className="text-[10px] font-bold text-muted-foreground/60 whitespace-nowrap">
+                                          {format(new Date(entry.occurredAt), "dd MMM yyyy • HH:mm")}
+                                        </span>
                                       </div>
-                                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 shrink-0 sm:rotate-0 rotate-90">
-                                        <ChevronRight className="w-4 h-4 text-primary" />
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Novo Cargo</p>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <p className="font-bold text-sm text-primary truncate block cursor-help">{entry.toPositionName}</p>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="top">{entry.toPositionName}</TooltipContent>
-                                        </Tooltip>
-                                      </div>
-                                    </div>
 
-                                    {entry.reason && (
-                                      <div className="relative pl-4 py-1">
-                                        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-white/10 rounded-full" />
-                                        <p className="text-xs font-medium text-muted-foreground leading-relaxed italic">"{entry.reason}"</p>
+                                      <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:border-white/10 transition-colors overflow-hidden">
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Anterior</p>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <p className="font-bold text-sm text-foreground/80 truncate block cursor-help">
+                                                {entry.fromPositionName || "—"}
+                                              </p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{entry.fromPositionName || "—"}</TooltipContent>
+                                          </Tooltip>
+                                        </div>
+                                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 shrink-0 sm:rotate-0 rotate-90">
+                                          <ChevronRight className="w-4 h-4 text-primary" />
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Novo Cargo</p>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <p className="font-bold text-sm text-primary truncate block cursor-help">{entry.toPositionName}</p>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="top">{entry.toPositionName}</TooltipContent>
+                                          </Tooltip>
+                                        </div>
                                       </div>
-                                    )}
 
-                                    <div className="flex items-center gap-2 text-muted-foreground/40 px-1">
-                                      <User className="w-3 h-3" />
-                                      <span className="text-[9px] font-black uppercase tracking-widest">Por: {entry.changedBy}</span>
+                                      {entry.reason && (
+                                        <div className="relative pl-4 py-1">
+                                          <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-white/10 rounded-full" />
+                                          <p className="text-xs font-medium text-muted-foreground leading-relaxed italic break-words">
+                                            &quot;{entry.reason}&quot;
+                                          </p>
+                                        </div>
+                                      )}
+                                      <div className="flex items-center gap-2 text-muted-foreground/40 px-1">
+                                        <User className="w-3 h-3" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Por: {entry.changedBy}</span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>
