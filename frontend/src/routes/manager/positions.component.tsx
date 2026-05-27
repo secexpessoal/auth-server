@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Plus, Search, RefreshCw, Pencil, Power, Briefcase, History as HistoryIcon, ShieldAlert } from "lucide-react";
+import { Plus, Search, RefreshCw, Pencil, Power, Briefcase } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@lib/components/sh-button/button.component";
@@ -19,7 +19,7 @@ export function PositionsPage() {
   const [editingPosition, setEditingPosition] = useState<{ id: string; name: string } | null>(null);
   const [newPositionName, setNewPositionName] = useState("");
 
-  const { data: positions, isLoading, error, refetch } = useQuery({
+  const { data: positions, isLoading, refetch } = useQuery({
     queryKey: ["positions"],
     queryFn: getAllPositions,
   });

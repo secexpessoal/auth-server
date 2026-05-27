@@ -45,7 +45,7 @@ export function LoginPage() {
       }
 
       if (data.user.roles.includes("ROLE_ADMIN")) {
-        toast.success(`Bem-vindo, ${data.user.profile.username}!`);
+        toast.success(`Bem-vindo, ${data.user.profile?.username || "Administrador"}!`);
       }
 
       setAuth(data.session, data.user);
@@ -118,7 +118,7 @@ export function LoginPage() {
               <div className="mx-auto bg-card shadow-neumorph-convex w-20 h-20 rounded-3xl flex items-center justify-center mb-6 border border-white/40">
                 <LogIn className="w-10 h-10 text-primary" />
               </div>
-              <h1 className="text-4xl font-black text-foreground tracking-tight mb-2">Auth Server</h1>
+              <h1 className="text-4xl font-black text-foreground tracking-tight mb-2">Login</h1>
               <p className="text-muted-foreground text-sm font-medium">Gestão Centralizada de Identidade</p>
             </div>
 

@@ -74,12 +74,23 @@ const mockUsers = {
 describe("ManagerTableComponent", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (useQuery as Mock).mockReturnValue({
-      data: mockUsers,
-      isLoading: false,
-      isRefetching: false,
-      error: null,
-      refetch: vi.fn(),
+    (useQuery as Mock).mockImplementation(({ queryKey }) => {
+      if (queryKey[0] === "users") {
+        return {
+          data: mockUsers,
+          isLoading: false,
+          isRefetching: false,
+          error: null,
+          refetch: vi.fn(),
+        };
+      }
+      return {
+        data: [],
+        isLoading: false,
+        isRefetching: false,
+        error: null,
+        refetch: vi.fn(),
+      };
     });
     (useMutation as Mock).mockReturnValue({
       mutate: vi.fn(),

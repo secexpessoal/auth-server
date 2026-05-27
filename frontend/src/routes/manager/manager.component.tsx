@@ -33,7 +33,7 @@ export function ManagerPage() {
             <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Gestão de Identidade</h1>
             <p className="text-sm text-muted-foreground font-medium mt-1">Administração centralizada de acessos e permissões</p>
             <p className="text-xs font-bold text-primary mt-2 flex items-center gap-1.5 uppercase tracking-wider">
-              <Shield className="w-3.5 h-3.5" /> {user?.profile.username || "Administrador"}
+              <Shield className="w-3.5 h-3.5" /> {user?.profile?.username || "Administrador"}
             </p>
           </div>
         </div>

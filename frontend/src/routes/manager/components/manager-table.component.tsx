@@ -202,7 +202,7 @@ export function ManagerTableComponent() {
                 <TableCell className="pl-6">
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground">{user.profile.username}</span>
+                      <span className="font-bold text-foreground">{user.profile?.username || "Usuário"}</span>
                       {!user.active && (
                         <span className="px-2 py-0.5 rounded-md text-[9px] font-black bg-destructive/10 text-destructive border border-destructive/20 uppercase tracking-tighter">
                           Inativo
@@ -396,7 +396,7 @@ export function ManagerTableComponent() {
             </div>
             <DialogTitle className="text-center">Senha Resetada</DialogTitle>
             <DialogDescription className="text-center pt-2">
-              A nova senha temporária de <span className="font-bold text-primary">{selectedUser?.profile.username}</span> está disponível.
+              A nova senha temporária de <span className="font-bold text-primary">{selectedUser?.profile?.username || "Usuário"}</span> está disponível.
             </DialogDescription>
           </DialogHeader>
           

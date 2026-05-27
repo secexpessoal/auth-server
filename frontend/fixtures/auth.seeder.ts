@@ -8,7 +8,12 @@ export const mockAdminUser: UserResponseDto = {
   profile: {
     username: "admin_test",
     registration: "123456",
-    position: "Admin",
+    position: {
+      id: "pos-admin",
+      name: "Admin",
+      active: true,
+      createdAt: new Date().toISOString(),
+    },
     birthDate: null,
     workRegime: "HYBRID",
     livesElsewhere: false,
@@ -29,7 +34,12 @@ export const mockCommonUser: UserResponseDto = {
   profile: {
     username: "common_test",
     registration: "654321",
-    position: "User",
+    position: {
+      id: "pos-user",
+      name: "User",
+      active: true,
+      createdAt: new Date().toISOString(),
+    },
     birthDate: null,
     workRegime: "HYBRID",
     livesElsewhere: false,
@@ -47,6 +57,7 @@ export const mockLoginResponseAdmin: AuthenticationResponseDto = {
     accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_admin_token",
     tokenVersion: 2,
     passwordResetRequired: false,
+    profileSetupRequired: false,
   },
   user: mockAdminUser,
 };
@@ -56,6 +67,7 @@ export const mockLoginResponseCommon: AuthenticationResponseDto = {
     accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mocked_common_token",
     tokenVersion: 2,
     passwordResetRequired: false,
+    profileSetupRequired: false,
   },
   user: mockCommonUser,
 };
