@@ -9,8 +9,11 @@ package com.auth.api.controller.v2;
 
 import com.auth.api.dto.auth.PositionRequestDto;
 import com.auth.api.dto.auth.PositionResponseDto;
+import com.auth.api.dto.auth.PositionUpdateDto;
+import com.auth.api.dto.common.EnumTypeResponseDto;
 import com.auth.application.service.PositionService;
 import com.auth.domain.model.Position;
+import com.auth.domain.model.UserPositionEventType;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -18,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -30,10 +34,30 @@ public class PositionController {
 
     private final PositionService positionService;
 
+    @GetMapping("/event-types")
+    @Operation(summary = "Lista tipos de eventos de cargos", description = "Retorna todos os tipos de eventos de transição de cargos com labels e descrições.")
+    public ResponseEntity<List<EnumTypeResponseDto>> getPositionEventTypes() {
+        List<EnumTypeResponseDto> types = Arrays.stream(UserPositionEventType.values())
+                .map(type -> new EnumTypeResponseDto(
+                        type.name(),
+                        type.getLabel(),
+                        type.getDescription()
+                ))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(types);
+    }
+
     @PostMapping
     @Operation(summary = "Cria um novo cargo", description = "Adiciona um cargo ao catálogo.")
     public ResponseEntity<PositionResponseDto> create(@Valid @RequestBody PositionRequestDto request) {
         Position position = positionService.create(request.name());
+        return ResponseEntity.ok(mapToResponse(position));
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Atualiza um cargo", description = "Permite editar o nome ou status de atividade de um cargo.")
+    public ResponseEntity<PositionResponseDto> update(@PathVariable UUID id, @RequestBody PositionUpdateDto request) {
+        Position position = positionService.update(id, request);
         return ResponseEntity.ok(mapToResponse(position));
     }
 

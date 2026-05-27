@@ -16,5 +16,5 @@ import java.util.UUID;
 
 @Repository
 public interface UserPositionHistoryRepository extends MongoRepository<UserPositionHistory, UUID> {
-    List<UserPositionHistory> findAllByUserIdOrderByStartDateDesc(UUID userId);
+    List<UserPositionHistory> findAllByUserIdOrderByOccurredAtDesc(UUID userId);
 }

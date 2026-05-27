@@ -19,6 +19,9 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.Instant;
 import java.util.UUID;
 
+/**
+ * Entidade que registra transições de cargos de usuários para fins de auditoria e histórico.
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -33,21 +36,34 @@ public class UserPositionHistory {
     @Field("user_id")
     private UUID userId;
 
-    @Field("position_id")
-    private UUID positionId;
+    @Field("event_type")
+    private UserPositionEventType eventType;
 
-    @Field("position_name")
-    private String positionName;
+    @Field("from_position_id")
+    private UUID fromPositionId;
 
-    @Field("start_date")
-    private Instant startDate;
+    @Field("from_position_name")
+    private String fromPositionName;
 
-    @Field("end_date")
-    private Instant endDate;
+    @Field("to_position_id")
+    private UUID toPositionId;
+
+    @Field("to_position_name")
+    private String toPositionName;
+
+    @Field("is_temporary")
+    private boolean temporary;
+
+    @Field("planned_end_date")
+    private Instant plannedEndDate;
+
+    @Field("occurred_at")
+    @Builder.Default
+    private Instant occurredAt = Instant.now();
 
     @Field("changed_by")
     private String changedBy;
 
     @Field("reason")
-    private String reason; // Ex: "Pessoa X entrou de férias e pessoa Y vai entrar em seu lugar temporariamente"
+    private String reason;
 }

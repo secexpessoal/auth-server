@@ -7,6 +7,7 @@
  */
 package com.auth.application.service;
 
+import com.auth.api.dto.auth.PositionUpdateDto;
 import com.auth.domain.model.Position;
 import com.auth.domain.repository.PositionRepository;
 import com.auth.infra.exception.custom.NotFoundException;
@@ -35,6 +36,21 @@ public class PositionService {
                 .name(name)
                 .active(true)
                 .build();
+        return positionRepository.save(position);
+    }
+
+    public Position update(UUID id, PositionUpdateDto request) {
+        Position position = positionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Cargo não encontrado"));
+
+        if (request.name() != null && !request.name().isBlank()) {
+            position.setName(request.name());
+        }
+
+        if (request.active() != null) {
+            position.setActive(request.active());
+        }
+
         return positionRepository.save(position);
     }
 

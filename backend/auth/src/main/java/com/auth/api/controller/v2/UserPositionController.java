@@ -43,6 +43,7 @@ public class UserPositionController {
         userPositionService.changePosition(
                 userId,
                 request.positionId(),
+                request.eventType(),
                 request.temporary(),
                 request.endDate(),
                 admin.getUsername(),
@@ -55,7 +56,7 @@ public class UserPositionController {
     @GetMapping("/{userId}/history")
     @Operation(summary = "Lista o histórico de cargos", description = "Retorna o histórico completo de cargos de um usuário.")
     public ResponseEntity<List<UserPositionHistory>> getHistory(@PathVariable UUID userId) {
-        return ResponseEntity.ok(historyRepository.findAllByUserIdOrderByStartDateDesc(userId));
+        return ResponseEntity.ok(historyRepository.findAllByUserIdOrderByOccurredAtDesc(userId));
     }
 
     @GetMapping("/history")

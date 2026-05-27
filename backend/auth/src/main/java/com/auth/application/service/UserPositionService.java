@@ -16,6 +16,7 @@ import com.auth.domain.repository.PositionRepository;
 import com.auth.domain.repository.UserAuthRepository;
 import com.auth.domain.repository.UserDataRepository;
 import com.auth.domain.repository.UserPositionHistoryRepository;
+import com.auth.domain.model.UserPositionEventType;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class UserPositionService {
     /**
      * Altera o cargo de um usuário.
      */
-    public void changePosition(UUID userId, UUID newPositionId, boolean temporary, Instant endDate, String changedBy, String reason) {
+    public void changePosition(UUID userId, UUID newPositionId, UserPositionEventType eventType, boolean temporary, Instant endDate, String changedBy, String reason) {
         UserAuth user = userAuthRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
@@ -57,10 +58,13 @@ public class UserPositionService {
         }
 
         UserPositionAssignment current = userData.getCurrentPosition();
-        
-        if (current != null) {
-            // Registra o fim do cargo atual no histórico
-            recordHistory(userId, current.getPositionId(), null, current.getStartDate(), Instant.now(), changedBy, "POSITION_CHANGED");
+        UUID fromPositionId = current != null ? current.getPositionId() : null;
+        String fromPositionName = null;
+
+        if (fromPositionId != null) {
+            fromPositionName = positionRepository.findById(fromPositionId)
+                    .map(Position::getName)
+                    .orElse("Cargo Antigo");
         }
 
         user.assignPosition(newPosition.getId(), temporary, endDate);
@@ -68,7 +72,7 @@ public class UserPositionService {
         userDataRepository.save(userData);
         userAuthRepository.save(user);
 
-        recordHistory(userId, newPosition.getId(), newPosition.getName(), Instant.now(), null, changedBy, reason);
+        recordTransition(userId, eventType, fromPositionId, fromPositionName, newPosition.getId(), newPosition.getName(), temporary, endDate, changedBy, reason);
     }
 
     /**
@@ -99,25 +103,41 @@ public class UserPositionService {
         UserPositionAssignment current = userData.getCurrentPosition();
         if (current == null || current.getPreviousPositionId() == null) return;
 
+        Position currentPosition = positionRepository.findById(current.getPositionId())
+                .orElse(null);
+
         Position previousPosition = positionRepository.findById(current.getPreviousPositionId())
                 .orElseThrow(() -> new RuntimeException("Cargo anterior não encontrado"));
 
-        // Registra o fim do cargo temporário no histórico
-        recordHistory(userData.getUserId(), current.getPositionId(), null, current.getStartDate(), Instant.now(), "SYSTEM", "TEMPORARY_EXPIRED");
+        String currentName = currentPosition != null ? currentPosition.getName() : "Cargo Temporário";
 
         userData.assignPosition(previousPosition.getId(), false, null);
         userDataRepository.save(userData);
 
-        recordHistory(userData.getUserId(), previousPosition.getId(), previousPosition.getName(), Instant.now(), null, "SYSTEM", "AUTOMATIC_REVERSION");
+        recordTransition(
+                userData.getUserId(),
+                UserPositionEventType.TEMPORARY_END,
+                current.getPositionId(),
+                currentName,
+                previousPosition.getId(),
+                previousPosition.getName(),
+                false,
+                null,
+                "SYSTEM",
+                "Reversão automática por expiração de cargo temporário"
+        );
     }
 
-    private void recordHistory(UUID userId, UUID posId, String posName, Instant start, Instant end, String by, String reason) {
+    private void recordTransition(UUID userId, UserPositionEventType type, UUID fromId, String fromName, UUID toId, String toName, boolean temp, Instant end, String by, String reason) {
         UserPositionHistory history = UserPositionHistory.builder()
                 .userId(userId)
-                .positionId(posId)
-                .positionName(posName)
-                .startDate(start)
-                .endDate(end)
+                .eventType(type)
+                .fromPositionId(fromId)
+                .fromPositionName(fromName)
+                .toPositionId(toId)
+                .toPositionName(toName)
+                .temporary(temp)
+                .plannedEndDate(end)
                 .changedBy(by)
                 .reason(reason)
                 .build();

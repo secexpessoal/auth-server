@@ -7,6 +7,7 @@
  */
 package com.auth.api.dto.auth;
 
+import com.auth.domain.model.UserPositionEventType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
@@ -16,6 +17,10 @@ public record UserPositionChangeRequestDto(
     @NotNull(message = "O ID do cargo é obrigatório")
     @JsonProperty("positionId")
     UUID positionId,
+
+    @NotNull(message = "O tipo de evento é obrigatório")
+    @JsonProperty("eventType")
+    UserPositionEventType eventType,
 
     @JsonProperty("isTemporary")
     boolean temporary,
