@@ -87,11 +87,6 @@ public class AuthMapperV2 {
                     .build();
         }
 
-        boolean profileSetupRequired = profileData == null || 
-                                     profileData.getUserName() == null || profileData.getUserName().isBlank() ||
-                                     profileData.getRegistration() == null || profileData.getRegistration().isBlank() ||
-                                     positionMissing;
-
         Set<String> roles = user.getRoles().stream()
                 .map(role -> "ROLE_" + role.getRole())
                 .collect(Collectors.toSet());
@@ -103,7 +98,19 @@ public class AuthMapperV2 {
                 .active(user.getActive() != null && user.getActive())
                 .profile(profile)
                 .audit(audit)
-                .profileSetupRequired(profileSetupRequired)
                 .build();
+    }
+
+    public boolean isProfileSetupRequired(UserAuth user) {
+        UserData profileData = user.getUserProfile();
+        boolean positionMissing = true;
+        if (profileData != null && profileData.getCurrentPosition() != null && profileData.getCurrentPosition().getPositionId() != null) {
+            positionMissing = false;
+        }
+
+        return profileData == null || 
+               profileData.getUserName() == null || profileData.getUserName().isBlank() ||
+               profileData.getRegistration() == null || profileData.getRegistration().isBlank() ||
+               positionMissing;
     }
 }

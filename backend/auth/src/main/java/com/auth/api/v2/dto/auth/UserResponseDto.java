@@ -32,9 +32,6 @@ public record UserResponseDto(
         UserProfileResponseDto profile,
 
         @JsonProperty("audit")
-        UserAuditResponseDto audit,
-
-        @JsonProperty("profileSetupRequired")
-        boolean profileSetupRequired
+        UserAuditResponseDto audit
 ) {
 }

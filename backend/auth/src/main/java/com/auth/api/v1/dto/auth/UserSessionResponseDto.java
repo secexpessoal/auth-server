@@ -19,6 +19,9 @@ public record UserSessionResponseDto(
         Integer tokenVersion,
 
         @JsonProperty("passwordResetRequired")
-        boolean passwordResetRequired
+        boolean passwordResetRequired,
+
+        @JsonProperty("profileSetupRequired")
+        boolean profileSetupRequired
 ) {
 }

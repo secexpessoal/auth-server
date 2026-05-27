@@ -37,7 +37,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(value = "/user", version = "2")
 @Tag(name = "Autenticação V2", description = "Endpoints para login, renovação de token e perfil com metadados expandidos")
-public class AuthController {
+public class    AuthController {
 
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
@@ -60,6 +60,7 @@ public class AuthController {
                 .accessToken(result.accessToken())
                 .tokenVersion(result.tokenVersion())
                 .passwordResetRequired(result.passwordResetRequired())
+                .profileSetupRequired(authMapperV2.isProfileSetupRequired(result.user()))
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
@@ -90,6 +91,7 @@ public class AuthController {
                 .accessToken(result.accessToken())
                 .tokenVersion(result.tokenVersion())
                 .passwordResetRequired(result.passwordResetRequired())
+                .profileSetupRequired(authMapperV2.isProfileSetupRequired(result.user()))
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
