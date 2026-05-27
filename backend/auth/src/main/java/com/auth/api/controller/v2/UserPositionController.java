@@ -12,10 +12,11 @@ import com.auth.application.service.UserPositionService;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserPositionHistory;
 import com.auth.domain.repository.UserPositionHistoryRepository;
-import com.mongodb.lang.NonNull;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class UserPositionController {
     @Operation(summary = "Altera o cargo de um usuário", description = "Atribui um novo cargo (definitivo ou temporário) a um usuário.")
     public ResponseEntity<Void> changePosition(
             @PathVariable UUID userId,
-            @RequestBody UserPositionChangeRequestDto request,
+            @Valid @RequestBody UserPositionChangeRequestDto request,
             @AuthenticationPrincipal UserAuth admin) {
 
         userPositionService.changePosition(

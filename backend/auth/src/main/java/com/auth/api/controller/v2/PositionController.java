@@ -13,6 +13,7 @@ import com.auth.application.service.PositionService;
 import com.auth.domain.model.Position;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +32,7 @@ public class PositionController {
 
     @PostMapping
     @Operation(summary = "Cria um novo cargo", description = "Adiciona um cargo ao catálogo.")
-    public ResponseEntity<PositionResponseDto> create(@RequestBody PositionRequestDto request) {
+    public ResponseEntity<PositionResponseDto> create(@Valid @RequestBody PositionRequestDto request) {
         Position position = positionService.create(request.name());
         return ResponseEntity.ok(mapToResponse(position));
     }

@@ -1,0 +1,1 @@
+- [ ] Fazer as rotas serem versionadas com sentido sem código repetido igual ao AuthController que é o mesmo no v1 e v2

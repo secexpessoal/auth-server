@@ -16,6 +16,8 @@ import com.auth.domain.repository.PositionRepository;
 import com.auth.domain.repository.UserAuthRepository;
 import com.auth.domain.repository.UserDataRepository;
 import com.auth.domain.repository.UserPositionHistoryRepository;
+import com.auth.infra.exception.custom.BadRequestException;
+import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,18 +42,18 @@ public class UserPositionService {
      */
     public void changePosition(UUID userId, UUID newPositionId, boolean temporary, Instant endDate, String changedBy, String reason) {
         UserAuth user = userAuthRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
 
         Position newPosition = positionRepository.findById(newPositionId)
-                .orElseThrow(() -> new RuntimeException("Cargo não encontrado ou inativo"));
+                .orElseThrow(() -> new NotFoundException("Cargo não encontrado"));
         
         if (!newPosition.isActive()) {
-            throw new RuntimeException("O cargo selecionado não está ativo");
+            throw new BadRequestException("O cargo selecionado não está ativo");
         }
 
         UserData userData = user.getUserProfile();
         if (userData == null) {
-            throw new RuntimeException("Perfil do usuário não encontrado. Não é possível atribuir cargo.");
+            throw new BadRequestException("Perfil do usuário não encontrado. Não é possível atribuir cargo.");
         }
 
         UserPositionAssignment current = userData.getCurrentPosition();

@@ -9,6 +9,7 @@ package com.auth.application.service;
 
 import com.auth.domain.model.Position;
 import com.auth.domain.repository.PositionRepository;
+import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -38,8 +39,7 @@ public class PositionService {
     }
 
     public Position toggleStatus(UUID id) {
-        Position position = positionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Cargo não encontrado"));
+        Position position = positionRepository.findById(id).orElseThrow(() -> new NotFoundException("Cargo não encontrado"));
         position.setActive(!position.isActive());
         return positionRepository.save(position);
     }
