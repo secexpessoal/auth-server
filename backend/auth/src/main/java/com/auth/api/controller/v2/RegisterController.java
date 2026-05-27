@@ -8,7 +8,7 @@
 package com.auth.api.controller.v2;
 
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v2.dto.auth.RegisterResponseDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
@@ -38,7 +38,7 @@ public class RegisterController {
     public ResponseEntity<@NonNull RegisterResponseDto> register(@Valid @RequestBody RegisterRequestDto request) {
         // O UserService.register da V1 já gera a senha e retorna o DTO V1 com a senha.
         // Vamos extrair a senha do DTO V1 para o novo contrato V2.
-        UserResponseDto v1Response = userService.register(request, Role.USER);
+        UserResponseDtoV1 v1Response = userService.register(request, Role.USER);
         
         RegisterResponseDto v2Response = RegisterResponseDto.builder()
                 .user(v1Response)

@@ -12,17 +12,16 @@ import com.auth.api.v1.dto.auth.InPersonWorkPeriodDto;
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v1.dto.common.PaginatedResponseDto;
 import com.auth.api.v1.dto.common.PaginationMetaDto;
 import com.auth.api.v1.dto.password.ChangePasswordRequestDto;
 import com.auth.api.v1.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.v1.dto.password.ResetPasswordRequestDto;
 import com.auth.api.v1.mapper.UserMapper;
+import com.auth.api.v2.dto.auth.UserResponseDtoV2;
 import com.auth.application.payload.AuthMetadata;
 import com.auth.application.payload.AuthenticationResult;
-import com.auth.application.payload.VerifyAuthResult;
-import com.auth.application.payload.VerifyAuthStatus;
 import com.auth.domain.model.Position;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
@@ -86,13 +85,13 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(tempPassword));
         user.getRoles().add(role);
         user.setPasswordResetRequired(true);
-        
+
         user = userRepository.save(user);
 
         UserData userData = new UserData();
         userData.setUserName(request.userName());
         userData.setUser(user);
-        
+
         userData = userDataRepository.save(userData);
         user.setUserProfile(userData);
 
@@ -110,8 +109,6 @@ public class UserService {
                 () -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado!"));
     }
 
-
-
     public AuthenticationResult login(AuthenticationRequestDto loginRequest, AuthMetadata metadata) {
         String validatedRedirect = redirectService.validateRedirectUri(loginRequest.redirectUri());
 
@@ -127,7 +124,7 @@ public class UserService {
         log.info("Usuário {} autenticado com sucesso via IP {}. Roles: {}", user.getEmail(), metadata.ipAddress(), user.getRoles());
 
         String jwt = jwtService.generateToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user, 
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user,
                 metadata.userAgent(), metadata.ipAddress(), metadata.origin(), metadata.referer());
 
         return AuthenticationResult.builder()
@@ -140,7 +137,7 @@ public class UserService {
                 .build();
     }
 
-    public UserResponseDto validateToken(Authentication authentication) {
+    public UserResponseDtoV1 validateToken(Authentication authentication) {
         UserAuth user = (UserAuth) Optional.ofNullable(authentication)
                 .map(Authentication::getPrincipal)
                 .filter(principal -> principal instanceof UserAuth)
@@ -148,8 +145,6 @@ public class UserService {
 
         return userMapper.toResponse(user);
     }
-
-
 
     public void changePassword(Authentication authentication, ChangePasswordRequestDto request) {
         UserAuth user = getUserFromAuth(authentication);
@@ -206,18 +201,27 @@ public class UserService {
         return user;
     }
 
+    public PaginatedResponseDto<UserResponseDtoV1> listUsers(int page, int limit, String requestUrl, String email, String userName, String positionName) {
+        Page<UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
+        Map<UUID, String> positionNameCache = positionRepository.findAll().stream().collect(Collectors.toMap(Position::getId, Position::getName));
+        List<UserResponseDtoV1> data = usersPage.getContent().stream().map(userItem -> userMapper.toResponse(userItem, positionNameCache)).toList();
+        return buildPaginatedResponse(usersPage, data, requestUrl, email, userName, positionName);
+    }
 
+    public PaginatedResponseDto<UserResponseDtoV2> listUsersV2(int page, int limit, String requestUrl, String email, String userName, String positionName) {
+        Page<UserAuth> usersPage = listUsersCore(page, limit, email, userName, positionName);
+        List<UserResponseDtoV2> data = usersPage.getContent().stream().map(userMapper::toResponseV2).toList();
+        return buildPaginatedResponseV2(usersPage, data, requestUrl, email, userName, positionName);
+    }
 
-    public PaginatedResponseDto<UserResponseDto> listUsers(int page, int limit, String requestUrl, String email, String userName, String positionName) {
+    private Page<UserAuth> listUsersCore(int page, int limit, String email, String userName, String positionName) {
         Pageable pageable = PageRequest.of(page, limit);
-
         List<UUID> matchingUserIds = null;
 
         if (isProfileFilterPresent(userName, positionName)) {
             matchingUserIds = findUserIdsByProfileFilters(userName, positionName);
-
             if (matchingUserIds.isEmpty()) {
-                return buildEmptyResponse(page, limit);
+                return Page.empty(pageable);
             }
         }
 
@@ -234,13 +238,7 @@ public class UserService {
         query.with(pageable);
 
         List<UserAuth> users = mongoTemplate.find(query, UserAuth.class);
-        Page<UserAuth> usersPage = new PageImpl<>(users, pageable, totalCount);
-
-        Map<UUID, String> positionNameCache = positionRepository.findAll().stream().collect(Collectors.toMap(Position::getId, Position::getName));
-
-        List<UserResponseDto> data = usersPage.getContent().stream().map(userItem -> userMapper.toResponse(userItem, positionNameCache)).toList();
-
-        return buildPaginatedResponse(usersPage, data, requestUrl, email, userName, positionName);
+        return new PageImpl<>(users, pageable, totalCount);
     }
 
     private boolean isProfileFilterPresent(String userName, String positionName) {
@@ -271,7 +269,7 @@ public class UserService {
         return mongoTemplate.find(dataQuery, UserData.class).stream().map(UserData::getUserId).toList();
     }
 
-    private PaginatedResponseDto<UserResponseDto> buildPaginatedResponse(Page<UserAuth> page, List<UserResponseDto> data, String url, String email, String name, String pos) {
+    private PaginatedResponseDto<UserResponseDtoV1> buildPaginatedResponse(Page<UserAuth> page, List<UserResponseDtoV1> data, String url, String email, String name, String pos) {
         PaginationMetaDto meta = PaginationMetaDto.builder()
                 .page(page.getNumber())
                 .limit(page.getSize())
@@ -291,7 +289,7 @@ public class UserService {
                 ? String.format("%s?page=%d&limit=%d%s", url, page.getNumber() - 1, page.getSize(), queryParams)
                 : "";
 
-        return PaginatedResponseDto.<UserResponseDto>builder()
+        return PaginatedResponseDto.<UserResponseDtoV1>builder()
                 .data(data)
                 .meta(Map.of("pagination", meta))
                 .links(Map.of("next", nextLink, "prev", prevLink))
@@ -307,7 +305,34 @@ public class UserService {
         return params.toString();
     }
 
-    private PaginatedResponseDto<UserResponseDto> buildEmptyResponse(int page, int limit) {
+    private PaginatedResponseDto<UserResponseDtoV2> buildPaginatedResponseV2(Page<UserAuth> page, List<UserResponseDtoV2> data, String url, String email, String name, String pos) {
+        PaginationMetaDto meta = PaginationMetaDto.builder()
+                .page(page.getNumber())
+                .limit(page.getSize())
+                .totalItems(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .hasNext(page.hasNext())
+                .hasPrevious(page.hasPrevious())
+                .build();
+
+        String queryParams = buildQueryParams(email, name, pos);
+
+        String nextLink = page.hasNext()
+                ? String.format("%s?page=%d&limit=%d%s", url, page.getNumber() + 1, page.getSize(), queryParams)
+                : "";
+
+        String prevLink = page.hasPrevious()
+                ? String.format("%s?page=%d&limit=%d%s", url, page.getNumber() - 1, page.getSize(), queryParams)
+                : "";
+
+        return PaginatedResponseDto.<UserResponseDtoV2>builder()
+                .data(data)
+                .meta(Map.of("pagination", meta))
+                .links(Map.of("next", nextLink, "prev", prevLink))
+                .build();
+    }
+
+    private PaginatedResponseDto<UserResponseDtoV2> buildEmptyResponseV2(int page, int limit) {
         PaginationMetaDto meta = PaginationMetaDto.builder()
                 .page(page)
                 .limit(limit)
@@ -317,14 +342,14 @@ public class UserService {
                 .hasPrevious(false)
                 .build();
 
-        return PaginatedResponseDto.<UserResponseDto>builder()
+        return PaginatedResponseDto.<UserResponseDtoV2>builder()
                 .data(List.of())
                 .meta(Map.of("pagination", meta))
                 .links(Map.of("next", "", "prev", ""))
                 .build();
     }
 
-    public UserResponseDto register(RegisterRequestDto request, Role role) {
+    public UserResponseDtoV1 register(RegisterRequestDto request, Role role) {
         String tempPassword = passwordGeneratorService.generateTemporaryPassword();
 
         UserAuth user = Optional.ofNullable(userRegister(request, role, tempPassword))
@@ -333,22 +358,28 @@ public class UserService {
         return userMapper.toResponse(user, tempPassword);
     }
 
-    public UserResponseDto updateProfile(UUID userId, UpdateUserProfileRequestDto request) {
+    public UserResponseDtoV1 updateProfile(UUID userId, UpdateUserProfileRequestDto request) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 
         InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
-        
+
         try {
             user.updateProfile(
-                request.username(),
-                request.registration(),
-                request.birthDate(),
-                request.workRegime(),
-                request.livesElsewhere(),
-                period != null ? period.frequencyCycleWeeks() : null,
-                period != null ? period.frequencyWeekMask() : null,
-                period != null ? period.frequencyDurationDays() : null
+                    request.username(),
+                    request.registration(),
+                    request.birthDate(),
+                    request.workRegime(),
+                    request.livesElsewhere(),
+                    period != null
+                            ? period.frequencyCycleWeeks()
+                            : null,
+                    period != null
+                            ? period.frequencyWeekMask()
+                            : null,
+                    period != null
+                            ? period.frequencyDurationDays()
+                            : null
             );
 
             if (request.position() != null && !request.position().isBlank()) {
@@ -373,7 +404,7 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    public UserResponseDto updateRoles(UUID userId, UpdateUserRolesRequestDto request) {
+    public UserResponseDtoV1 updateRoles(UUID userId, UpdateUserRolesRequestDto request) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 

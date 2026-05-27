@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Builder
-public record UserResponseDto(
+public record UserResponseDtoV1(
         @JsonProperty("id")
         UUID id,
 

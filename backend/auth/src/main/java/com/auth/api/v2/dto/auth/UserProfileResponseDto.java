@@ -7,9 +7,8 @@
  */
 package com.auth.api.v2.dto.auth;
 
-import com.auth.domain.model.WorkRegime;
 import com.auth.api.v1.dto.auth.InPersonWorkPeriodDto;
-import com.auth.api.v2.dto.auth.PositionResponseDto;
+import com.auth.domain.model.WorkRegime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

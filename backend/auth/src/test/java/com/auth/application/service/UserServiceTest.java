@@ -8,19 +8,16 @@
 package com.auth.application.service;
 
 import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
-import com.auth.api.v1.dto.auth.AuthenticationResponseDto;
 import com.auth.api.v1.dto.auth.RegisterRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v1.dto.common.PaginatedResponseDto;
 import com.auth.api.v1.dto.password.ChangePasswordRequestDto;
-import com.auth.api.v1.dto.password.FirstChangePasswordRequestDto;
 import com.auth.api.v1.dto.password.ResetPasswordRequestDto;
 import com.auth.application.payload.AuthMetadata;
 import com.auth.application.payload.AuthenticationResult;
 import com.auth.api.v1.mapper.UserMapper;
-import com.auth.domain.model.Position;
 import com.auth.domain.model.RefreshToken;
 import com.auth.domain.model.Role;
 import com.auth.domain.model.UserAuth;
@@ -28,7 +25,6 @@ import com.auth.domain.model.UserData;
 import com.auth.domain.repository.PositionRepository;
 import com.auth.domain.repository.UserAuthRepository;
 import com.auth.domain.repository.UserDataRepository;
-import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.custom.BadRequestException;
 import com.auth.infra.exception.custom.NotFoundException;
 import com.auth.infra.security.service.JwtGeneratorService;
@@ -154,7 +150,7 @@ class UserServiceTest {
             refreshToken.setVersion(1);
             when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(refreshToken);
             
-            when(userMapper.toResponse(any())).thenReturn(UserResponseDto.builder().email("test@example.com").build());
+            when(userMapper.toResponse(any())).thenReturn(UserResponseDtoV1.builder().email("test@example.com").build());
 
             AuthenticationResult result = userService.login(request, new AuthMetadata("Mozilla", "127.0.0.1", "origin", "referer"));
 
@@ -245,9 +241,9 @@ class UserServiceTest {
             when(mongoTemplate.count(any(), eq(UserAuth.class))).thenReturn(1L);
             when(mongoTemplate.find(any(), eq(UserAuth.class))).thenReturn(List.of(testUser));
             when(positionRepository.findAll()).thenReturn(List.of());
-            when(userMapper.toResponse(any(), anyMap())).thenReturn(UserResponseDto.builder().build());
+            when(userMapper.toResponse(any(), anyMap())).thenReturn(UserResponseDtoV1.builder().build());
 
-            PaginatedResponseDto<UserResponseDto> result = userService.listUsers(0, 10, "url", null, null, null);
+            PaginatedResponseDto<UserResponseDtoV1> result = userService.listUsers(0, 10, "url", null, null, null);
 
             assertNotNull(result);
             assertEquals(1, result.data().size());
@@ -261,7 +257,7 @@ class UserServiceTest {
                     .username("newname")
                     .build();
             when(userRepository.findById(id)).thenReturn(Optional.of(testUser));
-            when(userMapper.toResponse(any())).thenReturn(UserResponseDto.builder().build());
+            when(userMapper.toResponse(any())).thenReturn(UserResponseDtoV1.builder().build());
 
             userService.updateProfile(id, request);
 

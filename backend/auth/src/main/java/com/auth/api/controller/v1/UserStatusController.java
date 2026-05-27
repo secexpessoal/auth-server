@@ -9,7 +9,7 @@ package com.auth.api.controller.v1;
 
 import com.auth.api.v1.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.v1.dto.auth.UpdateUserRolesRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -50,7 +50,7 @@ public class UserStatusController {
     // NOTE: Rota autenticada
     @PatchMapping("/profile/{id}")
     @Operation(summary = "Atualiza o perfil do usuário", description = "Permite editar metadados do perfil do usuário. Requer cargo ADMIN.")
-    public ResponseEntity<UserResponseDto> updateProfile(
+    public ResponseEntity<UserResponseDtoV1> updateProfile(
             @PathVariable UUID id,
             @RequestBody UpdateUserProfileRequestDto request) {
         return ResponseEntity.ok(userService.updateProfile(id, request));
@@ -59,7 +59,7 @@ public class UserStatusController {
     // NOTE: Rota privada e só para ADMIN
     @PatchMapping("/{id}/roles")
     @Operation(summary = "Atualiza os cargos do usuário", description = "Permite adicionar ou remover cargos do usuário. Requer cargo ADMIN.")
-    public ResponseEntity<UserResponseDto> updateRoles(
+    public ResponseEntity<UserResponseDtoV1> updateRoles(
             @PathVariable UUID id,
             @RequestBody UpdateUserRolesRequestDto request) {
         return ResponseEntity.ok(userService.updateRoles(id, request));

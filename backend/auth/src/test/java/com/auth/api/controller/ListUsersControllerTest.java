@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v1.dto.common.PaginatedResponseDto;
 import com.auth.application.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +15,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -54,7 +53,7 @@ class ListUsersControllerTest {
     @DisplayName("Deve retornar 200 e lista paginada de usuários")
     @WithMockUser(roles = "ADMIN")
     void deveRetornarListaPaginada() throws Exception {
-        PaginatedResponseDto<UserResponseDto> response = PaginatedResponseDto.<UserResponseDto>builder()
+        PaginatedResponseDto<UserResponseDtoV1> response = PaginatedResponseDto.<UserResponseDtoV1>builder()
                 .data(List.of())
                 .meta(Map.of())
                 .links(Map.of())

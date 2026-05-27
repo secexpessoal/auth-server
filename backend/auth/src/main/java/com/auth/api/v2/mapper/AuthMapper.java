@@ -11,7 +11,7 @@ import com.auth.api.v1.dto.auth.InPersonWorkPeriodDto;
 import com.auth.api.v1.dto.auth.UserAuditResponseDto;
 import com.auth.api.v2.dto.auth.PositionResponseDto;
 import com.auth.api.v2.dto.auth.UserProfileResponseDto;
-import com.auth.api.v2.dto.auth.UserResponseDto;
+import com.auth.api.v2.dto.auth.UserResponseDtoV2;
 import com.auth.domain.model.Position;
 import com.auth.domain.model.UserAuth;
 import com.auth.domain.model.UserData;
@@ -26,15 +26,15 @@ import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
-public class AuthMapperV2 {
+public class AuthMapper {
 
     private final PositionRepository positionRepository;
 
-    public UserResponseDto toResponse(UserAuth user) {
+    public UserResponseDtoV2 toResponse(UserAuth user) {
         return toResponse(user, null);
     }
 
-    public UserResponseDto toResponse(UserAuth user, Map<UUID, Position> positionCache) {
+    public UserResponseDtoV2 toResponse(UserAuth user, Map<UUID, Position> positionCache) {
         UserData profileData = user.getUserProfile();
         
         UserProfileResponseDto profile = null;
@@ -91,7 +91,7 @@ public class AuthMapperV2 {
                 .map(role -> "ROLE_" + role.getRole())
                 .collect(Collectors.toSet());
 
-        return UserResponseDto.builder()
+        return UserResponseDtoV2.builder()
                 .id(user.getUserId())
                 .email(user.getEmail())
                 .roles(roles)

@@ -8,7 +8,6 @@
 package com.auth.api.controller;
 
 import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
 import com.auth.application.payload.AuthMetadata;
 import com.auth.application.payload.AuthenticationResult;
 import com.auth.application.service.CookieService;

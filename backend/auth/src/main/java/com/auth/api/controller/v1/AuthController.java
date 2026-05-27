@@ -9,7 +9,7 @@ package com.auth.api.controller.v1;
 
 import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
 import com.auth.api.v1.dto.auth.AuthenticationResponseDto;
-import com.auth.api.v1.dto.auth.UserResponseDto;
+import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.api.v1.dto.auth.UserSessionResponseDto;
 import com.auth.api.v1.dto.token.RefreshTokenRequestDto;
 import com.auth.api.v1.mapper.UserMapper;
@@ -131,8 +131,8 @@ public class AuthController {
     // NOTE: Rota privada, usuário precisa mandar o token
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado", description = "Extrai informações detalhadas do usuário a partir do token JWT enviado no Header.")
-    public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
-        UserResponseDto response = userService.validateToken(authentication);
+    public ResponseEntity<@NonNull UserResponseDtoV1> validateToken(Authentication authentication) {
+        UserResponseDtoV1 response = userService.validateToken(authentication);
         return ResponseEntity.ok(response);
     }
 }

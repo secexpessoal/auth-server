@@ -11,8 +11,8 @@ import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
 import com.auth.api.v1.dto.auth.UserSessionResponseDto;
 import com.auth.api.v1.dto.token.RefreshTokenRequestDto;
 import com.auth.api.v2.dto.auth.AuthenticationResponseDto;
-import com.auth.api.v2.dto.auth.UserResponseDto;
-import com.auth.api.v2.mapper.AuthMapperV2;
+import com.auth.api.v2.dto.auth.UserResponseDtoV2;
+import com.auth.api.v2.mapper.AuthMapper;
 import com.auth.application.payload.AuthMetadata;
 import com.auth.application.payload.AuthenticationResult;
 import com.auth.application.service.CookieService;
@@ -42,7 +42,7 @@ public class    AuthController {
     private final UserService userService;
     private final RefreshTokenService refreshTokenService;
     private final CookieService cookieService;
-    private final AuthMapperV2 authMapperV2;
+    private final AuthMapper authMapper;
 
     @PostMapping("/login")
     @Operation(summary = "Realiza o login do usuário V2", description = "Retorna perfil expandido e flag profileSetupRequired.")
@@ -60,12 +60,12 @@ public class    AuthController {
                 .accessToken(result.accessToken())
                 .tokenVersion(result.tokenVersion())
                 .passwordResetRequired(result.passwordResetRequired())
-                .profileSetupRequired(authMapperV2.isProfileSetupRequired(result.user()))
+                .profileSetupRequired(authMapper.isProfileSetupRequired(result.user()))
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
-                .user(authMapperV2.toResponse(result.user()))
+                .user(authMapper.toResponse(result.user()))
                 .redirectUri(result.redirectUri())
                 .build();
 
@@ -91,12 +91,12 @@ public class    AuthController {
                 .accessToken(result.accessToken())
                 .tokenVersion(result.tokenVersion())
                 .passwordResetRequired(result.passwordResetRequired())
-                .profileSetupRequired(authMapperV2.isProfileSetupRequired(result.user()))
+                .profileSetupRequired(authMapper.isProfileSetupRequired(result.user()))
                 .build();
 
         AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
                 .session(session)
-                .user(authMapperV2.toResponse(result.user()))
+                .user(authMapper.toResponse(result.user()))
                 .redirectUri(result.redirectUri())
                 .build();
 
@@ -113,12 +113,12 @@ public class    AuthController {
 
     @GetMapping("/profile")
     @Operation(summary = "Retorna o perfil do usuário logado V2", description = "Retorna perfil expandido e flag profileSetupRequired.")
-    public ResponseEntity<@NonNull UserResponseDto> validateToken(Authentication authentication) {
+    public ResponseEntity<@NonNull UserResponseDtoV2> validateToken(Authentication authentication) {
         // O UserService.validateToken da V1 retorna o DTO da V1. 
         // Para a V2, buscamos a entidade do contexto e mapeamos com o mapper V2.
         if (!(authentication.getPrincipal() instanceof com.auth.domain.model.UserAuth user)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.ok(authMapperV2.toResponse(user));
+        return ResponseEntity.ok(authMapper.toResponse(user));
     }
 }
