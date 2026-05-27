@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@lib/components/sh-popo
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@lib/components/sh-select/select.component";
 import { Spinner } from "@lib/components/sh-spinner/spinner.component";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@lib/components/sh-tabs/tabs.component";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@lib/components/sh-tooltip/tooltip.component";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@lib/utils/cn/cn.util";
 import { format, parseISO } from "date-fns";
@@ -588,149 +589,170 @@ export function ManagerDetailsModal({
 
                 {/* --- CAREER SECTION --- */}
                 <TabsContent value="career" className="m-0 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-10">
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                    {/* Alterar Cargo Form */}
-                    <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8">
-                      <div className="flex items-center gap-4 border-b border-white/5 pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                          <RefreshCw className="w-6 h-6 text-primary" />
-                        </div>
-                        <h3 className="text-xl font-black text-foreground">Alterar Cargo</h3>
-                      </div>
-
-                      <div className="space-y-6 max-h-125 overflow-y-auto pr-2 custom-scrollbar">
-                        Alterar Cargo
-                        <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Novo Cargo</label>
-                          <Select onValueChange={setNewPositionId} value={newPositionId}>
-                            <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
-                              <SelectValue placeholder="Selecione o cargo..." />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-white/20">
-                              {activePositions?.map((pos) => (
-                                <SelectItem key={pos.id} value={pos.id} className="font-bold">
-                                  {pos.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
-                          <Select onValueChange={setEventType} value={eventType}>
-                            <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-card border-white/20">
-                              <SelectItem value="PROMOTION" className="font-bold">
-                                Promoção
-                              </SelectItem>
-                              <SelectItem value="LATERAL_MOVE" className="font-bold">
-                                Movimentação Lateral
-                              </SelectItem>
-                              <SelectItem value="DEMOTION" className="font-bold">
-                                Rebaixamento
-                              </SelectItem>
-                              <SelectItem value="HIRING" className="font-bold">
-                                Contratação
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Motivo / Observação</label>
-                          <textarea
-                            value={changeReason}
-                            onChange={(e) => setChangeReason(e.target.value)}
-                            className="w-full min-h-[150px] p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                            placeholder="Descreva o motivo da alteração..."
-                          />
-                        </div>
-                      </div>
-
-                      <Button
-                        onClick={() => changePositionMutation.mutate()}
-                        disabled={!newPositionId || changePositionMutation.isPending}
-                        className="w-full h-12 font-black uppercase tracking-widest"
-                      >
-                        {changePositionMutation.isPending ? <Spinner className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-                        Confirmar Mudança
-                      </Button>
-                    </div>
-
-                    {/* Histórico */}
-                    <div className="lg:col-span-8 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8">
-                      <div className="flex items-center gap-4 border-b border-white/5 pb-6">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
-                          <History className="w-6 h-6 text-primary" />
-                        </div>
-                        <h3 className="text-xl font-black text-foreground">Histórico de Transições</h3>
-                      </div>
-
-                      <div className="max-h-[800px] overflow-y-auto pr-4 custom-scrollbar relative pl-8 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
-                        {isLoadingHistory ? (
-                          <div className="flex justify-center p-10">
-                            <Spinner className="w-6 h-6" />
+                  <TooltipProvider>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                      {/* Alterar Cargo Form */}
+                      <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8 h-full">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                            <RefreshCw className="w-6 h-6 text-primary" />
                           </div>
-                        ) : history?.length === 0 ? (
-                          <p className="text-muted-foreground font-medium text-center py-10">Nenhuma transição registrada.</p>
-                        ) : (
-                          <div className="space-y-12">
-                            {history?.map((entry) => (
-                              <div key={entry.id} className="relative group">
-                                <div className="absolute -left-[25px] top-1 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-neumorph-sm z-10 group-hover:scale-125 transition-transform" />
+                          <h3 className="text-xl font-black text-foreground">Alterar Cargo</h3>
+                        </div>
 
-                                <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <span
-                                      className={cn(
-                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border",
-                                        entry.eventType === "PROMOTION"
-                                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                        <div className="space-y-6 flex-1">
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Novo Cargo</label>
+                            <Select onValueChange={setNewPositionId} value={newPositionId}>
+                              <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                <SelectValue placeholder="Selecione o cargo..." />
+                              </SelectTrigger>
+                              <SelectContent className="bg-card border-white/20">
+                                {activePositions?.map((pos) => (
+                                  <SelectItem key={pos.id} value={pos.id} className="font-bold">
+                                    {pos.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
+                            <Select onValueChange={setEventType} value={eventType}>
+                              <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-card border-white/20">
+                                <SelectItem value="PROMOTION" className="font-bold">
+                                  Promoção
+                                </SelectItem>
+                                <SelectItem value="LATERAL_MOVE" className="font-bold">
+                                  Movimentação Lateral
+                                </SelectItem>
+                                <SelectItem value="DEMOTION" className="font-bold">
+                                  Rebaixamento
+                                </SelectItem>
+                                <SelectItem value="HIRING" className="font-bold">
+                                  Contratação
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Motivo / Observação</label>
+                            <textarea
+                              value={changeReason}
+                              onChange={(e) => setChangeReason(e.target.value)}
+                              className="w-full min-h-[280px] p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none h-full max-h-[250px]"
+                              placeholder="Descreva o motivo da alteração..."
+                            />
+                          </div>
+                        </div>
+
+                        <Button
+                          type="button"
+                          onClick={() => changePositionMutation.mutate()}
+                          disabled={!newPositionId || changePositionMutation.isPending}
+                          className="w-full h-12 font-black uppercase tracking-widest mt-auto"
+                        >
+                          {changePositionMutation.isPending ? <Spinner className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                          Confirmar Mudança
+                        </Button>
+                      </div>
+
+                      {/* Histórico */}
+                      <div className="lg:col-span-7 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8 h-full">
+                        <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                            <History className="w-6 h-6 text-primary" />
+                          </div>
+                          <h3 className="text-xl font-black text-foreground">Histórico de Transições</h3>
+                        </div>
+
+                        <div className="max-h-[600px] overflow-y-auto pr-4 custom-scrollbar relative pl-8 flex-1 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
+                          {isLoadingHistory ? (
+                            <div className="flex justify-center p-10">
+                              <Spinner className="w-6 h-6" />
+                            </div>
+                          ) : history?.length === 0 ? (
+                            <p className="text-muted-foreground font-medium text-center py-10">Nenhuma transição registrada.</p>
+                          ) : (
+                            <div className="space-y-10">
+                              {history?.map((entry) => (
+                                <div key={entry.id} className="relative group">
+                                  <div className="absolute -left-[25px] top-1.5 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-[0_0_10px_rgba(var(--primary),0.3)] z-10 group-hover:scale-125 transition-transform duration-300" />
+
+                                  <div className="space-y-4">
+                                    <div className="flex items-center justify-between gap-4">
+                                      <span
+                                        className={cn(
+                                          "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                          entry.eventType === "PROMOTION"
+                                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                            : entry.eventType === "DEMOTION"
+                                              ? "bg-destructive/10 text-destructive border-destructive/20"
+                                              : "bg-primary/10 text-primary border-primary/20",
+                                        )}
+                                      >
+                                        {entry.eventType === "PROMOTION"
+                                          ? "Promoção"
                                           : entry.eventType === "DEMOTION"
-                                            ? "bg-destructive/10 text-destructive border-destructive/20"
-                                            : "bg-primary/10 text-primary border-primary/20",
-                                      )}
-                                    >
-                                      {entry.eventType}
-                                    </span>
-                                    <span className="text-xs font-bold text-muted-foreground">
-                                      {format(new Date(entry.occurredAt), "dd/MM/yyyy HH:mm")}
-                                    </span>
-                                  </div>
-
-                                  <div className="flex items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5">
-                                    <div className="flex-1">
-                                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">De</p>
-                                      <p className="font-bold text-sm text-foreground/70">{entry.fromPositionName || "—"}</p>
+                                            ? "Rebaixamento"
+                                            : entry.eventType === "HIRING"
+                                              ? "Contratação"
+                                              : "Movimentação"}
+                                      </span>
+                                      <span className="text-[10px] font-bold text-muted-foreground/60 whitespace-nowrap">
+                                        {format(new Date(entry.occurredAt), "dd MMM yyyy • HH:mm")}
+                                      </span>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
-                                    <div className="flex-1">
-                                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Para</p>
-                                      <p className="font-bold text-sm text-primary">{entry.toPositionName}</p>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5 group-hover:border-white/10 transition-colors overflow-hidden">
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Anterior</p>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <p className="font-bold text-sm text-foreground/80 truncate block cursor-help">
+                                              {entry.fromPositionName || "—"}
+                                            </p>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top">{entry.fromPositionName || "—"}</TooltipContent>
+                                        </Tooltip>
+                                      </div>
+                                      <div className="flex items-center justify-center h-8 w-8 rounded-full bg-white/5 border border-white/5 shrink-0 sm:rotate-0 rotate-90">
+                                        <ChevronRight className="w-4 h-4 text-primary" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">Novo Cargo</p>
+                                        <Tooltip>
+                                          <TooltipTrigger asChild>
+                                            <p className="font-bold text-sm text-primary truncate block cursor-help">{entry.toPositionName}</p>
+                                          </TooltipTrigger>
+                                          <TooltipContent side="top">{entry.toPositionName}</TooltipContent>
+                                        </Tooltip>
+                                      </div>
                                     </div>
-                                  </div>
 
-                                  {entry.reason && (
-                                    <p className="text-xs font-medium text-muted-foreground leading-relaxed italic pl-1 border-l-2 border-white/10 ml-1 py-1">
-                                      "{entry.reason}"
-                                    </p>
-                                  )}
+                                    {entry.reason && (
+                                      <div className="relative pl-4 py-1">
+                                        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-white/10 rounded-full" />
+                                        <p className="text-xs font-medium text-muted-foreground leading-relaxed italic">"{entry.reason}"</p>
+                                      </div>
+                                    )}
 
-                                  <div className="flex items-center gap-2 pl-1">
-                                    <User className="w-3 h-3 text-muted-foreground/40" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
-                                      Alterado por: {entry.changedBy}
-                                    </span>
+                                    <div className="flex items-center gap-2 text-muted-foreground/40 px-1">
+                                      <User className="w-3 h-3" />
+                                      <span className="text-[9px] font-black uppercase tracking-widest">Por: {entry.changedBy}</span>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  </TooltipProvider>
                 </TabsContent>
 
                 {/* --- GOVERNANCE SECTION --- */}
