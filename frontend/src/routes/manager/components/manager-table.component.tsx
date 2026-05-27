@@ -240,7 +240,7 @@ export function ManagerTableComponent() {
 
                 <TableCell>
                   <span className="text-muted-foreground text-sm font-bold truncate block max-w-[150px]">
-                    {user.profile.position || "—"}
+                    {user.profile?.position?.name || "—"}
                   </span>
                 </TableCell>
 

@@ -27,6 +27,9 @@ import {
   UserCheck,
   UserCircle,
   UserX,
+  Briefcase,
+  History,
+  ChevronRight,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
@@ -34,6 +37,11 @@ import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
 import { type UpdateUserProfileRequestDto, updateUserProfileSchema } from "@lib/data/manager/molecule/user.schema";
 import { updateUserRoles } from "@lib/data/manager/services/user.service";
+import { getUserPositionHistory, changeUserPosition, type UserPositionHistoryResponseDto } from "@lib/data/manager/services/user-position.service";
+import { getActivePositions } from "@lib/data/manager/services/position.service";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@lib/infra/query/query.util";
+import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
 
 export function ManagerDetailsModal({
   open,
@@ -105,20 +113,56 @@ export function ManagerDetailsModal({
   useEffect(() => {
     if (open && user) {
       form.reset({
-        position: user.profile.position,
-        workRegime: user.profile.workRegime,
-        username: user.profile.username || "",
-        birthDate: user.profile.birthDate || null,
-        registration: user.profile.registration || "",
-        livesElsewhere: user.profile.livesElsewhere || false,
+        position: user.profile?.position?.name || "",
+        workRegime: user.profile?.workRegime,
+        username: user.profile?.username || "",
+        birthDate: user.profile?.birthDate || null,
+        registration: user.profile?.registration || "",
+        livesElsewhere: user.profile?.livesElsewhere || false,
         inPersonWorkPeriod: {
-          frequencyCycleWeeks: user.profile.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
-          frequencyWeekMask: user.profile.inPersonWorkPeriod?.frequencyWeekMask || 0,
-          frequencyDurationDays: user.profile.inPersonWorkPeriod?.frequencyDurationDays || null,
+          frequencyCycleWeeks: user.profile?.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
+          frequencyWeekMask: user.profile?.inPersonWorkPeriod?.frequencyWeekMask || 0,
+          frequencyDurationDays: user.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
         },
       });
     }
   }, [open, user, form]);
+
+  const { data: history, isLoading: isLoadingHistory } = useQuery({
+    queryKey: ["user-position-history", user?.id],
+    queryFn: () => getUserPositionHistory(user!.id),
+    enabled: !!user?.id && open,
+  });
+
+  const { data: activePositions } = useQuery({
+    queryKey: ["active-positions"],
+    queryFn: getActivePositions,
+    enabled: open,
+  });
+
+  const [isChangingPosition, setIsChangingPosition] = useState(false);
+  const [newPositionId, setNewPositionId] = useState("");
+  const [changeReason, setChangeReason] = useState("");
+  const [eventType, setEventType] = useState("PROMOTION");
+
+  const changePositionMutation = useMutation({
+    mutationFn: () =>
+      changeUserPosition(user!.id, {
+        positionId: newPositionId,
+        eventType,
+        isTemporary: false,
+        reason: changeReason,
+      }),
+    onSuccess: () => {
+      toast.success("Cargo alterado com sucesso!");
+      void queryClient.invalidateQueries({ queryKey: ["user-position-history", user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ["users"] });
+      setIsChangingPosition(false);
+      setNewPositionId("");
+      setChangeReason("");
+    },
+    onError: (error) => toast.error(getErrorMessage(error, "Erro ao alterar cargo")),
+  });
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
 
@@ -127,7 +171,7 @@ export function ManagerDetailsModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="w-full sm:max-w-7xl h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
+        className="w-full sm:max-w-400 h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
         showCloseButton
       >
         <Tabs orientation="vertical" defaultValue="profile" className="flex flex-col md:flex-row h-full w-full items-stretch">
@@ -161,6 +205,14 @@ export function ManagerDetailsModal({
                 >
                   <MapPin className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
                   Regime & Localização
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="career"
+                  className="w-full justify-start h-14 px-5 rounded-md text-sm font-bold transition-all data-[state=active]:bg-card data-[state=active]:shadow-neumorph data-[state=active]:text-primary border border-transparent data-[state=active]:border-white/20 group"
+                >
+                  <Briefcase className="w-5 h-5 mr-3 opacity-50 group-data-[state=active]:opacity-100 transition-all" />
+                  Carreira & Cargos
                 </TabsTrigger>
 
                 <TabsTrigger
@@ -532,6 +584,153 @@ export function ManagerDetailsModal({
                       </div>
                     </div>
                   )}
+                </TabsContent>
+
+                {/* --- CAREER SECTION --- */}
+                <TabsContent value="career" className="m-0 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-10">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                    {/* Alterar Cargo Form */}
+                    <div className="lg:col-span-4 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8">
+                      <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <RefreshCw className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-black text-foreground">Alterar Cargo</h3>
+                      </div>
+
+                      <div className="space-y-6 max-h-125 overflow-y-auto pr-2 custom-scrollbar">
+                        Alterar Cargo
+                        <div className="space-y-2">
+                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Novo Cargo</label>
+                          <Select onValueChange={setNewPositionId} value={newPositionId}>
+                            <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                              <SelectValue placeholder="Selecione o cargo..." />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-white/20">
+                              {activePositions?.map((pos) => (
+                                <SelectItem key={pos.id} value={pos.id} className="font-bold">
+                                  {pos.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
+                          <Select onValueChange={setEventType} value={eventType}>
+                            <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="bg-card border-white/20">
+                              <SelectItem value="PROMOTION" className="font-bold">
+                                Promoção
+                              </SelectItem>
+                              <SelectItem value="LATERAL_MOVE" className="font-bold">
+                                Movimentação Lateral
+                              </SelectItem>
+                              <SelectItem value="DEMOTION" className="font-bold">
+                                Rebaixamento
+                              </SelectItem>
+                              <SelectItem value="HIRING" className="font-bold">
+                                Contratação
+                              </SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Motivo / Observação</label>
+                          <textarea
+                            value={changeReason}
+                            onChange={(e) => setChangeReason(e.target.value)}
+                            className="w-full min-h-[150px] p-4 bg-black/5 dark:bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                            placeholder="Descreva o motivo da alteração..."
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        onClick={() => changePositionMutation.mutate()}
+                        disabled={!newPositionId || changePositionMutation.isPending}
+                        className="w-full h-12 font-black uppercase tracking-widest"
+                      >
+                        {changePositionMutation.isPending ? <Spinner className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
+                        Confirmar Mudança
+                      </Button>
+                    </div>
+
+                    {/* Histórico */}
+                    <div className="lg:col-span-8 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8">
+                      <div className="flex items-center gap-4 border-b border-white/5 pb-6">
+                        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center">
+                          <History className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-black text-foreground">Histórico de Transições</h3>
+                      </div>
+
+                      <div className="max-h-[800px] overflow-y-auto pr-4 custom-scrollbar relative pl-8 before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-gradient-to-b before:from-primary/40 before:via-primary/10 before:to-transparent">
+                        {isLoadingHistory ? (
+                          <div className="flex justify-center p-10">
+                            <Spinner className="w-6 h-6" />
+                          </div>
+                        ) : history?.length === 0 ? (
+                          <p className="text-muted-foreground font-medium text-center py-10">Nenhuma transição registrada.</p>
+                        ) : (
+                          <div className="space-y-12">
+                            {history?.map((entry) => (
+                              <div key={entry.id} className="relative group">
+                                <div className="absolute -left-[25px] top-1 w-4 h-4 rounded-full bg-card border-2 border-primary shadow-neumorph-sm z-10 group-hover:scale-125 transition-transform" />
+
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <span
+                                      className={cn(
+                                        "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border",
+                                        entry.eventType === "PROMOTION"
+                                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                          : entry.eventType === "DEMOTION"
+                                            ? "bg-destructive/10 text-destructive border-destructive/20"
+                                            : "bg-primary/10 text-primary border-primary/20",
+                                      )}
+                                    >
+                                      {entry.eventType}
+                                    </span>
+                                    <span className="text-xs font-bold text-muted-foreground">
+                                      {format(new Date(entry.occurredAt), "dd/MM/yyyy HH:mm")}
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-4 bg-black/5 dark:bg-white/5 p-4 rounded-2xl border border-white/5">
+                                    <div className="flex-1">
+                                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">De</p>
+                                      <p className="font-bold text-sm text-foreground/70">{entry.fromPositionName || "—"}</p>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground/40" />
+                                    <div className="flex-1">
+                                      <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-1">Para</p>
+                                      <p className="font-bold text-sm text-primary">{entry.toPositionName}</p>
+                                    </div>
+                                  </div>
+
+                                  {entry.reason && (
+                                    <p className="text-xs font-medium text-muted-foreground leading-relaxed italic pl-1 border-l-2 border-white/10 ml-1 py-1">
+                                      "{entry.reason}"
+                                    </p>
+                                  )}
+
+                                  <div className="flex items-center gap-2 pl-1">
+                                    <User className="w-3 h-3 text-muted-foreground/40" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+                                      Alterado por: {entry.changedBy}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </TabsContent>
 
                 {/* --- GOVERNANCE SECTION --- */}
