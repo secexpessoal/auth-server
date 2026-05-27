@@ -7,7 +7,7 @@
  */
 package com.auth.api.controller;
 
-import com.auth.application.usecase.PasswordUseCase;
+import com.auth.application.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -45,7 +45,7 @@ class PasswordControllerTest {
     private ObjectMapper objectMapper;
 
     @MockitoBean
-    private PasswordUseCase passwordUseCase;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {
@@ -59,7 +59,7 @@ class PasswordControllerTest {
     @WithMockUser(roles = "ADMIN")
     void deveRetornar200AoResetarSenha() throws Exception {
         Map<String, String> request = Map.of("email", "test@example.com");
-        when(passwordUseCase.resetByAdmin(any())).thenReturn("new-temp-pass");
+        when(userService.resetByAdmin(any())).thenReturn("new-temp-pass");
 
         mockMvc.perform(post("/v1/password/admin-reset")
                 .with(csrf())

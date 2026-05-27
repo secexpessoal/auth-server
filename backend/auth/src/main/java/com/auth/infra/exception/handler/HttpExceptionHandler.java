@@ -33,9 +33,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
 
 /**
  * Manipulador global de exceções da API.
@@ -44,6 +47,15 @@ import java.util.Map;
 @Slf4j
 @RestControllerAdvice
 public class HttpExceptionHandler {
+
+    /**
+     * Trata erros de arquivo não encontrado (ex: quando o fallback da SPA tenta carregar index.html mas ele não existe).
+     */
+    @ExceptionHandler(FileNotFoundException.class)
+    public ResponseEntity<@NonNull DataObjectError> handleFileNotFound(FileNotFoundException exception) {
+        log.warn("Arquivo não encontrado: {}", exception.getMessage());
+        return buildErrorResponse("O recurso estático solicitado não foi encontrado no servidor", HttpStatus.NOT_FOUND);
+    }
 
     /**
      * Trata exceções personalizadas da aplicação que estendem {@link AppException}.
@@ -70,7 +82,7 @@ public class HttpExceptionHandler {
         log.warn("Erro de validação em {} campos: {}", errors.size(), errors);
 
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String traceId = MDC.get("requestId");
+        String traceId = MDC.get(REQUEST_ID_KEY);
 
         DataObjectError error = DataObjectError.builder()
                 .timestamp(new Date())
@@ -195,7 +207,7 @@ public class HttpExceptionHandler {
         String path = request != null
                 ? request.getRequestURI()
                 : "Unknown path";
-        String traceId = MDC.get("requestId");
+        String traceId = MDC.get(REQUEST_ID_KEY);
 
         DataObjectError error = DataObjectError.builder()
                 .timestamp(new Date())

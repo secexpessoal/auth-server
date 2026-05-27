@@ -14,13 +14,12 @@ import lombok.experimental.UtilityClass;
 public class RequestUtil {
 
     /**
-     * Extrai o IP real do cliente, considerando possíveis proxies (X-Forwarded-For).
+     * Extrai o IP real do cliente.
+     * Como server.forward-headers-strategy=native está ativado, o Spring/Tomcat 
+     * já processou o X-Forwarded-For e o remoteAddr já contém o IP real.
      */
     public static String getClientIP(HttpServletRequest request) {
-        String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader == null || xfHeader.isEmpty()) {
-            return request.getRemoteAddr();
-        }
-        return xfHeader.split(",")[0].trim();
+        return request.getRemoteAddr();
     }
 }
+

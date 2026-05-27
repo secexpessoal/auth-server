@@ -37,7 +37,24 @@ services:
       - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL}
     restart: always
 
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=${DB_NAME:-auth}
+      - MONGO_INITDB_ROOT_USERNAME=${DB_USER:-admin}
+      - MONGO_INITDB_ROOT_PASSWORD=${DB_PASSWORD:-admin123.}
+    volumes:
+      - mongodb_data:/data/db
+    restart:
+      always
+
       # Configuração do Middleware de Forward Auth
       # - "traefik.http.middlewares.auth-forward.forwardauth.address=http://auth-server:${APP_PORT}/v1/auth/verify"
       # - "traefik.http.middlewares.auth-forward.forwardauth.trustForwardHeader=true"
       # - "traefik.http.middlewares.auth-forward.forwardauth.authResponseHeaders=Authorization"
+
+volumes:
+  mongodb_data:

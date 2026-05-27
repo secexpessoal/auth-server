@@ -11,6 +11,10 @@ import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.base.AppException;
 
 public class NotFoundException extends AppException {
+    public NotFoundException(String message) {
+        super(ErrorCode.NOT_FOUND, message);
+    }
+
     public NotFoundException(ErrorCode errorCode, String message) {
         super(errorCode, message);
     }

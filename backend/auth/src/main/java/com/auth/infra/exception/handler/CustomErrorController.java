@@ -19,9 +19,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.Date;
 
+import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
+
 /**
  * Controller personalizado para lidar com erros mapeados para /error.
- * Garante que rotas de API (/v1/**) sempre retornem JSON, mesmo para erros de infraestrutura.
+ * Garante que rotas de API (/v1/** e /v2/**) sempre retornem JSON, mesmo para erros de infraestrutura.
  */
 @Controller
 public class CustomErrorController implements ErrorController {
@@ -47,7 +49,7 @@ public class CustomErrorController implements ErrorController {
             default -> "Ocorreu um erro ao processar sua solicitação";
         };
 
-        String traceId = MDC.get("requestId");
+        String traceId = MDC.get(REQUEST_ID_KEY);
 
         DataObjectError error = DataObjectError.builder()
                 .timestamp(new Date())

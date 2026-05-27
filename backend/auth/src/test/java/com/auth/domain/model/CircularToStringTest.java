@@ -14,7 +14,7 @@ class CircularToStringTest {
         UserData userData = new UserData();
 
         userAuth.setEmail("test@test.com");
-        userAuth.setUserData(userData);
+        userAuth.setUserProfile(userData);
         
         userData.setUserName("Test User");
         userData.setUser(userAuth);
@@ -34,7 +34,7 @@ class CircularToStringTest {
         UserData userData = new UserData();
 
         userAuth.setEmail("test@test.com");
-        userAuth.setUserData(userData);
+        userAuth.setUserProfile(userData);
         
         userData.setUserName("Test User");
         userData.setUser(userAuth);

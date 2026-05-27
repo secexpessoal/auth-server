@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.util.Date;
 
+import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
+
 @Component
 @RequiredArgsConstructor
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
@@ -36,7 +38,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 
-        String traceId = MDC.get("requestId");
+        String traceId = MDC.get(REQUEST_ID_KEY);
 
         DataObjectError error = DataObjectError.builder()
                 .timestamp(new Date())
@@ -47,6 +49,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                 .path(request.getRequestURI())
                 .traceId(traceId)
                 .build();
+
         response.getWriter().write(objectMapper.writeValueAsString(error));
     }
 }

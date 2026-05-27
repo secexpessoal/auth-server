@@ -1,5 +1,6 @@
 [versions]
 springBoot = "4.0.2"
+spotless = "8.4.0"
 springDependencyManagement = "1.1.7"
 jjwt = "0.12.6"
 lombok = "1.18.42"
@@ -36,3 +37,4 @@ spring-boot-starter-security-test = { group = "org.springframework.boot", name =
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
 spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
