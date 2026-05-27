@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController("listUsersControllerV1")
 @RequiredArgsConstructor
-@RequestMapping(value = "/users", version = "1")
+@RequestMapping(value = "/user", version = "1")
 @Tag(name = "Usuários V1", description = "Endpoints para consulta e listagem de usuários")
 public class ListUsersController {
 
