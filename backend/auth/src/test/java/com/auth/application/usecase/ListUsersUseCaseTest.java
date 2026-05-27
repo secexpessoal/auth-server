@@ -54,7 +54,7 @@ class ListUsersUseCaseTest {
         userData.setUserName("testuser");
         userData.setRegistration("12345");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
     }
 
     @Test

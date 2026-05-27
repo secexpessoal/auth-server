@@ -69,7 +69,7 @@ class LoginUseCaseTest {
         UserData userData = new UserData();
         userData.setUserName("testuser");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
 
         loginRequest = new AuthenticationRequestDto("test@example.com", "password", null);
     }

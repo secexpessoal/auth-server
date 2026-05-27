@@ -25,19 +25,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class DeactivateUserUseCaseTest {
+class UpdateUserStatusUseCaseTest {
 
     @Mock
     private UserAuthRepository userRepository;
 
     @InjectMocks
-    private DeactivateUserUseCase deactivateUserUseCase;
+    private UpdateUserStatusUseCase updateUserStatusUseCase;
 
     private UserAuth testUser;
     private UUID userId;
@@ -48,23 +47,38 @@ class DeactivateUserUseCaseTest {
         testUser = new UserAuth();
         testUser.setUserId(userId);
         testUser.setEmail("test@example.com");
-        testUser.setActive(true);
+        testUser.setActive(false);
         testUser.setRoles(Set.of(Role.USER));
 
         UserData userData = new UserData();
         userData.setUserName("testuser");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
+    }
+
+    @Test
+    @DisplayName("Deve ativar um usuário desativado com sucesso")
+    void deveAtivarUsuarioComSucesso() {
+        // Arrange
+        when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
+
+        // Act
+        updateUserStatusUseCase.execute(userId, true);
+
+        // Assert
+        assertTrue(testUser.getActive());
+        verify(userRepository).save(testUser);
     }
 
     @Test
     @DisplayName("Deve desativar um usuário ativo com sucesso")
     void deveDesativarUsuarioComSucesso() {
         // Arrange
+        testUser.setActive(true);
         when(userRepository.findById(userId)).thenReturn(Optional.of(testUser));
 
         // Act
-        deactivateUserUseCase.execute(userId);
+        updateUserStatusUseCase.execute(userId, false);
 
         // Assert
         assertFalse(testUser.getActive());
@@ -78,7 +92,7 @@ class DeactivateUserUseCaseTest {
         when(userRepository.findById(any())).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(NotFoundException.class, () -> deactivateUserUseCase.execute(userId));
+        assertThrows(NotFoundException.class, () -> updateUserStatusUseCase.execute(userId, true));
         verify(userRepository, never()).save(any());
     }
 }

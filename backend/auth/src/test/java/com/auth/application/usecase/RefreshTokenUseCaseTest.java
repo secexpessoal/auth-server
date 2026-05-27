@@ -56,7 +56,7 @@ class RefreshTokenUseCaseTest {
         UserData userData = new UserData();
         userData.setUserName("testuser");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
 
         oldToken = new RefreshToken();
         oldToken.setToken("old-refresh-token");

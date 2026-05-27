@@ -58,7 +58,7 @@ class UpdateUserRolesUseCaseTest {
         userData.setUserName("testuser");
         userData.setUpdatedAt(Instant.now());
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
     }
 
     @Test

@@ -46,7 +46,7 @@ class ValidationUseCaseTest {
         UserData userData = new UserData();
         userData.setUserName("testuser");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
     }
 
     @Test

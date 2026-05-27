@@ -34,24 +34,20 @@ public class PositionController {
 
     private final PositionService positionService;
 
-    @GetMapping("/event-types")
-    @Operation(summary = "Lista tipos de eventos de cargos", description = "Retorna todos os tipos de eventos de transição de cargos com labels e descrições.")
-    public ResponseEntity<List<EnumTypeResponseDto>> getPositionEventTypes() {
-        List<EnumTypeResponseDto> types = Arrays.stream(UserPositionEventType.values())
-                .map(type -> new EnumTypeResponseDto(
-                        type.name(),
-                        type.getLabel(),
-                        type.getDescription()
-                ))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(types);
-    }
-
     @PostMapping
     @Operation(summary = "Cria um novo cargo", description = "Adiciona um cargo ao catálogo.")
     public ResponseEntity<PositionResponseDto> create(@Valid @RequestBody PositionRequestDto request) {
         Position position = positionService.create(request.name());
         return ResponseEntity.ok(mapToResponse(position));
+    }
+
+    @GetMapping("/event-types")
+    @Operation(summary = "Lista tipos de eventos de cargos", description = "Retorna todos os tipos de eventos de transição de cargos com labels e descrições.")
+    public ResponseEntity<List<EnumTypeResponseDto>> getPositionEventTypes() {
+        List<EnumTypeResponseDto> types = Arrays.stream(UserPositionEventType.values())
+                .map(type -> new EnumTypeResponseDto(type.name(), type.getLabel(), type.getDescription()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(types);
     }
 
     @PatchMapping("/{id}")
@@ -64,17 +60,13 @@ public class PositionController {
     @GetMapping
     @Operation(summary = "Lista todos os cargos", description = "Retorna todos os cargos cadastrados.")
     public ResponseEntity<List<PositionResponseDto>> getAll() {
-        return ResponseEntity.ok(positionService.getAll().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(positionService.getAll().stream().map(this::mapToResponse).collect(Collectors.toList()));
     }
 
     @GetMapping("/active")
     @Operation(summary = "Lista cargos ativos", description = "Retorna apenas os cargos marcados como ativos.")
     public ResponseEntity<List<PositionResponseDto>> getActive() {
-        return ResponseEntity.ok(positionService.getAllActive().stream()
-                .map(this::mapToResponse)
-                .collect(Collectors.toList()));
+        return ResponseEntity.ok(positionService.getAllActive().stream().map(this::mapToResponse).collect(Collectors.toList()));
     }
 
     @PatchMapping("/{id}/toggle")

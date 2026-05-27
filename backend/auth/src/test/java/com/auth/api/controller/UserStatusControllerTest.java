@@ -7,15 +7,13 @@
  */
 package com.auth.api.controller;
 
-import com.auth.application.usecase.ActivateUserUseCase;
-import com.auth.application.usecase.DeactivateUserUseCase;
+import com.auth.application.usecase.UpdateUserStatusUseCase;
 import com.auth.application.usecase.UpdateUserProfileUseCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -26,7 +24,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,10 +38,7 @@ class UserStatusControllerTest {
     private WebApplicationContext context;
 
     @MockitoBean
-    private ActivateUserUseCase activateUserUseCase;
-
-    @MockitoBean
-    private DeactivateUserUseCase deactivateUserUseCase;
+    private UpdateUserStatusUseCase updateUserStatusUseCase;
 
     @MockitoBean
     private UpdateUserProfileUseCase updateUserProfileUseCase;
@@ -65,7 +59,7 @@ class UserStatusControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(activateUserUseCase).execute(id);
+        verify(updateUserStatusUseCase).execute(id, true);
     }
 
     @Test
@@ -79,6 +73,6 @@ class UserStatusControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
 
-        verify(deactivateUserUseCase).execute(id);
+        verify(updateUserStatusUseCase).execute(id, false);
     }
 }

@@ -14,24 +14,22 @@ import com.auth.infra.exception.custom.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
 import java.util.UUID;
 
 /**
- * Caso de Uso responsável por ativar um usuário.
+ * Caso de Uso responsável por atualizar o status (ativo/inativo) de um usuário.
  */
 @Service
 @RequiredArgsConstructor
-public class ActivateUserUseCase {
+public class UpdateUserStatusUseCase {
 
     private final UserAuthRepository userRepository;
 
-
-    public void execute(UUID userId) {
+    public void execute(UUID userId, boolean active) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado com o ID: " + userId));
 
-        user.setActive(true);
+        user.setActive(active);
         userRepository.save(user);
     }
 }

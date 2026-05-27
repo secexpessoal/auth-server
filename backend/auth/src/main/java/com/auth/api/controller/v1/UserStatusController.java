@@ -10,8 +10,7 @@ package com.auth.api.controller.v1;
 import com.auth.api.dto.auth.UpdateUserProfileRequestDto;
 import com.auth.api.dto.auth.UpdateUserRolesRequestDto;
 import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.application.usecase.ActivateUserUseCase;
-import com.auth.application.usecase.DeactivateUserUseCase;
+import com.auth.application.usecase.UpdateUserStatusUseCase;
 import com.auth.application.usecase.UpdateUserProfileUseCase;
 import com.auth.application.usecase.UpdateUserRolesUseCase;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,8 +31,7 @@ import java.util.UUID;
 @Tag(name = "Usuários V1", description = "Endpoints para gestão de status de contas de usuário")
 public class UserStatusController {
 
-    private final ActivateUserUseCase activateUserUseCase;
-    private final DeactivateUserUseCase deactivateUserUseCase;
+    private final UpdateUserStatusUseCase updateUserStatusUseCase;
     private final UpdateUserProfileUseCase updateUserProfileUseCase;
     private final UpdateUserRolesUseCase updateUserRolesUseCase;
 
@@ -41,7 +39,7 @@ public class UserStatusController {
     @PatchMapping("/deactivate")
     @Operation(summary = "Desativa um usuário", description = "Altera o status do usuário para inativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> deactivateUser(@RequestParam UUID id) {
-        deactivateUserUseCase.execute(id);
+        updateUserStatusUseCase.execute(id, false);
         return ResponseEntity.noContent().build();
     }
 
@@ -49,7 +47,7 @@ public class UserStatusController {
     @PatchMapping("/activate")
     @Operation(summary = "Ativa um usuário", description = "Altera o status do usuário para ativo. Requer cargo ADMIN e ID via parâmetro.")
     public ResponseEntity<@NonNull Void> activateUser(@RequestParam UUID id) {
-        activateUserUseCase.execute(id);
+        updateUserStatusUseCase.execute(id, true);
         return ResponseEntity.noContent().build();
     }
 

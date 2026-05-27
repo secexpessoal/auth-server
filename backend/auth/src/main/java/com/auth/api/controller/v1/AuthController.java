@@ -40,9 +40,10 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final LoginUseCase loginUseCase;
-    private final CookieService cookieService;
     private final ValidationUseCase validationUseCase;
     private final RefreshTokenUseCase refreshTokenUseCase;
+
+    private final CookieService cookieService;
     private final RefreshTokenService refreshTokenService;
 
     // NOTE: Rota publica

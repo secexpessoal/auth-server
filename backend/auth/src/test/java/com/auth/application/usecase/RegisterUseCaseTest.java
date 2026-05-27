@@ -53,7 +53,7 @@ class RegisterUseCaseTest {
         UserData userData = new UserData();
         userData.setUserName("newuser");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
 
         registerRequest = new RegisterRequestDto("newuser", "new@example.com", Role.USER);
     }

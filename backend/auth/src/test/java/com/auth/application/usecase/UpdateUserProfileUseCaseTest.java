@@ -62,7 +62,7 @@ class UpdateUserProfileUseCaseTest {
         userData.setUserName("olduser");
         userData.setRegistration("11111");
         userData.setUser(testUser);
-        testUser.setUserData(userData);
+        testUser.setUserProfile(userData);
     }
 
     @Test
@@ -84,7 +84,7 @@ class UpdateUserProfileUseCaseTest {
         assertEquals("newuser", response.profile().username());
         assertEquals("Developer", response.profile().position());
         assertEquals(WorkRegime.HYBRID, response.profile().workRegime());
-        verify(userDataRepository).save(testUser.getUserData());
+        verify(userDataRepository).save(testUser.getUserProfile());
         verify(userRepository).save(testUser);
     }
 
@@ -110,7 +110,7 @@ class UpdateUserProfileUseCaseTest {
         // Assert
         assertNull(response.profile().inPersonWorkPeriod().frequencyDurationDays());
         assertEquals(31, response.profile().inPersonWorkPeriod().frequencyWeekMask());
-        verify(userDataRepository).save(testUser.getUserData());
+        verify(userDataRepository).save(testUser.getUserProfile());
         verify(userRepository).save(testUser);
     }
 
@@ -118,7 +118,7 @@ class UpdateUserProfileUseCaseTest {
     @DisplayName("Deve limpar o cargo se o campo no request for null")
     void deveLimparCargoSeRequestNull() {
         // Arrange
-        testUser.getUserData().setPosition("Current Position");
+        testUser.assignPosition(UUID.randomUUID(), false, null);
         
         UpdateUserProfileRequestDto request = UpdateUserProfileRequestDto.builder()
                 .position(null)
