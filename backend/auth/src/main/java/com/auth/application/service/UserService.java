@@ -400,7 +400,6 @@ public class UserService {
             }
 
             userDataRepository.save(profileToSave);
-            userRepository.save(user);
 
         } catch (IllegalArgumentException | IllegalStateException exception) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());

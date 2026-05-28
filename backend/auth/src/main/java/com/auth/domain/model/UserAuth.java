@@ -73,8 +73,9 @@ public class UserAuth implements UserDetails {
     @NonNull
     @Override
     public String getUsername() {
-        if (this.userProfile != null && this.userProfile.getUserName() != null) {
-            return this.userProfile.getUserName();
+        UserData profile = getUserProfile();
+        if (profile != null && profile.getUserName() != null) {
+            return profile.getUserName();
         }
 
         return this.email != null
@@ -152,10 +153,11 @@ public class UserAuth implements UserDetails {
     }
 
     private UserData getProfileOrThrow() {
-        if (this.userProfile == null) {
+        UserData profile = getUserProfile();
+        if (profile == null) {
             throw new IllegalStateException("O usuário não possui um perfil (UserProfile) vinculado. Operação cancelada.");
         }
-        return this.userProfile;
+        return profile;
     }
     }
 

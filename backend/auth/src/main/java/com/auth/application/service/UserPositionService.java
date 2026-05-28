@@ -70,7 +70,6 @@ public class UserPositionService {
         user.assignPosition(newPosition.getId(), temporary, endDate);
         
         userDataRepository.save(userData);
-        userAuthRepository.save(user);
 
         recordTransition(userId, eventType, fromPositionId, fromPositionName, newPosition.getId(), newPosition.getName(), temporary, endDate, changedBy, reason);
     }

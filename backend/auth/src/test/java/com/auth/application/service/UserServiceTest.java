@@ -150,8 +150,6 @@ class UserServiceTest {
             refreshToken.setVersion(1);
             when(refreshTokenService.createRefreshToken(any(), any(), any(), any(), any())).thenReturn(refreshToken);
             
-            when(userMapper.toResponse(any())).thenReturn(UserResponseDtoV1.builder().email("test@example.com").build());
-
             AuthenticationResult result = userService.login(request, new AuthMetadata("Mozilla", "127.0.0.1", "origin", "referer"));
 
             assertNotNull(result);
@@ -263,7 +261,6 @@ class UserServiceTest {
 
             assertEquals("newname", testUser.getUserProfile().getUserName());
             verify(userDataRepository).save(any());
-            verify(userRepository).save(testUser);
         }
     }
 

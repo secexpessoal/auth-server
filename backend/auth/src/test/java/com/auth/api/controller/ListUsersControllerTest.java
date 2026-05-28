@@ -61,7 +61,7 @@ class ListUsersControllerTest {
 
         when(userService.listUsers(anyInt(), anyInt(), any(), any(), any(), any())).thenReturn(response);
 
-        mockMvc.perform(get("/v1/users")
+        mockMvc.perform(get("/v1/user")
                 .param("page", "0")
                 .param("limit", "10")
                 .contentType(MediaType.APPLICATION_JSON))
