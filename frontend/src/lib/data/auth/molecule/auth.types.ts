@@ -4,10 +4,17 @@ export type InPersonWorkPeriodDto = {
   frequencyDurationDays: number | null;
 };
 
+export type PositionResponseDto = {
+  id: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+};
+
 export type UserProfileResponseDto = {
   username: string;
   registration: string;
-  position: string;
+  position: PositionResponseDto | null;
   birthDate: string | null;
   workRegime: "HOME_WORK" | "OFFICE" | "HYBRID";
   livesElsewhere: boolean;
@@ -25,7 +32,7 @@ export type UserResponseDto = {
   email: string;
   active: boolean;
   roles: string[];
-  profile: UserProfileResponseDto;
+  profile: UserProfileResponseDto | null;
   audit: UserAuditResponseDto;
   tempPassword?: string;
 };
@@ -34,6 +41,7 @@ export type UserSessionResponseDto = {
   accessToken: string;
   tokenVersion: number;
   passwordResetRequired: boolean;
+  profileSetupRequired: boolean;
 };
 
 export type AuthenticationResponseDto = {

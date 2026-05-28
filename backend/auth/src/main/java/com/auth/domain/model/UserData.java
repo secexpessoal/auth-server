@@ -11,6 +11,7 @@ import com.auth.infra.security.service.UuidV7Service;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -46,8 +47,8 @@ public class UserData {
     @Field("registration")
     private String registration;
 
-    @Field("position")
-    private String position;
+    @Field("current_position")
+    private UserPositionAssignment currentPosition;
 
     @Field("birth_date")
     private Instant birthDate;
@@ -80,5 +81,94 @@ public class UserData {
 
     public void touch() {
         this.updatedAt = Instant.now();
+    }
+
+    /**
+     * Atualiza os dados básicos do perfil.
+     */
+    public void updateBasicInfo(String name, String registration, Instant birthDate, WorkRegime regime, Boolean livesElsewhere) {
+        this.userName = name;
+        this.registration = registration;
+        this.birthDate = birthDate;
+        this.workRegime = regime;
+        this.livesElsewhere = livesElsewhere;
+    }
+
+    /**
+     * Atualiza as regras de trabalho presencial.
+     */
+    public void updateInPersonWorkPeriod(Integer cycleWeeks, Integer weekMask, Integer durationDays) {
+        Integer duration = calculateDuration(weekMask, durationDays);
+
+        this.frequencyCycleWeeks = cycleWeeks != null
+                ? cycleWeeks
+                : 1;
+        this.frequencyWeekMask = duration != null
+                ? 0
+                : (weekMask != null
+                        ? weekMask
+                        : 0);
+        this.frequencyDurationDays = duration;
+    }
+
+    private Integer calculateDuration(Integer mask, Integer requestedDuration) {
+        if (mask != null && mask > 0 && requestedDuration != null) {
+            return null;
+        }
+
+        if (requestedDuration != null && requestedDuration > 365) {
+            throw new IllegalArgumentException("A duração consecutiva não pode ultrapassar 365 dias");
+        }
+
+        return requestedDuration;
+    }
+
+    /**
+     * Atribui um novo cargo ao usuário.
+     */
+    public void assignPosition(UUID positionId, boolean temporary, Instant endDate) {
+        UUID previousId = null;
+        if (temporary && this.currentPosition != null) {
+            previousId = this.currentPosition.getPositionId();
+        }
+
+        this.currentPosition = UserPositionAssignment.builder()
+                .positionId(positionId)
+                .temporary(temporary)
+                .startDate(Instant.now())
+                .endDate(endDate)
+                .previousPositionId(previousId != null
+                        ? previousId
+                        : (this.currentPosition != null
+                                ? this.currentPosition.getPreviousPositionId()
+                                : null))
+                .build();
+        this.touch();
+    }
+
+    /**
+     * Classe interna para representar a atribuição de cargo atual do usuário.
+     * Define a estrutura embarcada (embedded) no MongoDB.
+     */
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class UserPositionAssignment {
+
+        @Field("position_id")
+        private UUID positionId;
+
+        @Field("is_temporary")
+        private boolean temporary;
+
+        @Field("start_date")
+        private Instant startDate;
+
+        @Field("end_date")
+        private Instant endDate;
+
+        @Field("previous_position_id")
+        private UUID previousPositionId;
     }
 }

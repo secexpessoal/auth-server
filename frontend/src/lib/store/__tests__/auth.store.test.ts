@@ -16,7 +16,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário ADMIN corretamente", () => {
     useAuthStore.getState().setAuth(
-      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false, profileSetupRequired: false },
       {
         id: "dummy-id-admin",
         email: "admin@ok.com",
@@ -25,7 +25,12 @@ describe("Auth Store (Zustand)", () => {
         profile: {
           username: "admin_user",
           registration: "123456",
-          position: "Admin",
+          position: {
+            id: "pos-admin",
+            name: "Admin",
+            active: true,
+            createdAt: new Date().toISOString(),
+          },
           birthDate: null,
           workRegime: "HYBRID",
           livesElsewhere: false,
@@ -47,7 +52,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve reconhecer usuário comum corretamente rejeitando admin", () => {
     useAuthStore.getState().setAuth(
-      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false, profileSetupRequired: false },
       {
         id: "dummy-id-user",
         email: "user@ok.com",
@@ -56,7 +61,12 @@ describe("Auth Store (Zustand)", () => {
         profile: {
           username: "common_user",
           registration: "654321",
-          position: "User",
+          position: {
+            id: "pos-user",
+            name: "User",
+            active: true,
+            createdAt: new Date().toISOString(),
+          },
           birthDate: null,
           workRegime: "HYBRID",
           livesElsewhere: false,
@@ -77,7 +87,7 @@ describe("Auth Store (Zustand)", () => {
 
   it("Deve limpar os dados ao executar clearAuth", () => {
     useAuthStore.getState().setAuth(
-      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false },
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false, profileSetupRequired: false },
       {
         id: "dummy-id",
         email: "admin@ok.com",
@@ -86,7 +96,12 @@ describe("Auth Store (Zustand)", () => {
         profile: {
           username: "admin_user",
           registration: "123456",
-          position: "Admin",
+          position: {
+            id: "pos-admin",
+            name: "Admin",
+            active: true,
+            createdAt: new Date().toISOString(),
+          },
           birthDate: null,
           workRegime: "HYBRID",
           livesElsewhere: false,

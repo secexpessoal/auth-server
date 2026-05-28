@@ -7,7 +7,7 @@
  */
 package com.auth.infra.config;
 
-import com.auth.api.dto.auth.RegisterRequestDto;
+import com.auth.api.v1.dto.auth.RegisterRequestDto;
 import com.auth.application.service.UserService;
 import com.auth.domain.model.Role;
 import com.auth.domain.repository.UserAuthRepository;

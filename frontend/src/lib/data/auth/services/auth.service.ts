@@ -3,7 +3,7 @@ import type { AuthenticationRequestDto, AuthenticationResponseDto, UserResponseD
 import { useAuthStore } from "@lib/store/auth.store";
 
 export async function loginAttempt(payload: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
-  const { data } = await axiosClient.post<AuthenticationResponseDto>("/v1/user/login", payload);
+  const { data } = await axiosClient.post<AuthenticationResponseDto>("/v2/user/login", payload);
   // NOTE: Não atualizamos o Store aqui para evitar que o Router tente renderizar o Dashboard 
   // antes do redirecionamento de volta para o Siaap acontecer.
   // useAuthStore.getState().setAuth(data.session, data.user); 
@@ -34,6 +34,6 @@ export async function resetPasswordAttempt(email: string): Promise<void> {
 }
 
 export async function getProfile(): Promise<UserResponseDto> {
-  const { data } = await axiosClient.get<UserResponseDto>("/v1/user/profile");
+  const { data } = await axiosClient.get<UserResponseDto>("/v2/user/profile");
   return data;
 }

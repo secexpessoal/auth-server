@@ -11,6 +11,10 @@ import com.auth.infra.exception.ErrorCode;
 import com.auth.infra.exception.base.AppException;
 
 public class BadRequestException extends AppException {
+    public BadRequestException(String message) {
+        super(ErrorCode.BAD_REQUEST, message);
+    }
+
     public BadRequestException(ErrorCode errorCode, String message) {
         super(errorCode, message);
     }

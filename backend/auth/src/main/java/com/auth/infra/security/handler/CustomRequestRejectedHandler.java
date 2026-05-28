@@ -40,7 +40,7 @@ public class CustomRequestRejectedHandler implements RequestRejectedHandler {
         // NOTE: Loga de forma limpa, sem expor o stack trace para o stdout/file e evitar overhead e lentidão por spam
         log.warn("Rejected malformed request - IP: {} - URI: {}", ip, uri != null ? uri : "Unknown path");
 
-        boolean isApiRoute = uri != null && uri.startsWith("/v1/");
+        boolean isApiRoute = uri != null && uri.matches("/v\\d+/.*");
 
         if (!isApiRoute) {
             response.sendRedirect("/?error_code=400");

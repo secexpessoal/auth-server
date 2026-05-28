@@ -104,6 +104,30 @@ public class CookieService {
                 .build();
     }
 
+    public java.util.List<ResponseCookie> buildAuthCookies(String refreshToken, String accessToken, String redirectUri) {
+        java.util.List<ResponseCookie> cookies = new java.util.ArrayList<>();
+        
+        cookies.add(buildRefreshTokenCookie(refreshToken));
+        cookies.add(buildAccessTokenCookie(accessToken));
+
+        if (redirectUri != null && !redirectUri.isBlank()) {
+            cookies.add(buildSsoRedirectCookie(redirectUri));
+        }
+
+        return cookies;
+    }
+
+    public java.util.List<ResponseCookie> buildAuthCookies(String refreshToken, String accessToken) {
+        return buildAuthCookies(refreshToken, accessToken, null);
+    }
+
+    public java.util.List<ResponseCookie> buildLogoutCookies() {
+        return java.util.List.of(
+                buildRefreshTokenLogoutCookie(),
+                buildAccessTokenLogoutCookie()
+        );
+    }
+
     private void applyDomain(ResponseCookie.ResponseCookieBuilder builder) {
         Optional.ofNullable(baseDomain)
                 .filter(domain -> !domain.isBlank())

@@ -68,7 +68,7 @@ export function ResetPasswordPage() {
               <h1 className="text-3xl font-black text-foreground tracking-tight mb-3">Nova Credencial</h1>
 
               <p className="text-muted-foreground font-medium">
-                Olá, <span className="font-bold text-foreground">{user?.profile.username}</span>.
+                Olá, <span className="font-bold text-foreground">{user?.profile?.username || "Colaborador"}</span>.
                 <br />
                 Por segurança, defina sua nova senha corporativa.
               </p>

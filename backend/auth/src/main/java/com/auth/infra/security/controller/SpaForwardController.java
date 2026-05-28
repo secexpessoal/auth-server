@@ -7,8 +7,10 @@
  */
 package com.auth.infra.security.controller;
 
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * Fallback Controller para rotas da SPA.
@@ -18,8 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 public class SpaForwardController {
 
-    @RequestMapping(value = "/{path:[^\\.]*}")
-    public String forward() {
+    @GetMapping(value = "/{path:[^\\.]*}")
+    public Object forward() {
+        // Verifica se o index.html existe para evitar Erro 500 (FileNotFoundException)
+        if (!new ClassPathResource("static/index.html").exists()) {
+            return ResponseEntity.status(503).body("Sistema em manutenção ou recursos estáticos ausentes. Por favor, tente mais tarde.");
+        }
         return "forward:/index.html";
     }
 }

@@ -61,12 +61,12 @@ class RateLimitingFilterTest {
         request.setRemoteAddr("1.2.3.5");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        // Consumir o limite (capacidade é 100 no código original)
-        for (int i = 0; i < 100; i++) {
+        // Consumir o limite (capacidade é 300)
+        for (int i = 0; i < 300; i++) {
             rateLimitingFilter.doFilterInternal(request, new MockHttpServletResponse(), filterChain);
         }
 
-        // 101ª requisição deve ser bloqueada
+        // 301ª requisição deve ser bloqueada
         rateLimitingFilter.doFilterInternal(request, response, filterChain);
 
         assertEquals(429, response.getStatus());

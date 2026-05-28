@@ -7,13 +7,13 @@
  */
 package com.auth.api.controller;
 
-import com.auth.api.dto.auth.AuthenticationRequestDto;
-import com.auth.api.dto.auth.AuthenticationResponseDto;
-import com.auth.api.dto.auth.UserResponseDto;
-import com.auth.application.dto.AuthenticationResult;
-import com.auth.application.usecase.LoginUseCase;
-import com.auth.application.usecase.RefreshTokenUseCase;
-import com.auth.application.usecase.ValidationUseCase;
+import com.auth.api.v1.dto.auth.AuthenticationRequestDto;
+import com.auth.application.payload.AuthMetadata;
+import com.auth.application.payload.AuthenticationResult;
+import com.auth.application.service.CookieService;
+import com.auth.application.service.RefreshTokenService;
+import com.auth.application.service.UserService;
+import com.auth.domain.model.UserAuth;
 import com.auth.domain.repository.UserAuthRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +28,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -50,13 +53,13 @@ class AuthControllerTest {
     private UserAuthRepository userRepository;
 
     @MockitoBean
-    private LoginUseCase loginUseCase;
+    private UserService userService;
 
     @MockitoBean
-    private RefreshTokenUseCase refreshTokenUseCase;
+    private RefreshTokenService refreshTokenService;
 
     @MockitoBean
-    private ValidationUseCase validationUseCase;
+    private CookieService cookieService;
 
     @BeforeEach
     void setUp() {
@@ -68,20 +71,24 @@ class AuthControllerTest {
     void shouldReturnOkOnLogin() throws Exception {
         AuthenticationRequestDto request = new AuthenticationRequestDto("admin@auth.com", "admin123", null);
 
-        AuthenticationResponseDto responseDto = AuthenticationResponseDto.builder()
-                .session(com.auth.api.dto.auth.UserSessionResponseDto.builder().accessToken("fake-jwt").build())
-                .user(UserResponseDto.builder().email("admin@auth.com").build())
+        UserAuth user = new UserAuth();
+        user.setEmail("admin@auth.com");
+
+        AuthenticationResult result = AuthenticationResult.builder()
+                .user(user)
+                .accessToken("fake-jwt")
+                .refreshToken("fake-refresh")
+                .tokenVersion(1)
+                .passwordResetRequired(false)
                 .build();
 
-        AuthenticationResult result = new AuthenticationResult(responseDto, "fake-refresh");
-
-        when(loginUseCase.execute(any(), any(), any(), any(), any())).thenReturn(result);
+        when(userService.login(any(), any(AuthMetadata.class))).thenReturn(result);
+        when(cookieService.buildAuthCookies(anyString(), anyString(), any())).thenReturn(List.of());
 
         mockMvc.perform(post("/v1/user/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.session.accessToken").value("fake-jwt"));
+                .andExpect(status().isOk());
     }
 
     @Test

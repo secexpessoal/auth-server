@@ -1,6 +1,7 @@
-import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
-
-export type RegisterResponseDto = UserResponseDto;
+export type RegisterResponseDto = {
+  email: string;
+  tempPassword: string;
+};
 
 export type RegisterRequestDto = {
   email: string;

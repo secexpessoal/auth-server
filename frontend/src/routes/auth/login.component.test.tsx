@@ -35,7 +35,7 @@ describe("LoginPage", () => {
 
   it("renders login form elements", () => {
     render(<LoginPage />);
-    expect(screen.getByText(/auth server/i)).toBeInTheDocument();
+    expect(screen.getByText(/login/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/colaborador@empresa.com/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /acessar painel/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /recuperar credenciais\?/i })).toBeInTheDocument();

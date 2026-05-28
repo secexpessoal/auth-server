@@ -9,6 +9,7 @@ type AuthState = {
   isAuthenticated: boolean;
   isAdmin: boolean;
   passwordResetRequired: boolean;
+  profileSetupRequired: boolean;
   isInitializing: boolean;
   setAuth: (session: UserSessionResponseDto, user: UserResponseDto) => void;
   clearAuth: () => void;
@@ -23,7 +24,7 @@ const proactiveRefresh = async () => {
       session: UserSessionResponseDto;
       user: UserResponseDto;
     }>(
-      "/v1/user/refresh",
+      "/v2/user/refresh",
       {},
       {
         withCredentials: true,
@@ -39,7 +40,7 @@ const proactiveRefresh = async () => {
 };
 
 const fetchProfile = async () => {
-  const response = await axios.get<UserResponseDto>("/v1/user/profile", {
+  const response = await axios.get<UserResponseDto>("/v2/user/profile", {
     withCredentials: true,
   });
   return response.data;
@@ -54,6 +55,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: false,
         isAdmin: false,
         passwordResetRequired: false,
+        profileSetupRequired: false,
         isInitializing: true,
 
         initializeAuth: async () => {
@@ -72,6 +74,8 @@ export const useAuthStore = create<AuthState>()(
               isAuthenticated: true,
               isAdmin: user.roles.includes("ROLE_ADMIN"),
               isInitializing: false,
+              passwordResetRequired: false, // Perfil V2 não traz essa flag diretamente no objeto user, mas a sessão reconstruída assume false por padrão
+              profileSetupRequired: false,  // Idem
             });
           } catch (_error) {
             // Se falhou (401), tentamos o refresh silencioso
@@ -79,11 +83,14 @@ export const useAuthStore = create<AuthState>()(
               const refreshResponse = await axios.post<{
                 session: UserSessionResponseDto;
                 user: UserResponseDto;
-              }>("/v1/user/refresh", {}, { withCredentials: true });
+              }>("/v2/user/refresh", {}, { withCredentials: true });
               
               get().setAuth(refreshResponse.data.session, refreshResponse.data.user);
             } catch (_refreshError) {
-              console.warn("Sessão expirada ou inexistente");
+              // Somente logamos se não for 401 (que é o esperado para quem não está logado)
+              if (axios.isAxiosError(_refreshError) && _refreshError.response?.status !== 401) {
+                console.warn("Falha ao tentar renovar sessão:", _refreshError.message);
+              }
               get().clearAuth();
             } finally {
               set({ isInitializing: false });
@@ -97,6 +104,7 @@ export const useAuthStore = create<AuthState>()(
             user,
             isAuthenticated: true,
             passwordResetRequired: session.passwordResetRequired,
+            profileSetupRequired: session.profileSetupRequired,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
 
@@ -118,6 +126,7 @@ export const useAuthStore = create<AuthState>()(
             isAdmin: false,
             isAuthenticated: false,
             passwordResetRequired: false,
+            profileSetupRequired: false,
             isInitializing: false,
           });
         },

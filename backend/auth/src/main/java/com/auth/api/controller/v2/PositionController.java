@@ -1,0 +1,82 @@
+/*
+ * SPDX-License-Identifier: BSD-3-Clause
+ *
+ * Copyright (c) 2025 Vinícius Gabriel Pereira Leitão
+ * Licensed under the BSD 3-Clause License.
+ * See LICENSE file in the project root for full license information.
+ */
+package com.auth.api.controller.v2;
+
+import com.auth.api.v2.dto.auth.PositionRequestDto;
+import com.auth.api.v2.dto.auth.PositionResponseDto;
+import com.auth.api.v2.dto.auth.PositionUpdateDto;
+import com.auth.api.v2.dto.common.EnumTypeResponseDto;
+import com.auth.application.service.PositionService;
+import com.auth.domain.model.Position;
+import com.auth.domain.model.UserPositionEventType;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@RestController("positionControllerV2")
+@RequiredArgsConstructor
+@RequestMapping(value = "/positions", version = "2")
+@Tag(name = "Cargos V2", description = "Endpoints para gestão do catálogo de cargos")
+public class PositionController {
+
+    private final PositionService positionService;
+
+    @PostMapping
+    @Operation(summary = "Cria um novo cargo", description = "Adiciona um cargo ao catálogo.")
+    public ResponseEntity<PositionResponseDto> create(@Valid @RequestBody PositionRequestDto request) {
+        Position position = positionService.create(request.name());
+        return ResponseEntity.ok(mapToResponse(position));
+    }
+
+    @GetMapping("/event-types")
+    @Operation(summary = "Lista tipos de eventos de cargos", description = "Retorna todos os tipos de eventos de transição de cargos com labels e descrições.")
+    public ResponseEntity<List<EnumTypeResponseDto>> getPositionEventTypes() {
+        List<EnumTypeResponseDto> types = Arrays.stream(UserPositionEventType.values())
+                .map(type -> new EnumTypeResponseDto(type.name(), type.getLabel(), type.getDescription()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(types);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Atualiza um cargo", description = "Permite editar o nome ou status de atividade de um cargo.")
+    public ResponseEntity<PositionResponseDto> update(@PathVariable UUID id, @RequestBody PositionUpdateDto request) {
+        Position position = positionService.update(id, request);
+        return ResponseEntity.ok(mapToResponse(position));
+    }
+
+    @GetMapping
+    @Operation(summary = "Lista todos os cargos", description = "Retorna todos os cargos cadastrados.")
+    public ResponseEntity<List<PositionResponseDto>> getAll() {
+        return ResponseEntity.ok(positionService.getAll().stream().map(this::mapToResponse).collect(Collectors.toList()));
+    }
+
+    @GetMapping("/active")
+    @Operation(summary = "Lista cargos ativos", description = "Retorna apenas os cargos marcados como ativos.")
+    public ResponseEntity<List<PositionResponseDto>> getActive() {
+        return ResponseEntity.ok(positionService.getAllActive().stream().map(this::mapToResponse).collect(Collectors.toList()));
+    }
+
+    @PatchMapping("/{id}/toggle")
+    @Operation(summary = "Ativa/Desativa um cargo", description = "Inverte o status de atividade de um cargo no catálogo.")
+    public ResponseEntity<PositionResponseDto> toggle(@PathVariable UUID id) {
+        Position position = positionService.toggleStatus(id);
+        return ResponseEntity.ok(mapToResponse(position));
+    }
+
+    private PositionResponseDto mapToResponse(Position position) {
+        return new PositionResponseDto(position.getId(), position.getName(), position.isActive(), position.getCreatedAt());
+    }
+}

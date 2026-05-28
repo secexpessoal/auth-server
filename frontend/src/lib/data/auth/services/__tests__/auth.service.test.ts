@@ -48,7 +48,7 @@ describe("auth.service", () => {
 
     const result = await loginAttempt({ email: "test@test.com", password: "password" });
 
-    expect(axiosClient.post).toHaveBeenCalledWith("/v1/user/login", {
+    expect(axiosClient.post).toHaveBeenCalledWith("/v2/user/login", {
       email: "test@test.com",
       password: "password",
     });
