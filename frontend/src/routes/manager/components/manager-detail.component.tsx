@@ -358,8 +358,9 @@ export function ManagerDetailsModal({
                                   <FormControl>
                                     <Input
                                       {...field}
+                                      disabled
                                       value={field.value || ""}
-                                      className="bg-black/5 dark:bg-white/5 border-white/10"
+                                      className="bg-black/5 dark:bg-white/5 border-white/10 disabled:cursor-not-allowed "
                                       placeholder="Ex: Desenvolvedor Senior"
                                     />
                                   </FormControl>

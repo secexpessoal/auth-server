@@ -69,7 +69,13 @@ public class UserPositionService {
 
         user.assignPosition(newPosition.getId(), temporary, endDate);
         
-        userDataRepository.save(userData);
+        // Garante que estamos salvando o objeto real e não um proxy inconsistente
+        UserData profileToSave = user.getUserProfile();
+        if (profileToSave == null) {
+            throw new IllegalStateException("Falha crítica: O perfil do usuário não pôde ser recuperado para salvamento.");
+        }
+        
+        userDataRepository.save(profileToSave);
 
         recordTransition(userId, eventType, fromPositionId, fromPositionName, newPosition.getId(), newPosition.getName(), temporary, endDate, changedBy, reason);
     }
