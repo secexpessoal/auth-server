@@ -10,12 +10,13 @@ import { queryClient } from "@lib/infra/query/query.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Separator } from "@lib/components/sh-separator/separator.component";
 import { Check, Copy, KeyRound, RefreshCw, Search, ShieldAlert, UserCheck, UserX, Mail, Send } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { cn } from "@lib/utils/cn/cn.util";
 import toast from "react-hot-toast";
 import type { UserResponseDto } from "@lib/data/auth/molecule/auth.types";
 import { resetPasswordAttempt as userResetPasswordAttempt } from "@lib/data/auth/services/auth.service";
 import { type UpdateUserProfileRequestDto } from "@lib/data/manager/molecule/user.schema";
+import { getGlobalPositionHistory } from "@lib/data/manager/services/user-position.service";
 import {
   activateUserAttempt,
   deactivateUserAttempt,
@@ -47,6 +48,33 @@ export function ManagerTableComponent() {
     queryFn: () => getUsersList(page, 50, debouncedSearchTerm, debouncedSearchTerm, debouncedSearchTerm),
     placeholderData: (previousData) => previousData,
   });
+
+  const { data: globalPositionHistory } = useQuery({
+    queryKey: ["global-position-history"],
+    queryFn: getGlobalPositionHistory,
+  });
+
+  const activeTemporaryPositions = useMemo(() => {
+    const latestByUser = new Map<string, NonNullable<typeof globalPositionHistory>[number]>();
+    const now = Date.now();
+
+    for (const entry of globalPositionHistory || []) {
+      const current = latestByUser.get(entry.userId);
+      if (!current || new Date(entry.occurredAt).getTime() > new Date(current.occurredAt).getTime()) {
+        latestByUser.set(entry.userId, entry);
+      }
+    }
+
+    const active = new Map<string, NonNullable<typeof globalPositionHistory>[number]>();
+    latestByUser.forEach((entry) => {
+      const endDate = entry.plannedEndDate ? new Date(entry.plannedEndDate).getTime() : null;
+      if (entry.eventType === "TEMPORARY_START" && (!endDate || endDate >= now)) {
+        active.set(entry.userId, entry);
+      }
+    });
+
+    return active;
+  }, [globalPositionHistory]);
 
   const resetMutation = useMutation({
     mutationFn: (email: string) => resetPasswordAttempt(email),
@@ -144,6 +172,28 @@ export function ManagerTableComponent() {
 
   const users = paginatedUsers?.data || [];
   const pagination = paginatedUsers?.meta.pagination;
+  const renderPositionCell = (user: UserResponseDto) => {
+    const temporaryPosition = activeTemporaryPositions.get(user.id);
+
+    if (temporaryPosition) {
+      return (
+        <div className="flex max-w-45 flex-col gap-1">
+          <span className="truncate rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 text-sm font-black text-amber-600 dark:text-amber-400">
+            {temporaryPosition.toPositionName}
+          </span>
+          <span className="text-[9px] font-black uppercase tracking-widest text-amber-600/80 dark:text-amber-400/80">
+            Temporário
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <span className="text-muted-foreground text-sm font-bold truncate block max-w-[150px]">
+        {user.profile?.position?.name || "—"}
+      </span>
+    );
+  };
 
   return (
     <div>
@@ -239,9 +289,7 @@ export function ManagerTableComponent() {
                 </TableCell>
 
                 <TableCell>
-                  <span className="text-muted-foreground text-sm font-bold truncate block max-w-[150px]">
-                    {user.profile?.position?.name || "—"}
-                  </span>
+                  {renderPositionCell(user)}
                 </TableCell>
 
                 <TableCell className="text-right pr-6">

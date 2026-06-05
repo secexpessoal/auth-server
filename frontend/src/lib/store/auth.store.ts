@@ -12,11 +12,24 @@ type AuthState = {
   profileSetupRequired: boolean;
   isInitializing: boolean;
   setAuth: (session: UserSessionResponseDto, user: UserResponseDto) => void;
+  completePasswordReset: () => void;
+  completeProfileSetup: (user: UserResponseDto) => void;
   clearAuth: () => void;
   initializeAuth: () => Promise<void>;
 };
 
 let refreshInterval: number | undefined;
+
+const isProfileSetupMissing = (user: UserResponseDto | null) => {
+  const profile = user?.profile;
+
+  return (
+    !profile ||
+    !profile.username?.trim() ||
+    !profile.registration?.trim() ||
+    !profile.position
+  );
+};
 
 const proactiveRefresh = async () => {
   try {
@@ -75,7 +88,7 @@ export const useAuthStore = create<AuthState>()(
               isAdmin: user.roles.includes("ROLE_ADMIN"),
               isInitializing: false,
               passwordResetRequired: false, // Perfil V2 não traz essa flag diretamente no objeto user, mas a sessão reconstruída assume false por padrão
-              profileSetupRequired: false,  // Idem
+              profileSetupRequired: isProfileSetupMissing(user),
             });
           } catch (_error) {
             // Se falhou (401), tentamos o refresh silencioso
@@ -113,6 +126,18 @@ export const useAuthStore = create<AuthState>()(
           }
 
           refreshInterval = window.setInterval(proactiveRefresh, 9 * 60 * 1000);
+        },
+
+        completePasswordReset: () => {
+          set({ passwordResetRequired: false });
+        },
+
+        completeProfileSetup: (user) => {
+          set({
+            user,
+            profileSetupRequired: false,
+            isAdmin: user.roles.includes("ROLE_ADMIN"),
+          });
         },
 
         clearAuth: () => {

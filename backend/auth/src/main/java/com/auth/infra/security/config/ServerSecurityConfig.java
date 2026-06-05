@@ -79,6 +79,7 @@ public class ServerSecurityConfig {
                             .requestMatchers(HttpMethod.PATCH, "/v*/user/*/roles").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v*/user/register/**", "/v1/password/admin-reset").hasRole(Role.ADMIN.name())
                             .requestMatchers(HttpMethod.PATCH, "/v*/user/activate", "/v*/user/deactivate").hasRole(Role.ADMIN.name())
+                            .requestMatchers(HttpMethod.GET, "/v*/positions/active").authenticated()
                             .requestMatchers("/v*/positions/**", "/v*/user/positions/**").hasRole(Role.ADMIN.name())
                             .requestMatchers("/v1/password/change", "/v*/user/profile/**", "/v1/password/first-change").authenticated()
 

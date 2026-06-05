@@ -46,7 +46,12 @@ const mockUsers = {
       profile: {
         username: "User 1",
         registration: "REG123",
-        position: "Dev",
+        position: {
+          id: "position-1",
+          name: "Dev",
+          active: true,
+          createdAt: new Date().toISOString(),
+        },
         birthDate: null,
         workRegime: "HYBRID",
         livesElsewhere: false,
@@ -72,12 +77,24 @@ const mockUsers = {
 };
 
 describe("ManagerTableComponent", () => {
+  let mockGlobalPositionHistory: unknown[] = [];
+
   beforeEach(() => {
     vi.clearAllMocks();
+    mockGlobalPositionHistory = [];
     (useQuery as Mock).mockImplementation(({ queryKey }) => {
       if (queryKey[0] === "users") {
         return {
           data: mockUsers,
+          isLoading: false,
+          isRefetching: false,
+          error: null,
+          refetch: vi.fn(),
+        };
+      }
+      if (queryKey[0] === "global-position-history") {
+        return {
+          data: mockGlobalPositionHistory,
           isLoading: false,
           isRefetching: false,
           error: null,
@@ -102,6 +119,31 @@ describe("ManagerTableComponent", () => {
     render(<ManagerTableComponent />);
     expect(screen.getByText("User 1")).toBeInTheDocument();
     expect(screen.getByText("user1@test.com")).toBeInTheDocument();
+  });
+
+  it("shows the active temporary position in the dashboard table", () => {
+    mockGlobalPositionHistory = [
+      {
+        id: "history-1",
+        userId: "1",
+        eventType: "TEMPORARY_START",
+        fromPositionId: "position-1",
+        fromPositionName: "Dev",
+        toPositionId: "position-2",
+        toPositionName: "Tech Lead",
+        temporary: true,
+        plannedEndDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        occurredAt: new Date().toISOString(),
+        changedBy: "admin@test.com",
+        reason: null,
+      },
+    ];
+
+    render(<ManagerTableComponent />);
+
+    expect(screen.getByText("Tech Lead")).toBeInTheDocument();
+    expect(screen.getByText("Temporário")).toBeInTheDocument();
+    expect(screen.queryByText("Dev")).not.toBeInTheDocument();
   });
 
   it("offers quick actions directly in the table row", () => {
@@ -151,11 +193,9 @@ describe("ManagerTableComponent", () => {
     render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
-    await waitFor(() => {
-      const tab = screen.getByRole("tab", { name: /Regime & Localização/i });
-      fireEvent.mouseDown(tab);
-      fireEvent.click(tab);
-    });
+    const tab = await screen.findByRole("tab", { name: /Regime & Localização/i });
+    fireEvent.mouseDown(tab);
+    fireEvent.click(tab);
 
     await waitFor(
       () => {
@@ -170,12 +210,9 @@ describe("ManagerTableComponent", () => {
     render(<ManagerTableComponent />);
     fireEvent.click(screen.getByTitle("Ver Detalhes"));
 
-    await waitFor(() => {
-      const tab = screen.getByRole("tab", { name: /Regime & Localização/i });
-      // Try switching more aggressively if click is failing
-      fireEvent.mouseDown(tab);
-      fireEvent.click(tab);
-    });
+    const tab = await screen.findByRole("tab", { name: /Regime & Localização/i });
+    fireEvent.mouseDown(tab);
+    fireEvent.click(tab);
 
     await waitFor(
       () => {

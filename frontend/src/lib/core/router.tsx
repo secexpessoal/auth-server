@@ -3,10 +3,18 @@ import { AppErrorBoundary } from "./errors/error-boundary.component";
 import { useAuthStore } from "@lib/store/auth.store";
 import { LoginPage } from "@routes/auth/login.component";
 import { ResetPasswordPage } from "@routes/auth/reset-password.component";
+import { ProfileSetupPage } from "@routes/auth/profile-setup.component";
 import { ErrorPage } from "./errors/error.component";
 import { ManagerPage } from "@routes/manager/manager.component";
 import { PositionsPage } from "@routes/manager/positions.component";
 import toast from "react-hot-toast";
+
+const authFlowSearch = (search: Record<string, unknown>): { redirectUri?: string; fromPasswordReset?: boolean } => {
+  return {
+    redirectUri: typeof search.redirectUri === "string" ? search.redirectUri : undefined,
+    fromPasswordReset: search.fromPasswordReset === true || search.fromPasswordReset === "true" ? true : undefined,
+  };
+};
 
 export const rootRoute = createRootRoute({
   validateSearch: (search: Record<string, unknown>): { error_code?: number } => {
@@ -39,8 +47,23 @@ export const loginRoute = createRoute({
     };
   },
   beforeLoad: () => {
-    if (useAuthStore.getState().isAuthenticated) {
-      throw redirect({ to: "/" });
+    const { isAuthenticated, passwordResetRequired, profileSetupRequired, isAdmin, clearAuth } = useAuthStore.getState();
+
+    if (isAuthenticated) {
+      if (passwordResetRequired) {
+        throw redirect({ to: "/reset-password" });
+      }
+
+      if (profileSetupRequired) {
+        throw redirect({ to: "/profile-setup" });
+      }
+
+      if (!isAdmin) {
+        clearAuth();
+        return;
+      }
+
+      throw redirect({ to: "/dashboard" });
     }
   },
 });
@@ -49,24 +72,40 @@ export const protectedLayout = createRoute({
   id: "protected",
   getParentRoute: () => rootRoute,
   beforeLoad: ({ location }) => {
-    const { isAuthenticated, isAdmin, passwordResetRequired, clearAuth } = useAuthStore.getState();
+    const { isAuthenticated, isAdmin, passwordResetRequired, profileSetupRequired, clearAuth } = useAuthStore.getState();
 
     if (!isAuthenticated) {
       throw redirect({ to: "/login", search: { redirect: location.href } });
     }
 
-    // NOTE: Força o usuário a resetar a senha.
     const isResetPage = location.pathname === "/reset-password";
+    const isProfileSetupPage = location.pathname === "/profile-setup";
 
     if (passwordResetRequired && !isResetPage) {
       throw redirect({ to: "/reset-password" });
     }
 
-    if (!passwordResetRequired && isResetPage) {
-      throw redirect({ to: "/dashboard" });
+    if (passwordResetRequired) {
+      return;
     }
 
-    if (!isAdmin && !passwordResetRequired) {
+    if (!passwordResetRequired && isResetPage) {
+      throw redirect({ to: profileSetupRequired ? "/profile-setup" : isAdmin ? "/dashboard" : "/login" });
+    }
+
+    if (profileSetupRequired && !isProfileSetupPage) {
+      throw redirect({ to: "/profile-setup" });
+    }
+
+    if (profileSetupRequired) {
+      return;
+    }
+
+    if (!profileSetupRequired && isProfileSetupPage) {
+      throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
+    }
+
+    if (!isAdmin) {
       toast.error("Você não tem permissão para acessar este recurso.");
 
       clearAuth();
@@ -92,10 +131,18 @@ export const indexRoute = createRoute({
   path: "/",
   getParentRoute: () => rootRoute,
   beforeLoad: () => {
-    const { isAuthenticated, isAdmin } = useAuthStore.getState();
+    const { isAuthenticated, isAdmin, passwordResetRequired, profileSetupRequired } = useAuthStore.getState();
     
     if (!isAuthenticated) {
       throw redirect({ to: "/login" });
+    }
+
+    if (passwordResetRequired) {
+      throw redirect({ to: "/reset-password" });
+    }
+
+    if (profileSetupRequired) {
+      throw redirect({ to: "/profile-setup" });
     }
 
     throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
@@ -106,6 +153,14 @@ export const resetPasswordRoute = createRoute({
   path: "/reset-password",
   component: ResetPasswordPage,
   getParentRoute: () => protectedLayout,
+  validateSearch: authFlowSearch,
+});
+
+export const profileSetupRoute = createRoute({
+  path: "/profile-setup",
+  component: ProfileSetupPage,
+  getParentRoute: () => protectedLayout,
+  validateSearch: authFlowSearch,
 });
 
 export const positionsRoute = createRoute({
@@ -117,7 +172,7 @@ export const positionsRoute = createRoute({
 export const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
-  protectedLayout.addChildren([dashboardRoute, positionsRoute, resetPasswordRoute]),
+  protectedLayout.addChildren([dashboardRoute, positionsRoute, resetPasswordRoute, profileSetupRoute]),
 ]);
 
 export const router = createRouter({

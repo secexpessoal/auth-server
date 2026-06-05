@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Plus, Search, RefreshCw, Pencil, Power, Briefcase } from "lucide-react";
+import { ChevronLeft, Plus, Search, RefreshCw, Pencil, Power, Briefcase } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@lib/components/sh-button/button.component";
@@ -12,6 +12,7 @@ import { queryClient } from "@lib/infra/query/query.util";
 import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
 import { format } from "date-fns";
 import { cn } from "@lib/utils/cn/cn.util";
+import { Link } from "@tanstack/react-router";
 
 export function PositionsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,11 +25,16 @@ export function PositionsPage() {
     queryFn: getAllPositions,
   });
 
+  const invalidatePositionQueries = () => {
+    void queryClient.invalidateQueries({ queryKey: ["positions"] });
+    void queryClient.invalidateQueries({ queryKey: ["active-positions"] });
+  };
+
   const createMutation = useMutation({
     mutationFn: (name: string) => createPosition({ name }),
     onSuccess: () => {
       toast.success("Cargo criado com sucesso!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
       setIsModalOpen(false);
       setNewPositionName("");
     },
@@ -39,7 +45,7 @@ export function PositionsPage() {
     mutationFn: ({ id, name }: { id: string; name: string }) => updatePosition(id, { name }),
     onSuccess: () => {
       toast.success("Cargo atualizado com sucesso!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
       setIsModalOpen(false);
       setEditingPosition(null);
       setNewPositionName("");
@@ -51,7 +57,7 @@ export function PositionsPage() {
     mutationFn: (id: string) => togglePositionStatus(id),
     onSuccess: () => {
       toast.success("Status do cargo atualizado!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
     },
     onError: (error) => toast.error(getErrorMessage(error, "Erro ao alternar status do cargo")),
   });
@@ -75,15 +81,25 @@ export function PositionsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div>
-          <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Catálogo de Cargos</h1>
-          <p className="text-sm text-muted-foreground font-medium mt-1">Gerencie os cargos disponíveis para os colaboradores</p>
+      <header className="bg-card rounded-[2.5rem] shadow-neumorph p-6 sm:p-10 flex flex-col sm:flex-row sm:items-center justify-between gap-8 border border-white/20">
+        <div className="flex items-center gap-6">
+          <Link
+            to="/dashboard"
+            aria-label="Voltar"
+            className="size-12 shrink-0 bg-card shadow-neumorph-convex rounded-2xl border border-white/40 inline-flex items-center justify-center text-primary transition-none hover:text-primary focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <ChevronLeft className="size-6" strokeWidth={3} />
+          </Link>
+
+          <div>
+            <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Catálogo de Cargos</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">Gerencie os cargos disponíveis para os colaboradores</p>
+          </div>
         </div>
         <Button onClick={() => { setEditingPosition(null); setNewPositionName(""); setIsModalOpen(true); }} size="h12" className="font-black px-6 shadow-neumorph-convex">
           <Plus className="w-5 h-5 mr-2" /> Novo Cargo
         </Button>
-      </div>
+      </header>
 
       <div className="bg-card rounded-[2.5rem] shadow-neumorph-pressed p-1 border border-white/10">
         <div className="p-6 border-b border-white/10 flex items-center justify-between gap-6">

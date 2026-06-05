@@ -1,5 +1,6 @@
 import { axiosClient } from "@lib/infra/axios/axios.util";
 import type { AuthenticationRequestDto, AuthenticationResponseDto, UserResponseDto } from "@lib/data/auth/molecule/auth.types";
+import { changePasswordRequestSchema, type ChangePasswordRequestDto } from "@lib/data/auth/molecule/auth.schema";
 import { useAuthStore } from "@lib/store/auth.store";
 
 export async function loginAttempt(payload: AuthenticationRequestDto): Promise<AuthenticationResponseDto> {
@@ -22,11 +23,10 @@ export async function firstChangePasswordAttempt(password: string): Promise<void
   await axiosClient.post("/v1/password/first-change", {
     newPassword: password,
   });
-  useAuthStore.getState().clearAuth();
 }
 
-export async function changePasswordAttempt(payload: { oldPassword: string; newPassword: string }): Promise<void> {
-  await axiosClient.post("/v1/password/change", payload);
+export async function changePasswordAttempt(payload: ChangePasswordRequestDto): Promise<void> {
+  await axiosClient.post("/v1/password/change", changePasswordRequestSchema.parse(payload));
 }
 
 export async function resetPasswordAttempt(email: string): Promise<void> {
