@@ -1,6 +1,7 @@
 import { Button } from "@lib/components/sh-button/button.component";
 import { Calendar } from "@lib/components/sh-calendar/calendar.component";
 import { Checkbox } from "@lib/components/sh-checkbox/checkbox.component";
+import { DatePicker } from "@lib/components/sh-date-picker/date-picker.component";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@lib/components/sh-dialog/dialog.component";
 import { Input } from "@lib/components/sh-input/input.component";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
@@ -59,6 +60,8 @@ import { getActivePositions, createPosition, getPositionEventTypes } from "@lib/
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@lib/infra/query/query.util";
 import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+
+const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
 export function ManagerDetailsModal({
   open,
@@ -166,6 +169,9 @@ export function ManagerDetailsModal({
   const [newPositionId, setNewPositionId] = useState("");
   const [changeReason, setChangeReason] = useState("");
   const [eventType, setEventType] = useState("PROMOTION");
+  const [isTemporaryPosition, setIsTemporaryPosition] = useState(false);
+  const [temporaryStartDate, setTemporaryStartDate] = useState(getTodayDate());
+  const [temporaryEndDate, setTemporaryEndDate] = useState<string | null>(null);
   const [isCreatingNewPosition, setIsCreatingNewPosition] = useState(false);
   const [newPositionName, setNewPositionName] = useState("");
 
@@ -188,24 +194,39 @@ export function ManagerDetailsModal({
   });
 
   const changePositionMutation = useMutation({
-    mutationFn: () =>
-      changeUserPosition(user!.id, {
+    mutationFn: () => {
+      const reasonParts = [
+        isTemporaryPosition && temporaryStartDate && temporaryEndDate
+          ? `Período temporário: ${format(parseISO(temporaryStartDate), "dd/MM/yyyy")} até ${format(parseISO(temporaryEndDate), "dd/MM/yyyy")}`
+          : "",
+        changeReason.trim(),
+      ].filter(Boolean);
+
+      return changeUserPosition(user!.id, {
         positionId: newPositionId,
-        eventType,
-        isTemporary: false,
-        reason: changeReason,
-      }),
+        eventType: isTemporaryPosition ? "TEMPORARY_START" : eventType,
+        isTemporary: isTemporaryPosition,
+        endDate: isTemporaryPosition && temporaryEndDate ? new Date(`${temporaryEndDate}T23:59:59.999Z`).toISOString() : undefined,
+        reason: reasonParts.join(". "),
+      });
+    },
     onSuccess: () => {
       toast.success("Cargo alterado com sucesso!");
       void queryClient.invalidateQueries({ queryKey: ["user-position-history", user?.id] });
+      void queryClient.invalidateQueries({ queryKey: ["global-position-history"] });
       void queryClient.invalidateQueries({ queryKey: ["users"] });
       setNewPositionId("");
       setChangeReason("");
+      setIsTemporaryPosition(false);
+      setTemporaryStartDate(getTodayDate());
+      setTemporaryEndDate(null);
     },
     onError: (error) => toast.error(getErrorMessage(error, "Erro ao alterar cargo")),
   });
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
+  const transitionEventTypes = eventTypes?.filter((type) => type.value !== "TEMPORARY_START" && type.value !== "TEMPORARY_END") || [];
+  const isTemporaryPeriodInvalid = isTemporaryPosition && (!temporaryStartDate || !temporaryEndDate || temporaryEndDate < temporaryStartDate);
 
   if (!user) return null;
 
@@ -215,7 +236,8 @@ export function ManagerDetailsModal({
         className="w-full sm:max-w-400 h-[85vh] p-0 border-white/20 shadow-neumorph bg-card backdrop-blur-3xl overflow-hidden flex flex-col sm:flex-row rounded-[3rem]"
         showCloseButton
       >
-        <Tabs orientation="vertical" defaultValue="profile" className="flex flex-col md:flex-row h-full w-full items-stretch">
+        <TooltipProvider>
+          <Tabs orientation="vertical" defaultValue="profile" className="flex flex-col md:flex-row h-full w-full items-stretch">
           {/* LEFT SIDEBAR */}
           <div className="w-full md:w-[320px] bg-black/5 dark:bg-white/5 border-r border-white/10 px-6 py-10 flex flex-col shrink-0 relative overflow-hidden h-full">
             <div className="relative z-10 mb-12">
@@ -634,8 +656,7 @@ export function ManagerDetailsModal({
 
                 {/* --- CAREER SECTION --- */}
                 <TabsContent value="career" className="m-0 outline-none animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-10">
-                  <TooltipProvider>
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
                       {/* Alterar Cargo Form */}
                       <div className="lg:col-span-5 bg-white/5 border border-white/10 rounded-[2.5rem] p-8 shadow-neumorph-pressed flex flex-col gap-8 h-full">
                         <div className="flex items-center gap-4 border-b border-white/5 pb-6">
@@ -706,20 +727,74 @@ export function ManagerDetailsModal({
                               </Select>
                             )}
                           </div>
-                          <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
-                            <Select onValueChange={setEventType} value={eventType}>
-                              <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-card border-white/20">
-                                {eventTypes?.map((type) => (
-                                  <SelectItem key={type.value} value={type.value} className="font-bold">
-                                    {type.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                          <div className="space-y-4">
+                            <Field orientation="horizontal" className="p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-white/10">
+                              <FieldContent className="flex-row items-center gap-4">
+                                <Checkbox
+                                  id="temporaryPosition"
+                                  checked={isTemporaryPosition}
+                                  className="w-6 h-6 rounded-lg"
+                                  onCheckedChange={(checked) => {
+                                    const enabled = checked === true;
+                                    setIsTemporaryPosition(enabled);
+                                    if (!enabled) {
+                                      setTemporaryStartDate(getTodayDate());
+                                      setTemporaryEndDate(null);
+                                    }
+                                  }}
+                                />
+                                <label htmlFor="temporaryPosition" className="text-sm font-bold text-foreground cursor-pointer select-none">
+                                  Cargo temporário
+                                </label>
+                              </FieldContent>
+                            </Field>
+
+                            {isTemporaryPosition ? (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-5 shadow-neumorph">
+                                <div className="space-y-2">
+                                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Início</label>
+                                  <DatePicker
+                                    value={temporaryStartDate}
+                                    onChange={(date) => {
+                                      const nextDate = date || getTodayDate();
+                                      setTemporaryStartDate(nextDate);
+                                      if (temporaryEndDate && temporaryEndDate < nextDate) {
+                                        setTemporaryEndDate(null);
+                                      }
+                                    }}
+                                    min={getTodayDate()}
+                                    placeholder="Data de início"
+                                    className="bg-black/5 dark:bg-white/5 border-white/10"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Fim</label>
+                                  <DatePicker
+                                    value={temporaryEndDate}
+                                    onChange={setTemporaryEndDate}
+                                    min={temporaryStartDate}
+                                    placeholder="Data de fim"
+                                    className="bg-black/5 dark:bg-white/5 border-white/10"
+                                  />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="space-y-2">
+                                <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Tipo de Evento</label>
+                                <Select onValueChange={setEventType} value={eventType}>
+                                  <SelectTrigger className="w-full h-12 bg-black/5 dark:bg-white/5 border-white/10 font-bold">
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-card border-white/20">
+                                    {transitionEventTypes.map((type) => (
+                                      <SelectItem key={type.value} value={type.value} className="font-bold">
+                                        {type.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Motivo / Observação</label>
@@ -735,7 +810,7 @@ export function ManagerDetailsModal({
                         <Button
                           type="button"
                           onClick={() => changePositionMutation.mutate()}
-                          disabled={!newPositionId || changePositionMutation.isPending}
+                          disabled={!newPositionId || isTemporaryPeriodInvalid || changePositionMutation.isPending}
                           className="w-full h-12 font-black uppercase tracking-widest mt-auto"
                         >
                           {changePositionMutation.isPending ? <Spinner className="w-4 h-4 mr-2" /> : <Save className="w-4 h-4 mr-2" />}
@@ -838,7 +913,6 @@ export function ManagerDetailsModal({
                         </div>
                       </div>
                     </div>
-                  </TooltipProvider>
                 </TabsContent>
 
                 {/* --- GOVERNANCE SECTION --- */}
@@ -1025,7 +1099,8 @@ export function ManagerDetailsModal({
               </div>
             </form>
           </Form>
-        </Tabs>
+          </Tabs>
+        </TooltipProvider>
       </DialogContent>
     </Dialog>
   );
