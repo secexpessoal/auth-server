@@ -20,10 +20,15 @@ export const firstChangeSchema = z
 
 export type FirstChangeFormData = z.infer<typeof firstChangeSchema>;
 
-export const changePasswordSchema = z
-  .object({
-    oldPassword: z.string().min(1, "A senha atual é obrigatória"),
-    newPassword: z.string().min(6, "A nova senha deve ter pelo menos 6 caracteres"),
+export const changePasswordRequestSchema = z.object({
+  oldPassword: z.string().min(1, "A senha atual é obrigatória"),
+  newPassword: z.string().min(6, "A nova senha deve ter pelo menos 6 caracteres"),
+});
+
+export type ChangePasswordRequestDto = z.infer<typeof changePasswordRequestSchema>;
+
+export const changePasswordSchema = changePasswordRequestSchema
+  .extend({
     confirmPassword: z.string().min(6, "A confirmação deve ter pelo menos 6 caracteres"),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {

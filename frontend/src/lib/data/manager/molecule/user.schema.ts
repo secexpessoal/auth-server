@@ -105,3 +105,88 @@ export const updateUserProfileSchema = z
   });
 
 export type UpdateUserProfileRequestDto = z.infer<typeof updateUserProfileSchema>;
+
+export const completeUserProfileSchema = z
+  .object({
+    username: z
+      .string()
+      .trim()
+      .min(3, "O nome deve ter no mínimo 3 caracteres")
+      .max(100, "O nome deve ter no máximo 100 caracteres"),
+    registration: z
+      .string()
+      .trim()
+      .min(5, "A matrícula deve ter no mínimo 5 caracteres")
+      .max(6, "A matrícula deve ter no máximo 6 caracteres"),
+    position: z.string().trim().min(1, "Selecione um cargo"),
+    birthDate: z.string().nullable().optional(),
+    workRegime: z.enum(["HOME_WORK", "OFFICE", "HYBRID"], {
+      error: "Selecione um regime de trabalho",
+    }),
+    livesElsewhere: z.boolean(),
+    inPersonWorkPeriod: z
+      .object({
+        frequencyCycleWeeks: z.number().int().positive().max(52, "Máximo de 52 semanas").nullable().optional(),
+        frequencyWeekMask: z.number().int().min(0).max(127, "Máscara inválida").nullable().optional(),
+        frequencyDurationDays: z.number().int().min(0).max(365, "Máximo de 365 dias").nullable().optional(),
+      })
+      .nullable()
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.workRegime !== "HYBRID") return;
+
+    const period = data.inPersonWorkPeriod;
+
+    if (!period) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Configure as regras do modelo híbrido",
+        path: ["inPersonWorkPeriod"],
+      });
+      return;
+    }
+
+    if (period.frequencyCycleWeeks === null || period.frequencyCycleWeeks === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Informe o ciclo de semanas",
+        path: ["inPersonWorkPeriod", "frequencyCycleWeeks"],
+      });
+    }
+
+    const mask = period.frequencyWeekMask ?? 0;
+    const duration = period.frequencyDurationDays ?? 0;
+    const hasMask = mask > 0;
+    const hasDuration = duration > 0;
+
+    if (!hasMask && !hasDuration) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Selecione ao menos um dia da semana ou informe a duração em dias",
+        path: ["inPersonWorkPeriod", "frequencyWeekMask"],
+      });
+
+      ctx.addIssue({
+        code: "custom",
+        message: "Informe a duração ou selecione dias específicos",
+        path: ["inPersonWorkPeriod", "frequencyDurationDays"],
+      });
+    }
+
+    if (hasMask && hasDuration) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
+        path: ["inPersonWorkPeriod", "frequencyWeekMask"],
+      });
+
+      ctx.addIssue({
+        code: "custom",
+        message: "Escolha apenas dias específicos OU período consecutivo, não ambos",
+        path: ["inPersonWorkPeriod", "frequencyDurationDays"],
+      });
+    }
+  });
+
+export type CompleteUserProfileFormData = z.infer<typeof completeUserProfileSchema>;

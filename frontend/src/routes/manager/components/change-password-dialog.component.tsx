@@ -10,7 +10,7 @@ import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
-import { changePasswordSchema, type ChangePasswordFormData } from "@lib/data/auth/molecule/auth.schema";
+import { changePasswordSchema, type ChangePasswordFormData, type ChangePasswordRequestDto } from "@lib/data/auth/molecule/auth.schema";
 import { changePasswordAttempt } from "@lib/data/auth/services/auth.service";
 
 export function ChangePasswordDialog() {
@@ -40,7 +40,14 @@ export function ChangePasswordDialog() {
   };
 
   const mutation = useMutation({
-    mutationFn: (data: ChangePasswordFormData) => changePasswordAttempt({ oldPassword: data.oldPassword, newPassword: data.newPassword }),
+    mutationFn: (data: ChangePasswordFormData) => {
+      const payload: ChangePasswordRequestDto = {
+        oldPassword: data.oldPassword,
+        newPassword: data.newPassword,
+      };
+
+      return changePasswordAttempt(payload);
+    },
     onSuccess: () => {
       toast.success("Sua senha foi alterada com sucesso!");
       handleOpenChange(false);

@@ -8,7 +8,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { Navigate } from "@tanstack/react-router";
+import { Navigate, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import { firstChangeSchema, type FirstChangeFormData } from "@lib/data/auth/molecule/auth.schema";
@@ -16,14 +16,32 @@ import { firstChangePasswordAttempt } from "@lib/data/auth/services/auth.service
 import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.component";
 
 export function ResetPasswordPage() {
-  const { isAuthenticated, passwordResetRequired, user } = useAuthStore();
+  const navigate = useNavigate();
+  const { isAuthenticated, passwordResetRequired, profileSetupRequired, user, completePasswordReset, clearAuth } = useAuthStore();
+  const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const mutation = useMutation({
     mutationFn: (data: FirstChangeFormData) => firstChangePasswordAttempt(data.password),
     onSuccess: () => {
-      toast.success("Senha atualizada com sucesso! Por favor, faça login com sua nova senha.");
+      completePasswordReset();
+
+      if (profileSetupRequired) {
+        toast.success("Senha atualizada. Complete seu perfil para continuar.");
+        void navigate({
+          to: "/profile-setup",
+          search: {
+            ...(redirectUri ? { redirectUri } : {}),
+            fromPasswordReset: true,
+          },
+        });
+        return;
+      }
+
+      clearAuth();
+      toast.success("Senha atualizada com sucesso! Faça login com sua nova senha.");
+      void navigate({ to: "/login" });
     },
     onError: (error) => {
       toast.error(getErrorMessage(error, "Erro ao atualizar senha. Tente novamente."));
@@ -44,6 +62,7 @@ export function ResetPasswordPage() {
   };
 
   if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!passwordResetRequired && profileSetupRequired) return <Navigate to="/profile-setup" search={redirectUri ? { redirectUri } : undefined} />;
   if (!passwordResetRequired) return <Navigate to="/" />;
 
   return (
@@ -65,12 +84,20 @@ export function ResetPasswordPage() {
                 <KeyRound className="w-10 h-10 text-primary" />
               </div>
 
+              {profileSetupRequired && (
+                <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+                  Etapa 1 de 2
+                </div>
+              )}
+
               <h1 className="text-3xl font-black text-foreground tracking-tight mb-3">Nova Credencial</h1>
 
               <p className="text-muted-foreground font-medium">
                 Olá, <span className="font-bold text-foreground">{user?.profile?.username || "Colaborador"}</span>.
                 <br />
-                Por segurança, defina sua nova senha corporativa.
+                {profileSetupRequired
+                  ? "Por segurança, defina sua nova senha antes de completar seu perfil corporativo."
+                  : "Por segurança, defina sua nova senha corporativa."}
               </p>
             </div>
 
@@ -146,7 +173,11 @@ export function ResetPasswordPage() {
                     <ShieldCheck className="w-6 h-6 mr-3" />
                   )}
 
-                  {form.formState.isSubmitting || mutation.isPending ? "Processando..." : "Confirmar e Sair"}
+                  {form.formState.isSubmitting || mutation.isPending
+                    ? "Processando..."
+                    : profileSetupRequired
+                      ? "Confirmar e Continuar"
+                      : "Confirmar e Sair"}
                 </Button>
               </form>
             </Form>

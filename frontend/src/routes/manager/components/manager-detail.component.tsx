@@ -569,26 +569,30 @@ export function ManagerDetailsModal({
                                     <FieldContent>
                                       <div className="flex flex-wrap gap-2.5">
                                         {[
-                                          { label: "S", val: 1 },
-                                          { label: "T", val: 2 },
-                                          { label: "Q", val: 4 },
-                                          { label: "Q", val: 8 },
-                                          { label: "S", val: 16 },
-                                          { label: "S", val: 32 },
-                                          { label: "D", val: 64 },
+                                          { label: "S", name: "Segunda", val: 1 },
+                                          { label: "T", name: "Terça", val: 2 },
+                                          { label: "Q", name: "Quarta", val: 4 },
+                                          { label: "Q", name: "Quinta", val: 8 },
+                                          { label: "S", name: "Sexta", val: 16 },
+                                          { label: "S", name: "Sábado", val: 32 },
+                                          { label: "D", name: "Domingo", val: 64 },
                                         ].map((day, idx) => {
                                           const mask = field.value || 0;
                                           const isSelected = (mask & day.val) === day.val;
                                           return (
-                                            <Button
-                                              key={idx}
-                                              type="button"
-                                              variant={isSelected ? "default" : "outline"}
-                                              className="w-12 h-12 rounded-md font-black"
-                                              onClick={() => field.onChange(isSelected ? mask & ~day.val : mask | day.val)}
-                                            >
-                                              {day.label}
-                                            </Button>
+                                            <Tooltip key={idx}>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  type="button"
+                                                  variant={isSelected ? "default" : "outline"}
+                                                  className="w-12 h-12 rounded-md font-black"
+                                                  onClick={() => field.onChange(isSelected ? mask & ~day.val : mask | day.val)}
+                                                >
+                                                  {day.label}
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent sideOffset={6}>{day.name}</TooltipContent>
+                                            </Tooltip>
                                           );
                                         })}
                                       </div>

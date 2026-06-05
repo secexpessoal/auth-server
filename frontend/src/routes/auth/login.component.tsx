@@ -29,18 +29,33 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      if (data.session.passwordResetRequired) {
+      const targetRedirectUri = data.redirectUri || redirectUri;
+
+      if (data.session.passwordResetRequired || data.session.profileSetupRequired) {
         setAuth(data.session, data.user);
-        toast.error("Você deve alterar sua senha antes de continuar.", { icon: "🔑" });
-        void navigate({ to: "/reset-password" });
+
+        if (data.session.passwordResetRequired) {
+          toast.error("Você deve alterar sua senha antes de continuar.");
+          void navigate({
+            to: "/reset-password",
+            search: targetRedirectUri ? { redirectUri: targetRedirectUri } : {},
+          });
+          return;
+        }
+
+        toast.error("Complete seu perfil antes de continuar.");
+        void navigate({
+          to: "/profile-setup",
+          search: targetRedirectUri ? { redirectUri: targetRedirectUri } : {},
+        });
         return;
       }
 
-      if (data.redirectUri) {
+      if (targetRedirectUri) {
         setIsRedirecting(true);
         // NOTE: Usamos replace para não sujar o histórico e evitar que o usuário volte para o login logado.
         // Não chamamos setAuth para evitar que o TanStack Router tente processar rotas protegidas antes da saída.
-        window.location.replace(data.redirectUri);
+        window.location.replace(targetRedirectUri);
         return;
       }
 

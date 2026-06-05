@@ -25,11 +25,16 @@ export function PositionsPage() {
     queryFn: getAllPositions,
   });
 
+  const invalidatePositionQueries = () => {
+    void queryClient.invalidateQueries({ queryKey: ["positions"] });
+    void queryClient.invalidateQueries({ queryKey: ["active-positions"] });
+  };
+
   const createMutation = useMutation({
     mutationFn: (name: string) => createPosition({ name }),
     onSuccess: () => {
       toast.success("Cargo criado com sucesso!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
       setIsModalOpen(false);
       setNewPositionName("");
     },
@@ -40,7 +45,7 @@ export function PositionsPage() {
     mutationFn: ({ id, name }: { id: string; name: string }) => updatePosition(id, { name }),
     onSuccess: () => {
       toast.success("Cargo atualizado com sucesso!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
       setIsModalOpen(false);
       setEditingPosition(null);
       setNewPositionName("");
@@ -52,7 +57,7 @@ export function PositionsPage() {
     mutationFn: (id: string) => togglePositionStatus(id),
     onSuccess: () => {
       toast.success("Status do cargo atualizado!");
-      void queryClient.invalidateQueries({ queryKey: ["positions"] });
+      invalidatePositionQueries();
     },
     onError: (error) => toast.error(getErrorMessage(error, "Erro ao alternar status do cargo")),
   });
