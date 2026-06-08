@@ -23,7 +23,7 @@ import { changeUserPosition } from "@lib/data/manager/services/user-position.ser
 import { updateUserProfile } from "@lib/data/manager/services/user.service";
 import { queryClient } from "@lib/infra/query/query.util";
 import { useAuthStore } from "@lib/store/auth.store";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { cn } from "@lib/utils/cn/cn.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "@tanstack/react-router";
@@ -191,6 +191,18 @@ export function ProfileSetupPage() {
       void navigate({ to: "/login" });
     },
     onError: (error) => {
+      if (toastValidationFieldErrors(error, {
+        username: "Nome completo",
+        registration: "Matrícula",
+        position: "Cargo atual",
+        workRegime: "Regime de trabalho",
+        "inPersonWorkPeriod.frequencyCycleWeeks": "Ciclo de repetição",
+        "inPersonWorkPeriod.frequencyWeekMask": "Dias presenciais",
+        "inPersonWorkPeriod.frequencyDurationDays": "Dias consecutivos",
+      })) {
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Erro ao configurar perfil. Revise os dados e tente novamente."));
     },
   });

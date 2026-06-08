@@ -52,7 +52,7 @@ public class PositionController {
 
     @PatchMapping("/{id}")
     @Operation(summary = "Atualiza um cargo", description = "Permite editar o nome ou status de atividade de um cargo.")
-    public ResponseEntity<PositionResponseDto> update(@PathVariable UUID id, @RequestBody PositionUpdateDto request) {
+    public ResponseEntity<PositionResponseDto> update(@PathVariable UUID id, @Valid @RequestBody PositionUpdateDto request) {
         Position position = positionService.update(id, request);
         return ResponseEntity.ok(mapToResponse(position));
     }

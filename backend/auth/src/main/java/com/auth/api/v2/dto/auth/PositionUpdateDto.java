@@ -8,9 +8,10 @@
 package com.auth.api.v2.dto.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Optional;
+import jakarta.validation.constraints.NotBlank;
 
 public record PositionUpdateDto(
+        @NotBlank(message = "O nome do cargo é obrigatório")
         @JsonProperty("name")
         String name,
 

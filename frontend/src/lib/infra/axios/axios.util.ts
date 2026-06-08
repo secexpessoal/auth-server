@@ -2,7 +2,7 @@ import axios from "axios";
 import type { InternalAxiosRequestConfig, AxiosError } from "axios";
 import { useAuthStore } from "@lib/store/auth.store";
 import toast from "react-hot-toast";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import type { DataObjectError, UserResponseDto, UserSessionResponseDto } from "@lib/data/auth/molecule/auth.types";
 
 export const axiosClient = axios.create({
@@ -50,6 +50,33 @@ axiosClient.interceptors.response.use(
 
     if (status === 403 && data?.error === "passwordResetRequired") {
       return Promise.reject(error);
+    }
+
+    if (status === 400 || status === 422) {
+      if (
+        toastValidationFieldErrors(error, {
+          username: "Nome completo",
+          email: "E-mail",
+          password: "Senha",
+          oldPassword: "Senha atual",
+          newPassword: "Nova senha",
+          registration: "Matrícula",
+          position: "Cargo",
+          workRegime: "Regime de trabalho",
+          roles: "Permissões",
+          role: "Cargo",
+          name: "Nome do cargo",
+          positionId: "Cargo",
+          eventType: "Tipo de evento",
+          reason: "Motivo",
+          endDate: "Data final",
+          "inPersonWorkPeriod.frequencyCycleWeeks": "Ciclo de repetição",
+          "inPersonWorkPeriod.frequencyWeekMask": "Dias presenciais",
+          "inPersonWorkPeriod.frequencyDurationDays": "Dias consecutivos",
+        })
+      ) {
+        return Promise.reject(error);
+      }
     }
 
     if (status === 401) {

@@ -40,7 +40,7 @@ class UserStatusControllerTest {
     @MockitoBean
     private UserService userService;
 
-@BeforeEach
+    @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
@@ -93,6 +93,29 @@ class UserStatusControllerTest {
                         }
                         """))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").exists());
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Erro de validação nos campos informados"))
+                .andExpect(jsonPath("$.details.registration").value("A matrícula é obrigatória"))
+                .andExpect(jsonPath("$.details.position").value("O cargo é obrigatório"))
+                .andExpect(jsonPath("$.details.workRegime").value("O regime de trabalho é obrigatório"));
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao atualizar cargos com roles nulas")
+    @WithMockUser(roles = "ADMIN")
+    void deveRetornar400AoAtualizarRolesComNulo() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/v1/user/{id}/roles", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "roles": null
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
+                .andExpect(jsonPath("$.message").value("Erro de validação nos campos informados"))
+                .andExpect(jsonPath("$.details.roles").value("A lista de cargos é obrigatória"));
     }
 }

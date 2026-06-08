@@ -21,6 +21,7 @@ public record DataObjectError(
         String error,
         String code,
         String message,
+        Map<String, String> details,
         String path,
         String traceId
 ) {

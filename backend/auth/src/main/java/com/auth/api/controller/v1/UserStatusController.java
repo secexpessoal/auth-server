@@ -13,6 +13,7 @@ import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +63,7 @@ public class UserStatusController {
     @Operation(summary = "Atualiza os cargos do usuário", description = "Permite adicionar ou remover cargos do usuário. Requer cargo ADMIN.")
     public ResponseEntity<UserResponseDtoV1> updateRoles(
             @PathVariable UUID id,
-            @RequestBody UpdateUserRolesRequestDto request) {
+            @Valid @RequestBody UpdateUserRolesRequestDto request) {
         return ResponseEntity.ok(userService.updateRoles(id, request));
     }
 }

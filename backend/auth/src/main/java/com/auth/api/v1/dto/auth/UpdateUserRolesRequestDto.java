@@ -17,8 +17,8 @@ import java.util.Set;
 
 @Builder
 public record UpdateUserRolesRequestDto(
-        @NotNull
-        @NotEmpty
+        @NotNull(message = "A lista de cargos é obrigatória")
+        @NotEmpty(message = "Selecione ao menos um cargo")
         @JsonProperty("roles")
         Set<Role> roles
 ) {

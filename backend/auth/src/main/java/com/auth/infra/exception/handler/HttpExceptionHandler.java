@@ -35,8 +35,11 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.FileNotFoundException;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 
 import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
 
@@ -71,29 +74,29 @@ public class HttpExceptionHandler {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<@NonNull DataObjectError> handleValidationExceptions(MethodArgumentNotValidException exception) {
-        Map<String, String> errors = new HashMap<>();
-
-        exception.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
+        Map<String, String> errors = extractFieldErrors(exception);
 
         log.warn("Erro de validação em {} campos: {}", errors.size(), errors);
 
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String traceId = MDC.get(REQUEST_ID_KEY);
+        return buildValidationErrorResponse(errors);
+    }
 
-        DataObjectError error = DataObjectError.builder()
-                .timestamp(new Date())
-                .status(HttpStatus.BAD_REQUEST.value())
-                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .code("VALIDATION_ERROR")
-                .message("Erro de validação nos campos informados: " + errors.toString())
-                .path(request.getRequestURI())
-                .traceId(traceId)
-                .build();
-        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    /**
+     * Trata violações de validação em parâmetros de rota, query e headers.
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<@NonNull DataObjectError> handleConstraintViolationException(ConstraintViolationException exception) {
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        for (ConstraintViolation<?> violation : exception.getConstraintViolations()) {
+            String path = violation.getPropertyPath().toString();
+            String fieldName = path.contains(".") ? path.substring(path.lastIndexOf('.') + 1) : path;
+            errors.putIfAbsent(fieldName, violation.getMessage());
+        }
+
+        log.warn("Erro de validação em {} campos: {}", errors.size(), errors);
+
+        return buildValidationErrorResponse(errors);
     }
 
     /**
@@ -197,6 +200,18 @@ public class HttpExceptionHandler {
     }
 
     private ResponseEntity<@NonNull DataObjectError> buildErrorResponse(String message, HttpStatus status) {
+        return buildErrorResponse(message, status, null);
+    }
+
+    private ResponseEntity<@NonNull DataObjectError> buildValidationErrorResponse(Map<String, String> details) {
+        return buildErrorResponse("Erro de validação nos campos informados", HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", details);
+    }
+
+    private ResponseEntity<@NonNull DataObjectError> buildErrorResponse(String message, HttpStatus status, Map<String, String> details) {
+        return buildErrorResponse(message, status, status.name(), details);
+    }
+
+    private ResponseEntity<@NonNull DataObjectError> buildErrorResponse(String message, HttpStatus status, String code, Map<String, String> details) {
         HttpServletRequest request = null;
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
@@ -213,11 +228,34 @@ public class HttpExceptionHandler {
                 .timestamp(new Date())
                 .status(status.value())
                 .error(status.getReasonPhrase())
-                .code(status.name())
+                .code(code)
                 .message(message)
+                .details(details != null && !details.isEmpty() ? details : null)
                 .path(path)
                 .traceId(traceId)
                 .build();
         return new ResponseEntity<>(error, status);
+    }
+
+    private Map<String, String> extractFieldErrors(MethodArgumentNotValidException exception) {
+        Map<String, String> errors = new LinkedHashMap<>();
+
+        exception.getBindingResult().getFieldErrors().forEach((FieldError error) -> {
+            String fieldName = error.getField();
+            String errorMessage = error.getDefaultMessage();
+            if (fieldName != null && errorMessage != null) {
+                errors.putIfAbsent(fieldName, errorMessage);
+            }
+        });
+
+        exception.getBindingResult().getGlobalErrors().forEach((error) -> {
+            String objectName = error.getObjectName();
+            String errorMessage = error.getDefaultMessage();
+            if (objectName != null && errorMessage != null) {
+                errors.putIfAbsent(objectName, errorMessage);
+            }
+        });
+
+        return errors;
     }
 }
