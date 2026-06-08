@@ -262,6 +262,27 @@ class UserServiceTest {
             assertEquals("newname", testUser.getUserProfile().getUserName());
             verify(userDataRepository).save(any());
         }
+
+        @Test
+        @DisplayName("Deve criar perfil ao atualizar usuário sem UserProfile vinculado")
+        void shouldCreateProfileWhenMissingDuringUpdate() {
+            UUID id = testUser.getUserId();
+            testUser.setUserProfile(null);
+            UpdateUserProfileRequestDto request = UpdateUserProfileRequestDto.builder()
+                    .username("Sap")
+                    .registration("000000")
+                    .build();
+            when(userRepository.findById(id)).thenReturn(Optional.of(testUser));
+            when(userMapper.toResponse(any())).thenReturn(UserResponseDtoV1.builder().build());
+
+            userService.updateProfile(id, request);
+
+            assertNotNull(testUser.getUserProfile());
+            assertEquals("Sap", testUser.getUserProfile().getUserName());
+            assertEquals("000000", testUser.getUserProfile().getRegistration());
+            verify(userDataRepository).save(testUser.getUserProfile());
+            verify(userRepository).save(testUser);
+        }
     }
 
     @Test

@@ -2,7 +2,7 @@ import { Button } from "@lib/components/sh-button/button.component";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@lib/components/sh-input-group/input-group.component";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { useAuthStore } from "@lib/store/auth.store";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -44,6 +44,12 @@ export function ResetPasswordPage() {
       void navigate({ to: "/login" });
     },
     onError: (error) => {
+      if (toastValidationFieldErrors(error, {
+        password: "Nova senha",
+      })) {
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Erro ao atualizar senha. Tente novamente."));
     },
   });

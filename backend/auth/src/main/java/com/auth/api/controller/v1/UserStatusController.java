@@ -13,12 +13,14 @@ import com.auth.api.v1.dto.auth.UserResponseDtoV1;
 import com.auth.application.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import jakarta.validation.Valid;
 
 /**
  * Controller responsável por atualizar o status de usuários.
@@ -52,7 +54,7 @@ public class UserStatusController {
     @Operation(summary = "Atualiza o perfil do usuário", description = "Permite editar metadados do perfil do usuário. Requer cargo ADMIN.")
     public ResponseEntity<UserResponseDtoV1> updateProfile(
             @PathVariable UUID id,
-            @RequestBody UpdateUserProfileRequestDto request) {
+            @Valid @RequestBody UpdateUserProfileRequestDto request) {
         return ResponseEntity.ok(userService.updateProfile(id, request));
     }
 
@@ -61,7 +63,7 @@ public class UserStatusController {
     @Operation(summary = "Atualiza os cargos do usuário", description = "Permite adicionar ou remover cargos do usuário. Requer cargo ADMIN.")
     public ResponseEntity<UserResponseDtoV1> updateRoles(
             @PathVariable UUID id,
-            @RequestBody UpdateUserRolesRequestDto request) {
+            @Valid @RequestBody UpdateUserRolesRequestDto request) {
         return ResponseEntity.ok(userService.updateRoles(id, request));
     }
 }

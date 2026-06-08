@@ -7,7 +7,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@l
 import type { LoginFormData, ResetPasswordFormData } from "@lib/data/auth/molecule/auth.schema";
 import { loginSchema, resetPasswordSchema } from "@lib/data/auth/molecule/auth.schema";
 import { loginAttempt, resetPasswordAttempt } from "@lib/data/auth/services/auth.service";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2, Lock, LogIn, Mail } from "lucide-react";
@@ -67,6 +67,13 @@ export function LoginPage() {
       void navigate({ to: "/dashboard" });
     },
     onError: (error) => {
+      if (toastValidationFieldErrors(error, {
+        email: "E-mail corporativo",
+        password: "Senha",
+      })) {
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Credenciais inválidas. Tente novamente."));
     },
   });
@@ -78,6 +85,12 @@ export function LoginPage() {
       setIsResetDialogOpen(false);
     },
     onError: (error) => {
+      if (toastValidationFieldErrors(error, {
+        email: "E-mail de cadastro",
+      })) {
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Ocorreu um erro ao processar sua solicitação."));
     },
   });

@@ -60,4 +60,8 @@ export type DataObjectError = {
   readonly error: string;
   readonly status: number;
   readonly message: string;
+  readonly code?: string | number;
+  readonly path?: string;
+  readonly traceId?: string;
+  readonly details?: Record<string, string>;
 };

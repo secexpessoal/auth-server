@@ -4,7 +4,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@lib/components/sh-input-group/input-group.component";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { useMutation } from "@tanstack/react-query";
 import { Eye, EyeOff, KeyRound, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
@@ -53,6 +53,13 @@ export function ChangePasswordDialog() {
       handleOpenChange(false);
     },
     onError: (error) => {
+      if (toastValidationFieldErrors(error, {
+        oldPassword: "Senha atual",
+        newPassword: "Nova senha",
+      })) {
+        return;
+      }
+
       toast.error(getErrorMessage(error, "Erro ao alterar a senha. Verifique sua senha atual e tente novamente."));
     },
   });

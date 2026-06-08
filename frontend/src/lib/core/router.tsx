@@ -1,4 +1,4 @@
-import { Outlet, createRootRoute, createRoute, createRouter, redirect } from "@tanstack/react-router";
+import { Outlet, createRootRoute, createRoute, createRouter, redirect, useLocation } from "@tanstack/react-router";
 import { AppErrorBoundary } from "./errors/error-boundary.component";
 import { useAuthStore } from "@lib/store/auth.store";
 import { LoginPage } from "@routes/auth/login.component";
@@ -15,6 +15,27 @@ const authFlowSearch = (search: Record<string, unknown>): { redirectUri?: string
     fromPasswordReset: search.fromPasswordReset === true || search.fromPasswordReset === "true" ? true : undefined,
   };
 };
+
+function ProtectedLayoutContent() {
+  const { pathname } = useLocation();
+  const isAuthFlowPage = pathname === "/profile-setup" || pathname === "/reset-password";
+
+  return (
+    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-500">
+      {isAuthFlowPage ? (
+        <main className="flex-1 w-full">
+          <Outlet />
+        </main>
+      ) : (
+        <main className="flex min-h-screen w-full justify-center p-4 md:p-8 lg:p-12">
+          <div className="mx-auto w-full max-w-7xl min-h-[70dvh]">
+            <Outlet />
+          </div>
+        </main>
+      )}
+    </div>
+  );
+}
 
 export const rootRoute = createRootRoute({
   validateSearch: (search: Record<string, unknown>): { error_code?: number } => {
@@ -112,13 +133,7 @@ export const protectedLayout = createRoute({
       throw redirect({ to: "/login" });
     }
   },
-  component: () => (
-    <div className="min-h-screen bg-background text-foreground flex flex-col transition-colors duration-500">
-      <main className="flex-1 p-4 md:p-8 lg:p-12 max-w-7xl mx-auto w-full">
-        <Outlet />
-      </main>
-    </div>
-  ),
+  component: ProtectedLayoutContent,
 });
 
 export const dashboardRoute = createRoute({

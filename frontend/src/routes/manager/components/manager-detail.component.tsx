@@ -59,7 +59,7 @@ import { getUserPositionHistory, changeUserPosition } from "@lib/data/manager/se
 import { getActivePositions, createPosition, getPositionEventTypes } from "@lib/data/manager/services/position.service";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@lib/infra/query/query.util";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
@@ -190,7 +190,10 @@ export function ManagerDetailsModal({
       setIsCreatingNewPosition(false);
       setNewPositionName("");
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Erro ao cadastrar cargo")),
+    onError: (error) => {
+      if (toastValidationFieldErrors(error, { name: "Nome do cargo" })) return;
+      toast.error(getErrorMessage(error, "Erro ao cadastrar cargo"));
+    },
   });
 
   const changePositionMutation = useMutation({
@@ -221,7 +224,20 @@ export function ManagerDetailsModal({
       setTemporaryStartDate(getTodayDate());
       setTemporaryEndDate(null);
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Erro ao alterar cargo")),
+    onError: (error) => {
+      if (
+        toastValidationFieldErrors(error, {
+          positionId: "Cargo",
+          eventType: "Tipo de evento",
+          reason: "Motivo",
+          endDate: "Data final",
+        })
+      ) {
+        return;
+      }
+
+      toast.error(getErrorMessage(error, "Erro ao alterar cargo"));
+    },
   });
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
@@ -750,7 +766,7 @@ export function ManagerDetailsModal({
                             </Field>
 
                             {isTemporaryPosition ? (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-5 shadow-neumorph">
+                              <div className="grid grid-cols-1 gap-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-5 shadow-neumorph">
                                 <div className="space-y-2">
                                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Início</label>
                                   <DatePicker
@@ -1019,7 +1035,8 @@ export function ManagerDetailsModal({
                             await updateUserRoles(user.id, selectedRoles);
                             toast.success("Cargos salvos!");
                             if (onUpdateRoles) onUpdateRoles(selectedRoles);
-                          } catch {
+                          } catch (error) {
+                            if (toastValidationFieldErrors(error, { roles: "Permissões" })) return;
                             toast.error("Erro ao salvar.");
                           } finally {
                             setIsUpdatingRoles(false);
