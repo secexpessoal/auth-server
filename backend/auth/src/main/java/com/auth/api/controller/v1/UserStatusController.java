@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import jakarta.validation.Valid;
 
 /**
  * Controller responsável por atualizar o status de usuários.
@@ -52,7 +53,7 @@ public class UserStatusController {
     @Operation(summary = "Atualiza o perfil do usuário", description = "Permite editar metadados do perfil do usuário. Requer cargo ADMIN.")
     public ResponseEntity<UserResponseDtoV1> updateProfile(
             @PathVariable UUID id,
-            @RequestBody UpdateUserProfileRequestDto request) {
+            @Valid @RequestBody UpdateUserProfileRequestDto request) {
         return ResponseEntity.ok(userService.updateProfile(id, request));
     }
 

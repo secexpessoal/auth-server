@@ -26,6 +26,7 @@ import java.util.UUID;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -70,5 +71,28 @@ class UserStatusControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(userService).updateStatus(id, false);
+    }
+
+    @Test
+    @DisplayName("Deve retornar 400 ao atualizar perfil com campos obrigatórios nulos")
+    @WithMockUser(roles = "ADMIN")
+    void deveRetornar400AoAtualizarPerfilComCamposNulos() throws Exception {
+        UUID id = UUID.randomUUID();
+
+        mockMvc.perform(patch("/v1/user/profile/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                          "username": "Sap",
+                          "registration": null,
+                          "position": null,
+                          "birthDate": null,
+                          "livesElsewhere": false,
+                          "inPersonWorkPeriod": null,
+                          "workRegime": null
+                        }
+                        """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").exists());
     }
 }
