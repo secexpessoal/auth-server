@@ -368,15 +368,18 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 
         InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
-        ensureProfileLinked(user);
+        UserData profile = resolveOrCreateProfile(user);
 
         try {
-            user.updateProfile(
+            profile.updateBasicInfo(
                     request.username(),
                     request.registration(),
                     request.birthDate(),
                     request.workRegime(),
-                    request.livesElsewhere(),
+                    request.livesElsewhere()
+            );
+
+            profile.updateInPersonWorkPeriod(
                     period != null
                             ? period.frequencyCycleWeeks()
                             : null,
@@ -394,15 +397,14 @@ public class UserService {
                         .findFirst()
                         .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Cargo informado não foi encontrado"));
 
-                user.assignPosition(selectedPosition.getId(), false, null);
+                profile.assignPosition(selectedPosition.getId(), false, null);
             }
 
-            UserData profileToSave = user.getUserProfile();
-            if (profileToSave == null) {
-                throw new IllegalStateException("Falha crítica: O perfil do usuário desapareceu durante a atualização.");
-            }
+            profile.touch();
+            profile.setUser(user);
+            user.setUserProfile(profile);
 
-            userDataRepository.save(profileToSave);
+            userDataRepository.save(profile);
             userRepository.save(user);
 
         } catch (IllegalArgumentException | IllegalStateException exception) {
@@ -412,17 +414,22 @@ public class UserService {
         return userMapper.toResponse(user);
     }
 
-    private boolean ensureProfileLinked(UserAuth user) {
-        UserData profile = user.getUserProfile();
+    private UserData resolveOrCreateProfile(UserAuth user) {
+        UserData profile = mongoTemplate.findOne(
+                Query.query(Criteria.where("user.$id").is(user.getUserId())),
+                UserData.class
+        );
 
         if (profile != null) {
-            return false;
+            profile.setUser(user);
+            user.setUserProfile(profile);
+            return profile;
         }
 
         UserData newProfile = new UserData();
         newProfile.setUser(user);
         user.setUserProfile(newProfile);
-        return true;
+        return newProfile;
     }
 
     public UserResponseDtoV1 updateRoles(UUID userId, UpdateUserRolesRequestDto request) {
