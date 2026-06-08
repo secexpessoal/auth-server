@@ -70,10 +70,18 @@ public class UserAuth implements UserDetails {
     @Field("user_profile")
     private UserData userProfile;
 
+    public UserData getUserProfile() {
+        try {
+            return this.userProfile;
+        } catch (IllegalArgumentException exception) {
+            return null;
+        }
+    }
+
     @NonNull
     @Override
     public String getUsername() {
-        UserData profile = getUserProfile();
+        UserData profile = resolveUserProfile();
         if (profile != null && profile.getUserName() != null) {
             return profile.getUserName();
         }
@@ -137,7 +145,7 @@ public class UserAuth implements UserDetails {
     /**
      * Orquestra a atualização do perfil do usuário.
      */
-    public void updateProfile(String name, String registration, Instant birthDate, WorkRegime regime, 
+    public void updateProfile(String name, String registration, Instant birthDate, WorkRegime regime,
                               Boolean livesElsewhere, Integer cycleWeeks, Integer weekMask, Integer durationDays) {
         UserData profile = getProfileOrThrow();
         profile.updateBasicInfo(name, registration, birthDate, regime, livesElsewhere);
@@ -153,11 +161,14 @@ public class UserAuth implements UserDetails {
     }
 
     private UserData getProfileOrThrow() {
-        UserData profile = getUserProfile();
+        UserData profile = resolveUserProfile();
         if (profile == null) {
             throw new IllegalStateException("O usuário não possui um perfil (UserProfile) vinculado. Operação cancelada.");
         }
         return profile;
     }
-    }
 
+    private UserData resolveUserProfile() {
+        return getUserProfile();
+    }
+}

@@ -368,7 +368,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 
         InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
-        boolean profileCreated = ensureProfileLinked(user);
+        ensureProfileLinked(user);
 
         try {
             user.updateProfile(
@@ -389,10 +389,12 @@ public class UserService {
             );
 
             if (request.position() != null && !request.position().isBlank()) {
-                positionRepository.findAll().stream()
+                Position selectedPosition = positionRepository.findAll().stream()
                         .filter(positionItem -> positionItem.getName().equalsIgnoreCase(request.position()))
                         .findFirst()
-                        .ifPresent(positionItem -> user.assignPosition(positionItem.getId(), false, null));
+                        .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Cargo informado não foi encontrado"));
+
+                user.assignPosition(selectedPosition.getId(), false, null);
             }
 
             UserData profileToSave = user.getUserProfile();
@@ -401,9 +403,7 @@ public class UserService {
             }
 
             userDataRepository.save(profileToSave);
-            if (profileCreated) {
-                userRepository.save(user);
-            }
+            userRepository.save(user);
 
         } catch (IllegalArgumentException | IllegalStateException exception) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());
@@ -413,14 +413,7 @@ public class UserService {
     }
 
     private boolean ensureProfileLinked(UserAuth user) {
-        UserData profile = null;
-        try {
-            profile = user.getUserProfile();
-        } catch (IllegalArgumentException exception) {
-            if (!"Target bean must not be null".equals(exception.getMessage())) {
-                throw exception;
-            }
-        }
+        UserData profile = user.getUserProfile();
 
         if (profile != null) {
             return false;
