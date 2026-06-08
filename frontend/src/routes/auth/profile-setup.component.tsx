@@ -62,6 +62,7 @@ export function ProfileSetupPage() {
   const [hybridMode, setHybridMode] = useState<"specific" | "consecutive">(
     user?.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific",
   );
+  const [prevUserId, setPrevUserId] = useState<string | null>(user?.id || null);
 
   const form = useForm<CompleteUserProfileFormData>({
     resolver: zodResolver(completeUserProfileSchema),
@@ -89,6 +90,12 @@ export function ProfileSetupPage() {
     queryFn: getActivePositions,
   });
 
+  const currentUserId = user?.id || null;
+  if (currentUserId !== prevUserId) {
+    setPrevUserId(currentUserId);
+    setHybridMode(user?.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
+  }
+
   useEffect(() => {
     if (!user) return;
 
@@ -105,8 +112,6 @@ export function ProfileSetupPage() {
         frequencyDurationDays: user.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
       },
     });
-
-    setHybridMode(user.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
   }, [form, user]);
 
   useEffect(() => {

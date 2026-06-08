@@ -49,14 +49,14 @@ export function ManagerTableComponent() {
     placeholderData: (previousData) => previousData,
   });
 
-  const { data: globalPositionHistory } = useQuery({
+  const { data: globalPositionHistory, dataUpdatedAt: globalPositionHistoryUpdatedAt } = useQuery({
     queryKey: ["global-position-history"],
     queryFn: getGlobalPositionHistory,
   });
 
   const activeTemporaryPositions = useMemo(() => {
     const latestByUser = new Map<string, NonNullable<typeof globalPositionHistory>[number]>();
-    const now = Date.now();
+    const now = globalPositionHistoryUpdatedAt;
 
     for (const entry of globalPositionHistory || []) {
       const current = latestByUser.get(entry.userId);
@@ -74,7 +74,7 @@ export function ManagerTableComponent() {
     });
 
     return active;
-  }, [globalPositionHistory]);
+  }, [globalPositionHistory, globalPositionHistoryUpdatedAt]);
 
   const resetMutation = useMutation({
     mutationFn: (email: string) => resetPasswordAttempt(email),
