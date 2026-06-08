@@ -368,6 +368,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
 
         InPersonWorkPeriodDto period = request.inPersonWorkPeriod();
+        boolean profileCreated = ensureProfileLinked(user);
 
         try {
             user.updateProfile(
@@ -400,12 +401,35 @@ public class UserService {
             }
 
             userDataRepository.save(profileToSave);
+            if (profileCreated) {
+                userRepository.save(user);
+            }
 
         } catch (IllegalArgumentException | IllegalStateException exception) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, exception.getMessage());
         }
 
         return userMapper.toResponse(user);
+    }
+
+    private boolean ensureProfileLinked(UserAuth user) {
+        UserData profile = null;
+        try {
+            profile = user.getUserProfile();
+        } catch (IllegalArgumentException exception) {
+            if (!"Target bean must not be null".equals(exception.getMessage())) {
+                throw exception;
+            }
+        }
+
+        if (profile != null) {
+            return false;
+        }
+
+        UserData newProfile = new UserData();
+        newProfile.setUser(user);
+        user.setUserProfile(newProfile);
+        return true;
     }
 
     public UserResponseDtoV1 updateRoles(UUID userId, UpdateUserRolesRequestDto request) {

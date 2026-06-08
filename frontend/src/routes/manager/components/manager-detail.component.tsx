@@ -750,7 +750,7 @@ export function ManagerDetailsModal({
                             </Field>
 
                             {isTemporaryPosition ? (
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-5 shadow-neumorph">
+                              <div className="grid grid-cols-1 gap-4 rounded-[2rem] border border-primary/20 bg-primary/5 p-5 shadow-neumorph">
                                 <div className="space-y-2">
                                   <label className="text-xs font-black uppercase tracking-widest text-muted-foreground ml-1">Início</label>
                                   <DatePicker

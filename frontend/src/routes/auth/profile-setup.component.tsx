@@ -21,6 +21,7 @@ import { type CompleteUserProfileFormData, completeUserProfileSchema, type Updat
 import { getActivePositions } from "@lib/data/manager/services/position.service";
 import { changeUserPosition } from "@lib/data/manager/services/user-position.service";
 import { updateUserProfile } from "@lib/data/manager/services/user.service";
+import { queryClient } from "@lib/infra/query/query.util";
 import { useAuthStore } from "@lib/store/auth.store";
 import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
 import { cn } from "@lib/utils/cn/cn.util";
@@ -54,6 +55,20 @@ const toInstantString = (value?: string | null) => {
   return value;
 };
 
+const getProfileFormValues = (profileUser: ReturnType<typeof useAuthStore.getState>["user"]) => ({
+  username: profileUser?.profile?.username || "",
+  registration: profileUser?.profile?.registration || "",
+  position: profileUser?.profile?.position?.name || "",
+  birthDate: toDateOnly(profileUser?.profile?.birthDate),
+  workRegime: profileUser?.profile?.workRegime || undefined,
+  livesElsewhere: profileUser?.profile?.livesElsewhere || false,
+  inPersonWorkPeriod: {
+    frequencyCycleWeeks: profileUser?.profile?.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
+    frequencyWeekMask: profileUser?.profile?.inPersonWorkPeriod?.frequencyWeekMask || 0,
+    frequencyDurationDays: profileUser?.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
+  },
+});
+
 export function ProfileSetupPage() {
   const navigate = useNavigate();
   const { user, isAuthenticated, passwordResetRequired, profileSetupRequired, completeProfileSetup, clearAuth } = useAuthStore();
@@ -62,24 +77,14 @@ export function ProfileSetupPage() {
   const [hybridMode, setHybridMode] = useState<"specific" | "consecutive">(
     user?.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific",
   );
-  const [prevUserId, setPrevUserId] = useState<string | null>(user?.id || null);
+  const [prevProfileSignature, setPrevProfileSignature] = useState<string | null>(
+    `${user?.id || ""}:${user?.profile?.inPersonWorkPeriod?.frequencyDurationDays || ""}`,
+  );
 
   const form = useForm<CompleteUserProfileFormData>({
     resolver: zodResolver(completeUserProfileSchema),
     mode: "onChange",
-    defaultValues: {
-      username: user?.profile?.username || "",
-      registration: user?.profile?.registration || "",
-      position: user?.profile?.position?.name || "",
-      birthDate: toDateOnly(user?.profile?.birthDate),
-      workRegime: user?.profile?.workRegime || undefined,
-      livesElsewhere: user?.profile?.livesElsewhere || false,
-      inPersonWorkPeriod: {
-        frequencyCycleWeeks: user?.profile?.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
-        frequencyWeekMask: user?.profile?.inPersonWorkPeriod?.frequencyWeekMask || 0,
-        frequencyDurationDays: user?.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
-      },
-    },
+    defaultValues: getProfileFormValues(user),
   });
 
   const workRegime = useWatch({ control: form.control, name: "workRegime" });
@@ -90,29 +95,24 @@ export function ProfileSetupPage() {
     queryFn: getActivePositions,
   });
 
-  const currentUserId = user?.id || null;
-  if (currentUserId !== prevUserId) {
-    setPrevUserId(currentUserId);
-    setHybridMode(user?.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
+  const { data: profileUser, isLoading: isLoadingProfile } = useQuery({
+    queryKey: ["profile-setup-profile"],
+    queryFn: getProfile,
+    enabled: isAuthenticated && profileSetupRequired && !passwordResetRequired,
+  });
+
+  const hydratedUser = profileUser || user;
+  const currentProfileSignature = `${hydratedUser?.id || ""}:${hydratedUser?.profile?.inPersonWorkPeriod?.frequencyDurationDays || ""}`;
+  if (currentProfileSignature !== prevProfileSignature) {
+    setPrevProfileSignature(currentProfileSignature);
+    setHybridMode(hydratedUser?.profile?.inPersonWorkPeriod?.frequencyDurationDays ? "consecutive" : "specific");
   }
 
   useEffect(() => {
-    if (!user) return;
+    if (!hydratedUser) return;
 
-    form.reset({
-      username: user.profile?.username || "",
-      registration: user.profile?.registration || "",
-      position: user.profile?.position?.name || "",
-      birthDate: toDateOnly(user.profile?.birthDate),
-      workRegime: user.profile?.workRegime || undefined,
-      livesElsewhere: user.profile?.livesElsewhere || false,
-      inPersonWorkPeriod: {
-        frequencyCycleWeeks: user.profile?.inPersonWorkPeriod?.frequencyCycleWeeks || 1,
-        frequencyWeekMask: user.profile?.inPersonWorkPeriod?.frequencyWeekMask || 0,
-        frequencyDurationDays: user.profile?.inPersonWorkPeriod?.frequencyDurationDays || null,
-      },
-    });
-  }, [form, user]);
+    form.reset(getProfileFormValues(hydratedUser));
+  }, [form, hydratedUser]);
 
   useEffect(() => {
     if (workRegime === "HYBRID") {
@@ -131,7 +131,7 @@ export function ProfileSetupPage() {
 
   const profileMutation = useMutation({
     mutationFn: async (values: CompleteUserProfileFormData) => {
-      if (!user) throw new Error("Usuário não autenticado");
+      if (!hydratedUser) throw new Error("Usuário não autenticado");
 
       const selectedPosition = activePositions?.find((position) => position.name === values.position.trim());
       if (!selectedPosition) throw new Error("Cargo selecionado não foi encontrado");
@@ -153,10 +153,10 @@ export function ProfileSetupPage() {
             : null,
       };
 
-      await updateUserProfile(user.id, payload);
+      await updateUserProfile(hydratedUser.id, payload);
 
-      if (user.profile?.position?.id !== selectedPosition.id) {
-        await changeUserPosition(user.id, {
+      if (hydratedUser.profile?.position?.id !== selectedPosition.id) {
+        await changeUserPosition(hydratedUser.id, {
           positionId: selectedPosition.id,
           eventType: "ASSIGNMENT",
           isTemporary: false,
@@ -166,8 +166,15 @@ export function ProfileSetupPage() {
 
       return getProfile();
     },
-    onSuccess: (updatedUser) => {
+    onSuccess: async (updatedUser) => {
       completeProfileSetup(updatedUser);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["profile-setup-profile"] }),
+        queryClient.invalidateQueries({ queryKey: ["users"] }),
+        queryClient.invalidateQueries({ queryKey: ["active-positions"] }),
+        queryClient.invalidateQueries({ queryKey: ["global-position-history"] }),
+        queryClient.invalidateQueries({ queryKey: ["user-position-history", updatedUser.id] }),
+      ]);
       toast.success("Perfil configurado com sucesso!");
 
       if (redirectUri) {
@@ -212,12 +219,12 @@ export function ProfileSetupPage() {
   if (!profileSetupRequired) return <Navigate to="/" />;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-dvh bg-background text-foreground">
       <div className="fixed top-6 right-6 z-50">
         <ThemeToggle />
       </div>
 
-      <main className="mx-auto flex min-h-screen w-full max-w-7xl flex-col justify-center gap-5 px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto box-border flex min-h-dvh w-full max-w-7xl flex-col justify-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <header className="bg-card rounded-[2.5rem] shadow-neumorph p-5 sm:p-6 border border-white/20 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-5">
             <div className="size-14 sm:size-16 bg-card shadow-neumorph-convex rounded-3xl border border-white/40 flex items-center justify-center shrink-0">
@@ -564,7 +571,7 @@ export function ProfileSetupPage() {
                 type="submit"
                 size="h12"
                 className="font-black px-8 shadow-neumorph-convex"
-                disabled={!form.formState.isValid || profileMutation.isPending || isLoadingPositions}
+                disabled={!form.formState.isValid || profileMutation.isPending || isLoadingPositions || isLoadingProfile}
               >
                 {profileMutation.isPending ? <Loader2 className="size-5 animate-spin" /> : <CheckCircle2 className="size-5" />}
                 Concluir Perfil
