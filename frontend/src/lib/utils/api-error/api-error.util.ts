@@ -90,9 +90,10 @@ export function getValidationFieldErrors(error: unknown): ValidationFieldError[]
     const responseData = error.response?.data
     const details = responseData?.details
     if (details && typeof details === "object") {
-        return Object.entries(details)
+        const entries = Object.entries(details) as Array<[string, string]>;
+        return entries
             .filter(([, message]) => typeof message === "string" && message.trim().length > 0)
-            .map(([field, message]) => ({ field, message }))
+            .map(([field, message]) => ({ field, message }));
     }
 
     const parsedFromMessage = typeof responseData?.message === "string"
@@ -101,7 +102,7 @@ export function getValidationFieldErrors(error: unknown): ValidationFieldError[]
 
     if (!parsedFromMessage) return []
 
-    return Object.entries(parsedFromMessage).map(([field, message]) => ({ field, message }))
+    return Object.entries(parsedFromMessage).map(([field, message]) => ({ field, message: String(message) }))
 }
 
 export function toastValidationFieldErrors(
