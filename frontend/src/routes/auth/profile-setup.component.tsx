@@ -139,7 +139,7 @@ export function ProfileSetupPage() {
       const payload: UpdateUserProfileRequestDto = {
         username: values.username.trim(),
         registration: values.registration.trim(),
-        position: null,
+        position: selectedPosition.name,
         birthDate: toInstantString(values.birthDate),
         workRegime: values.workRegime,
         livesElsewhere: values.livesElsewhere,
