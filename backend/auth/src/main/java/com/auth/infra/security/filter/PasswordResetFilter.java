@@ -31,7 +31,8 @@ import java.util.List;
  */
 public class PasswordResetFilter extends OncePerRequestFilter {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .setTimeZone(java.util.TimeZone.getTimeZone("America/Sao_Paulo"));
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final List<String> ALLOWED_PATTERNS = List.of(

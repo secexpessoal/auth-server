@@ -8,6 +8,7 @@
 package com.auth.infra.config;
 
 import com.auth.application.service.CustomUserDetailsService;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -33,6 +34,7 @@ public class ApplicationConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         mapper.configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, true);
+        mapper.configure(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE, false);
         mapper.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
 
         return mapper;

@@ -37,7 +37,8 @@ public class TomcatConfig implements WebServerFactoryCustomizer<ConfigurableServ
     }
 
     public static class CustomErrorReportValve extends ErrorReportValve {
-        private final ObjectMapper objectMapper = new ObjectMapper();
+        private final ObjectMapper objectMapper = new ObjectMapper()
+                .setTimeZone(java.util.TimeZone.getTimeZone("America/Sao_Paulo"));
 
         public CustomErrorReportValve() {
             super();
