@@ -23,7 +23,7 @@ public interface RefreshTokenRepository extends MongoRepository<RefreshToken, UU
 
     void deleteByUser(UserAuth user);
 
-    void deleteByToken(String token);
+    Long deleteByToken(String token);
 
     List<RefreshToken> findByUserAndUserAgentAndIpAddressAndOriginAndReferer(
             UserAuth user, String userAgent, String ipAddress, String origin, String referer);
