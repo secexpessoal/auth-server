@@ -117,7 +117,7 @@ class UserServiceTest {
             assertNotNull(saved);
             assertEquals("john@example.com", saved.getEmail());
             assertEquals("hashed", saved.getPassword());
-            verify(userRepository, times(2)).save(any());
+            verify(userRepository, times(1)).save(any());
         }
 
         @Test
