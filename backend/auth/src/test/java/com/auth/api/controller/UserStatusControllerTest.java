@@ -98,7 +98,6 @@ class UserStatusControllerTest {
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.message").value("Erro de validação nos campos informados"))
                 .andExpect(jsonPath("$.details.registration").value("A matrícula é obrigatória"))
-                .andExpect(jsonPath("$.details.position").value("O cargo é obrigatório"))
                 .andExpect(jsonPath("$.details.workRegime").value("O regime de trabalho é obrigatório"));
     }
 

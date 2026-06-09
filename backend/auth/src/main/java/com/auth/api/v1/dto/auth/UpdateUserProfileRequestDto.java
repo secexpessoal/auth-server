@@ -24,7 +24,6 @@ public record UpdateUserProfileRequestDto(
         @JsonProperty("username")
         String username,
 
-        @NotBlank(message = "O cargo é obrigatório")
         @JsonProperty("position")
         String position,
 
