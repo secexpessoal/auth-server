@@ -50,6 +50,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
@@ -77,6 +78,7 @@ public class UserService {
 
     // --- Original UserService Methods ---
 
+    @Transactional
     public UserAuth userRegister(RegisterRequestDto request, Role role, String tempPassword) {
         if (userRepository.findByEmail(request.email()).isPresent()) {
             throw new BadRequestException(ErrorCode.BAD_REQUEST, "Este e-mail já está em uso!");
@@ -88,15 +90,12 @@ public class UserService {
         user.getRoles().add(role);
         user.setPasswordResetRequired(true);
 
-        user = userRepository.save(user);
-
         UserData userData = new UserData();
         userData.setUserName(request.userName());
         userData.setUser(user);
-
-        userData = userDataRepository.save(userData);
         user.setUserProfile(userData);
 
+        userDataRepository.save(userData);
         return userRepository.save(user);
     }
 
@@ -363,6 +362,7 @@ public class UserService {
                 .build();
     }
 
+    @Transactional
     public UserResponseDtoV1 updateProfile(UUID userId, UpdateUserProfileRequestDto request) {
         UserAuth user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(ErrorCode.NOT_FOUND, "Usuário não encontrado"));
@@ -415,21 +415,13 @@ public class UserService {
     }
 
     private UserData resolveOrCreateProfile(UserAuth user) {
-        UserData profile = mongoTemplate.findOne(
-                Query.query(Criteria.where("user.$id").is(user.getUserId())),
-                UserData.class
-        );
-
-        if (profile != null) {
-            profile.setUser(user);
-            user.setUserProfile(profile);
-            return profile;
-        }
-
-        UserData newProfile = new UserData();
-        newProfile.setUser(user);
-        user.setUserProfile(newProfile);
-        return newProfile;
+        return userDataRepository.findFirstByUserOrderByUpdatedAtDesc(user)
+                .orElseGet(() -> {
+                    UserData newProfile = new UserData();
+                    newProfile.setUser(user);
+                    user.setUserProfile(newProfile);
+                    return newProfile;
+                });
     }
 
     public UserResponseDtoV1 updateRoles(UUID userId, UpdateUserRolesRequestDto request) {

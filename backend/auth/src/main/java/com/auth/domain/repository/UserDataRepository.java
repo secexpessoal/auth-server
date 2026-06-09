@@ -18,5 +18,6 @@ import java.util.UUID;
 @Repository
 public interface UserDataRepository extends MongoRepository<UserData, UUID> {
     Optional<UserData> findByUser(UserAuth user);
+    Optional<UserData> findFirstByUserOrderByUpdatedAtDesc(UserAuth user);
     Optional<UserData> findByUser_UserId(UUID userId);
 }
