@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
@@ -41,6 +42,7 @@ public class UserPositionService {
     /**
      * Altera o cargo de um usuário.
      */
+    @Transactional
     public void changePosition(UUID userId, UUID newPositionId, UserPositionEventType eventType, boolean temporary, Instant endDate, String changedBy, String reason) {
         UserAuth user = userAuthRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
@@ -52,10 +54,9 @@ public class UserPositionService {
             throw new BadRequestException("O cargo selecionado não está ativo");
         }
 
-        UserData userData = user.getUserProfile();
-        if (userData == null) {
-            throw new BadRequestException("Perfil do usuário não encontrado. Não é possível atribuir cargo.");
-        }
+        // Buscamos o profile diretamente do banco para evitar trabalhar com Proxies inconsistentes
+        UserData userData = userDataRepository.findByUser(user)
+                .orElseThrow(() -> new BadRequestException("Perfil do usuário não encontrado. Não é possível atribuir cargo."));
 
         UserPositionAssignment current = userData.getCurrentPosition();
         UUID fromPositionId = current != null ? current.getPositionId() : null;
@@ -67,15 +68,14 @@ public class UserPositionService {
                     .orElse("Cargo Antigo");
         }
 
-        user.assignPosition(newPosition.getId(), temporary, endDate);
-        
-        // Garante que estamos salvando o objeto real e não um proxy inconsistente
-        UserData profileToSave = user.getUserProfile();
-        if (profileToSave == null) {
-            throw new IllegalStateException("Falha crítica: O perfil do usuário não pôde ser recuperado para salvamento.");
-        }
-        
-        userDataRepository.save(profileToSave);
+        // Atualizamos o profile diretamente
+        userData.assignPosition(newPosition.getId(), temporary, endDate);
+        userData.setUpdatedBy(changedBy);
+        userDataRepository.save(userData);
+
+        // Atualizamos a versão do token do usuário para forçar refresh de dados/sessão
+        user.setTokenVersion(user.getTokenVersion() + 1);
+        userAuthRepository.save(user);
 
         recordTransition(userId, eventType, fromPositionId, fromPositionName, newPosition.getId(), newPosition.getName(), temporary, endDate, changedBy, reason);
     }

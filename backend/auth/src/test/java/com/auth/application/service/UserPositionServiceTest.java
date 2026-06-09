@@ -73,12 +73,13 @@ class UserPositionServiceTest {
 
         when(userAuthRepository.findById(userId)).thenReturn(Optional.of(testUser));
         when(positionRepository.findById(positionId)).thenReturn(Optional.of(testPosition));
+        when(userDataRepository.findByUser(testUser)).thenReturn(Optional.of(testUserData));
 
         userPositionService.changePosition(userId, positionId, UserPositionEventType.ASSIGNMENT, false, null, "admin", "reason");
 
         assertEquals(positionId, testUserData.getCurrentPosition().getPositionId());
         verify(userDataRepository).save(testUserData);
-        verify(userAuthRepository, never()).save(any());
+        verify(userAuthRepository).save(testUser); // Agora salvamos o UserAuth para atualizar a versão do token
         verify(historyRepository).save(any());
     }
 
