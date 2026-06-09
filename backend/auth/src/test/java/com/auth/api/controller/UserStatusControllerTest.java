@@ -28,6 +28,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+
 @SpringBootTest
 @ActiveProfiles("test")
 class UserStatusControllerTest {
@@ -116,6 +118,6 @@ class UserStatusControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"))
                 .andExpect(jsonPath("$.message").value("Erro de validação nos campos informados"))
-                .andExpect(jsonPath("$.details.roles").value("A lista de cargos é obrigatória"));
+                .andExpect(jsonPath("$.details.roles").value("Selecione ao menos um cargo"));
     }
 }
