@@ -88,8 +88,8 @@ public class RefreshTokenService {
     }
 
 
-    public void deleteByToken(String token) {
-        refreshTokenRepository.deleteByToken(token);
+    public Long deleteByToken(String token) {
+        return refreshTokenRepository.deleteByToken(token);
     }
 
 
@@ -110,7 +110,12 @@ public class RefreshTokenService {
         UserAuth user = token.getUser();
         String jwt = jwtService.generateToken(user);
 
-        deleteByToken(request.refreshToken());
+        // Deleta o token de forma atômica. Se retornar 0, significa que outra thread já renovou.
+        Long deleted = deleteByToken(request.refreshToken());
+        if (deleted == 0) {
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Refresh token já utilizado ou inválido.");
+        }
+
         RefreshToken newRefreshToken = createRefreshToken(user,
                 token.getUserAgent(), token.getIpAddress(), token.getOrigin(), token.getReferer());
 
@@ -137,6 +142,8 @@ public class RefreshTokenService {
                 try {
                     return performSilentRenewal(refreshToken, metadata, true);
                 } catch (Exception exception) {
+                    // No Proactive Refresh, erros como "token já rotacionado" são ignorados
+                    // para permitir que a requisição siga com o token atual.
                     log.warn("Falha no Proactive Refresh, mantendo token atual: {}", exception.getMessage());
                 }
             }
@@ -166,17 +173,28 @@ public class RefreshTokenService {
     private VerifyAuthResult performSilentRenewal(String refreshToken, AuthMetadata metadata, boolean proactive) {
         RefreshToken token = findByToken(refreshToken);
         verifyExpiration(token);
-        
         validateMetadata(token, metadata.userAgent(), metadata.ipAddress());
-        
+
         UserAuth userAuth = token.getUser();
         if (!Boolean.TRUE.equals(userAuth.getActive())) {
             throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário inativo.");
         }
-        
+
+        // Tenta deletar o token de forma atômica. 
+        // Apenas a thread que conseguir deletar (deleted == 1) segue para criar o novo token.
+        Long deleted = deleteByToken(refreshToken);
+        if (deleted == 0) {
+            // Se cair aqui e for proactive, significa que outra thread já renovou.
+            // Retornamos AUTHORIZED para deixar a requisição seguir com o token atual.
+            if (proactive) {
+                return VerifyAuthResult.builder()
+                        .status(VerifyAuthStatus.AUTHORIZED)
+                        .build();
+            }
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Refresh token já utilizado ou inválido.");
+        }
+
         String newAccessToken = jwtService.generateToken(userAuth);
-        
-        deleteByToken(refreshToken);
         RefreshToken newRefreshToken = createRefreshToken(userAuth, 
                 metadata.userAgent(), metadata.ipAddress(), metadata.origin(), metadata.referer());
         

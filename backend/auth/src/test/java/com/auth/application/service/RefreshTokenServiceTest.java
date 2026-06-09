@@ -126,6 +126,7 @@ class RefreshTokenServiceTest {
 
         when(refreshTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(oldToken));
         when(jwtService.generateToken(user)).thenReturn("new-jwt");
+        when(refreshTokenRepository.deleteByToken(tokenString)).thenReturn(1L);
         when(refreshTokenRepository.save(any())).thenReturn(newToken);
 
         VerifyAuthResult result = refreshTokenService.verifyAuth(null, tokenString, metadata);
@@ -133,6 +134,39 @@ class RefreshTokenServiceTest {
         assertEquals(VerifyAuthStatus.RENEWED, result.status());
         assertEquals("new-jwt", result.accessToken());
         assertEquals("new-refresh", result.refreshToken());
+        verify(refreshTokenRepository).deleteByToken(tokenString);
+    }
+
+    @Test
+    @DisplayName("Deve retornar AUTHORIZED no proactive refresh quando o token já foi rotacionado por outra thread")
+    void shouldReturnAuthorizedInProactiveRefreshWhenAlreadyRotated() {
+        String tokenString = "already-rotated";
+        String accessToken = "valid-but-expiring-jwt";
+        UserAuth user = new UserAuth();
+        user.setActive(true);
+        
+        RefreshToken token = RefreshToken.builder()
+                .token(tokenString)
+                .userAgent("ua")
+                .ipAddress("ip")
+                .expiryDate(Instant.now().plusSeconds(100))
+                .user(user)
+                .build();
+
+        // Simula que o Access Token é válido e está prestes a expirar
+        when(jwtService.isTokenValid(accessToken)).thenReturn(true);
+        when(jwtService.isTokenAboutToExpire(accessToken, 5)).thenReturn(true);
+        
+        // Simula que o Refresh Token ainda existe no banco
+        when(refreshTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(token));
+        
+        // SIMULAÇÃO DA RACE CONDITION: Outra thread deletou o token entre o findByToken e o deleteByToken
+        when(refreshTokenRepository.deleteByToken(tokenString)).thenReturn(0L);
+
+        VerifyAuthResult result = refreshTokenService.verifyAuth(accessToken, tokenString, metadata);
+
+        // Deve retornar AUTHORIZED (permitindo o uso do token atual) em vez de falhar
+        assertEquals(VerifyAuthStatus.AUTHORIZED, result.status());
         verify(refreshTokenRepository).deleteByToken(tokenString);
     }
 }
