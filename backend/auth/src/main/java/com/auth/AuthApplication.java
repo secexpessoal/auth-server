@@ -15,6 +15,7 @@ public class AuthApplication {
     }
 
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Sao_Paulo"));
         SpringApplication.run(AuthApplication.class, args);
     }
 }

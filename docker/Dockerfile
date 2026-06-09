@@ -32,6 +32,10 @@ ARG DOMAIN
 ARG APP_PORT
 ARG SERVICE_NAME=tests_auth
 
+# Set Timezone
+RUN apk add --no-cache tzdata
+ENV TZ=America/Sao_Paulo
+
 WORKDIR /app
 COPY --from=backend-build /app/auth/build/libs/auth-0.0.1-SNAPSHOT.jar app.jar
 
