@@ -215,9 +215,8 @@ public class RefreshTokenService {
         }
 
         if (token.getIpAddress() != null && !token.getIpAddress().equals(ipAddress)) {
-            log.warn("IP divergente! Esperado: {}, Recebido: {}", token.getIpAddress(), ipAddress);
-            deleteByToken(token.getToken());
-            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Segurança da sessão comprometida (IP).");
+            log.warn("IP divergente para usuário {}. Esperado: {}, Recebido: {}. [AUDITORIA]", 
+                    token.getUser().getEmail(), token.getIpAddress(), ipAddress);
         }
     }
 }
