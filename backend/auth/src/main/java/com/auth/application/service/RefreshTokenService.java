@@ -108,6 +108,11 @@ public class RefreshTokenService {
         verifyExpiration(token);
 
         UserAuth user = token.getUser();
+        if (user == null) {
+            log.error("Tentativa de refresh com token {} que não possui usuário vinculado.", request.refreshToken());
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Refresh token inválido ou sem usuário vinculado.");
+        }
+
         String jwt = jwtService.generateToken(user);
 
         // Deleta o token de forma atômica. Se retornar 0, significa que outra thread já renovou.
@@ -176,6 +181,11 @@ public class RefreshTokenService {
         validateMetadata(token, metadata.userAgent(), metadata.ipAddress());
 
         UserAuth userAuth = token.getUser();
+        if (userAuth == null) {
+            log.error("Tentativa de renovação silenciosa com token {} que não possui usuário vinculado.", refreshToken);
+            throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Refresh token inválido ou sem usuário vinculado.");
+        }
+
         if (!Boolean.TRUE.equals(userAuth.getActive())) {
             throw new BadRequestException(ErrorCode.UNAUTHORIZED, "Usuário inativo.");
         }
@@ -215,8 +225,9 @@ public class RefreshTokenService {
         }
 
         if (token.getIpAddress() != null && !token.getIpAddress().equals(ipAddress)) {
+            String identifier = token.getUser() != null ? token.getUser().getEmail() : "N/A (user null)";
             log.warn("IP divergente para usuário {}. Esperado: {}, Recebido: {}. [AUDITORIA]", 
-                    token.getUser().getEmail(), token.getIpAddress(), ipAddress);
+                    identifier, token.getIpAddress(), ipAddress);
         }
     }
 }

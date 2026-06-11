@@ -169,4 +169,38 @@ class RefreshTokenServiceTest {
         assertEquals(VerifyAuthStatus.AUTHORIZED, result.status());
         verify(refreshTokenRepository).deleteByToken(tokenString);
     }
+
+    @Test
+    @DisplayName("Deve lançar BadRequestException no refreshToken quando o usuário vinculado ao token for nulo")
+    void shouldThrowBadRequestInRefreshTokenWhenUserIsNull() {
+        String tokenString = "token-without-user";
+        RefreshToken token = RefreshToken.builder()
+                .token(tokenString)
+                .user(null)
+                .expiryDate(Instant.now().plusSeconds(100))
+                .build();
+
+        when(refreshTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(token));
+
+        assertThrows(BadRequestException.class, () -> 
+            refreshTokenService.refreshToken(new com.auth.api.v1.dto.token.RefreshTokenRequestDto(tokenString))
+        );
+    }
+
+    @Test
+    @DisplayName("Deve retornar UNAUTHORIZED no verifyAuth quando o usuário vinculado ao token for nulo")
+    void shouldReturnUnauthorizedInVerifyAuthWhenUserIsNull() {
+        String tokenString = "token-without-user";
+        RefreshToken token = RefreshToken.builder()
+                .token(tokenString)
+                .user(null)
+                .expiryDate(Instant.now().plusSeconds(100))
+                .build();
+
+        when(refreshTokenRepository.findByToken(tokenString)).thenReturn(Optional.of(token));
+
+        VerifyAuthResult result = refreshTokenService.verifyAuth(null, tokenString, metadata);
+        
+        assertEquals(VerifyAuthStatus.UNAUTHORIZED, result.status());
+    }
 }
