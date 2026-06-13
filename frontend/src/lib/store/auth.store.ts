@@ -20,17 +20,6 @@ type AuthState = {
 
 let refreshInterval: number | undefined;
 
-const isProfileSetupMissing = (user: UserResponseDto | null) => {
-  const profile = user?.profile;
-
-  return (
-    !profile ||
-    !profile.username?.trim() ||
-    !profile.registration?.trim() ||
-    !profile.position
-  );
-};
-
 const proactiveRefresh = async () => {
   try {
     const response = await axios.post<{
@@ -74,7 +63,7 @@ export const useAuthStore = create<AuthState>()(
         initializeAuth: async () => {
           // Se já estamos autenticados via persistência, só removemos o loading
           if (get().isAuthenticated) {
-            set({ isInitializing: false });
+            set({ isInitializing: false, profileSetupRequired: false });
             return;
           }
 
@@ -88,7 +77,7 @@ export const useAuthStore = create<AuthState>()(
               isAdmin: user.roles.includes("ROLE_ADMIN"),
               isInitializing: false,
               passwordResetRequired: false, // Perfil V2 não traz essa flag diretamente no objeto user, mas a sessão reconstruída assume false por padrão
-              profileSetupRequired: isProfileSetupMissing(user),
+              profileSetupRequired: false,
             });
           } catch (_error) {
             // Se falhou (401), tentamos o refresh silencioso
@@ -117,7 +106,7 @@ export const useAuthStore = create<AuthState>()(
             user,
             isAuthenticated: true,
             passwordResetRequired: session.passwordResetRequired,
-            profileSetupRequired: session.profileSetupRequired,
+            profileSetupRequired: false,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
 
@@ -159,6 +148,11 @@ export const useAuthStore = create<AuthState>()(
       {
         name: "auth-storage",
         storage: createJSONStorage(() => sessionStorage),
+        merge: (persistedState, currentState) => ({
+          ...currentState,
+          ...(persistedState as Partial<AuthState>),
+          profileSetupRequired: false,
+        }),
         onRehydrateStorage: () => (state) => {
           // Se sobrevivermos a um F5 e formos autenticados, precisamos registrar novamente o intervalo de atualização do token.
           if (state?.isAuthenticated) {

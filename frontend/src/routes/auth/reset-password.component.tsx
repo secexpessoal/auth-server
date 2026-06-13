@@ -17,8 +17,7 @@ import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.compon
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, passwordResetRequired, profileSetupRequired, user, completePasswordReset, clearAuth } = useAuthStore();
-  const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
+  const { isAuthenticated, passwordResetRequired, user, completePasswordReset, clearAuth } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -26,18 +25,6 @@ export function ResetPasswordPage() {
     mutationFn: (data: FirstChangeFormData) => firstChangePasswordAttempt(data.password),
     onSuccess: () => {
       completePasswordReset();
-
-      if (profileSetupRequired) {
-        toast.success("Senha atualizada. Complete seu perfil para continuar.");
-        void navigate({
-          to: "/profile-setup",
-          search: {
-            ...(redirectUri ? { redirectUri } : {}),
-            fromPasswordReset: true,
-          },
-        });
-        return;
-      }
 
       clearAuth();
       toast.success("Senha atualizada com sucesso! Faça login com sua nova senha.");
@@ -68,7 +55,6 @@ export function ResetPasswordPage() {
   };
 
   if (!isAuthenticated) return <Navigate to="/login" />;
-  if (!passwordResetRequired && profileSetupRequired) return <Navigate to="/profile-setup" search={redirectUri ? { redirectUri } : undefined} />;
   if (!passwordResetRequired) return <Navigate to="/" />;
 
   return (
@@ -90,20 +76,12 @@ export function ResetPasswordPage() {
                 <KeyRound className="w-10 h-10 text-primary" />
               </div>
 
-              {profileSetupRequired && (
-                <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
-                  Etapa 1 de 2
-                </div>
-              )}
-
               <h1 className="text-3xl font-black text-foreground tracking-tight mb-3">Nova Credencial</h1>
 
               <p className="text-muted-foreground font-medium">
                 Olá, <span className="font-bold text-foreground">{user?.profile?.username || "Colaborador"}</span>.
                 <br />
-                {profileSetupRequired
-                  ? "Por segurança, defina sua nova senha antes de completar seu perfil corporativo."
-                  : "Por segurança, defina sua nova senha corporativa."}
+                Por segurança, defina sua nova senha corporativa.
               </p>
             </div>
 
@@ -181,9 +159,7 @@ export function ResetPasswordPage() {
 
                   {form.formState.isSubmitting || mutation.isPending
                     ? "Processando..."
-                    : profileSetupRequired
-                      ? "Confirmar e Continuar"
-                      : "Confirmar e Sair"}
+                    : "Confirmar e Sair"}
                 </Button>
               </form>
             </Form>

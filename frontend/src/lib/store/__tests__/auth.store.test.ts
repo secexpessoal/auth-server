@@ -50,6 +50,28 @@ describe("Auth Store (Zustand)", () => {
     expect(state.token).toBe("token_mock_123");
   });
 
+  it("Deve ignorar exigência de profile setup enviada pela sessão", () => {
+    useAuthStore.getState().setAuth(
+      { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false, profileSetupRequired: true },
+      {
+        id: "dummy-id-admin",
+        email: "admin@ok.com",
+        active: true,
+        roles: ["ROLE_ADMIN"],
+        profile: null,
+        audit: {
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          updatedBy: "system",
+        },
+      },
+    );
+
+    const state = useAuthStore.getState();
+    expect(state.isAuthenticated).toBe(true);
+    expect(state.profileSetupRequired).toBe(false);
+  });
+
   it("Deve reconhecer usuário comum corretamente rejeitando admin", () => {
     useAuthStore.getState().setAuth(
       { accessToken: "token_mock_123", tokenVersion: 2, passwordResetRequired: false, profileSetupRequired: false },
