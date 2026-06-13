@@ -31,21 +31,12 @@ export function LoginPage() {
     onSuccess: (data) => {
       const targetRedirectUri = data.redirectUri || redirectUri;
 
-      if (data.session.passwordResetRequired || data.session.profileSetupRequired) {
+      if (data.session.passwordResetRequired) {
         setAuth(data.session, data.user);
 
-        if (data.session.passwordResetRequired) {
-          toast.error("Você deve alterar sua senha antes de continuar.");
-          void navigate({
-            to: "/reset-password",
-            search: targetRedirectUri ? { redirectUri: targetRedirectUri } : {},
-          });
-          return;
-        }
-
-        toast.error("Complete seu perfil antes de continuar.");
+        toast.error("Você deve alterar sua senha antes de continuar.");
         void navigate({
-          to: "/profile-setup",
+          to: "/reset-password",
           search: targetRedirectUri ? { redirectUri: targetRedirectUri } : {},
         });
         return;

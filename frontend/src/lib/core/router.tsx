@@ -68,15 +68,11 @@ export const loginRoute = createRoute({
     };
   },
   beforeLoad: () => {
-    const { isAuthenticated, passwordResetRequired, profileSetupRequired, isAdmin, clearAuth } = useAuthStore.getState();
+    const { isAuthenticated, passwordResetRequired, isAdmin, clearAuth } = useAuthStore.getState();
 
     if (isAuthenticated) {
       if (passwordResetRequired) {
         throw redirect({ to: "/reset-password" });
-      }
-
-      if (profileSetupRequired) {
-        throw redirect({ to: "/profile-setup" });
       }
 
       if (!isAdmin) {
@@ -93,7 +89,7 @@ export const protectedLayout = createRoute({
   id: "protected",
   getParentRoute: () => rootRoute,
   beforeLoad: ({ location }) => {
-    const { isAuthenticated, isAdmin, passwordResetRequired, profileSetupRequired, clearAuth } = useAuthStore.getState();
+    const { isAuthenticated, isAdmin, passwordResetRequired, clearAuth } = useAuthStore.getState();
 
     if (!isAuthenticated) {
       throw redirect({ to: "/login", search: { redirect: location.href } });
@@ -111,18 +107,10 @@ export const protectedLayout = createRoute({
     }
 
     if (!passwordResetRequired && isResetPage) {
-      throw redirect({ to: profileSetupRequired ? "/profile-setup" : isAdmin ? "/dashboard" : "/login" });
+      throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
     }
 
-    if (profileSetupRequired && !isProfileSetupPage) {
-      throw redirect({ to: "/profile-setup" });
-    }
-
-    if (profileSetupRequired) {
-      return;
-    }
-
-    if (!profileSetupRequired && isProfileSetupPage) {
+    if (isProfileSetupPage) {
       throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
     }
 
@@ -146,7 +134,7 @@ export const indexRoute = createRoute({
   path: "/",
   getParentRoute: () => rootRoute,
   beforeLoad: () => {
-    const { isAuthenticated, isAdmin, passwordResetRequired, profileSetupRequired } = useAuthStore.getState();
+    const { isAuthenticated, isAdmin, passwordResetRequired } = useAuthStore.getState();
     
     if (!isAuthenticated) {
       throw redirect({ to: "/login" });
@@ -154,10 +142,6 @@ export const indexRoute = createRoute({
 
     if (passwordResetRequired) {
       throw redirect({ to: "/reset-password" });
-    }
-
-    if (profileSetupRequired) {
-      throw redirect({ to: "/profile-setup" });
     }
 
     throw redirect({ to: isAdmin ? "/dashboard" : "/login" });
