@@ -56,7 +56,7 @@ export function ManagerTableComponent() {
 
   const activeTemporaryPositions = useMemo(() => {
     const latestByUser = new Map<string, NonNullable<typeof globalPositionHistory>[number]>();
-    const now = globalPositionHistoryUpdatedAt || Date.now();
+    const now = globalPositionHistoryUpdatedAt;
 
     for (const entry of globalPositionHistory || []) {
       const current = latestByUser.get(entry.userId);
