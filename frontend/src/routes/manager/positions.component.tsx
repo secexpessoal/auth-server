@@ -9,7 +9,7 @@ import { Spinner } from "@lib/components/sh-spinner/spinner.component";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@lib/components/sh-dialog/dialog.component";
 import { getAllPositions, createPosition, updatePosition, togglePositionStatus } from "@lib/data/manager/services/position.service";
 import { queryClient } from "@lib/infra/query/query.util";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { format } from "date-fns";
 import { cn } from "@lib/utils/cn/cn.util";
 import { Link } from "@tanstack/react-router";
@@ -40,7 +40,7 @@ export function PositionsPage() {
     },
     onError: (error) => {
       if (toastValidationFieldErrors(error, { name: "Nome do cargo" })) return;
-      toast.error(getErrorMessage(error, "Erro ao criar cargo"));
+      toastApiError(error, "Erro ao criar cargo");
     },
   });
 
@@ -55,7 +55,7 @@ export function PositionsPage() {
     },
     onError: (error) => {
       if (toastValidationFieldErrors(error, { name: "Nome do cargo" })) return;
-      toast.error(getErrorMessage(error, "Erro ao atualizar cargo"));
+      toastApiError(error, "Erro ao atualizar cargo");
     },
   });
 
@@ -65,7 +65,7 @@ export function PositionsPage() {
       toast.success("Status do cargo atualizado!");
       invalidatePositionQueries();
     },
-    onError: (error) => toast.error(getErrorMessage(error, "Erro ao alternar status do cargo")),
+    onError: (error) => toastApiError(error, "Erro ao alternar status do cargo"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

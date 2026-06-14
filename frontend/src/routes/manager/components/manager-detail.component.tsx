@@ -59,7 +59,7 @@ import { getUserPositionHistory, changeUserPosition } from "@lib/data/manager/se
 import { getActivePositions, createPosition, getPositionEventTypes } from "@lib/data/manager/services/position.service";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient } from "@lib/infra/query/query.util";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 
 const getTodayDate = () => new Date().toISOString().slice(0, 10);
 
@@ -192,7 +192,7 @@ export function ManagerDetailsModal({
     },
     onError: (error) => {
       if (toastValidationFieldErrors(error, { name: "Nome do cargo" })) return;
-      toast.error(getErrorMessage(error, "Erro ao cadastrar cargo"));
+      toastApiError(error, "Erro ao cadastrar cargo");
     },
   });
 
@@ -236,7 +236,7 @@ export function ManagerDetailsModal({
         return;
       }
 
-      toast.error(getErrorMessage(error, "Erro ao alterar cargo"));
+      toastApiError(error, "Erro ao alterar cargo");
     },
   });
 
@@ -1037,7 +1037,7 @@ export function ManagerDetailsModal({
                             if (onUpdateRoles) onUpdateRoles(selectedRoles);
                           } catch (error) {
                             if (toastValidationFieldErrors(error, { roles: "Permissões" })) return;
-                            toast.error("Erro ao salvar.");
+                            toastApiError(error, "Erro ao salvar permissões.");
                           } finally {
                             setIsUpdatingRoles(false);
                           }

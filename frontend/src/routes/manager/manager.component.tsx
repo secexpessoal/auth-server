@@ -10,7 +10,7 @@ import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.compon
 
 export function ManagerPage() {
   const navigate = useNavigate();
-  const { user, clearAuth } = useAuthStore();
+  const { user, isAdmin, clearAuth } = useAuthStore();
 
   const handleLogout = async () => {
     try {
@@ -30,8 +30,10 @@ export function ManagerPage() {
           </div>
 
           <div>
-            <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">Gestão de Identidade</h1>
-            <p className="text-sm text-muted-foreground font-medium mt-1">Administração centralizada de acessos e permissões</p>
+            <h1 className="text-3xl font-black text-foreground leading-tight tracking-tight">{isAdmin ? "Gestão de Identidade" : "Dashboard"}</h1>
+            <p className="text-sm text-muted-foreground font-medium mt-1">
+              {isAdmin ? "Administração centralizada de acessos e permissões" : "Sessão autenticada no servidor de identidade"}
+            </p>
             <p className="text-xs font-bold text-primary mt-2 flex items-center gap-1.5 uppercase tracking-wider">
               <Shield className="w-3.5 h-3.5" /> {user?.profile?.username || "Administrador"}
             </p>
@@ -43,24 +45,28 @@ export function ManagerPage() {
             <ThemeToggle />
             <ChangePasswordDialog />
 
-            <Link to="/positions">
-              <Button
-                variant="outline"
-                className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm border-primary/20 text-primary hover:bg-primary/5"
-              >
-                Cargos
-                <Briefcase className="w-4 h-4 ml-2 opacity-70" />
-              </Button>
-            </Link>
+            {isAdmin && (
+              <>
+                <Link to="/positions">
+                  <Button
+                    variant="outline"
+                    className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm border-primary/20 text-primary hover:bg-primary/5"
+                  >
+                    Cargos
+                    <Briefcase className="w-4 h-4 ml-2 opacity-70" />
+                  </Button>
+                </Link>
 
-            <Button
-              variant="success"
-              onClick={() => (window.location.href = "/swagger-ui.html")}
-              className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm"
-            >
-              API Docs
-              <BookOpen className="w-4 h-4 ml-2 opacity-70" />
-            </Button>
+                <Button
+                  variant="success"
+                  onClick={() => (window.location.href = "/swagger-ui.html")}
+                  className="h-11 px-5 font-bold uppercase text-xs tracking-widest shadow-sm"
+                >
+                  API Docs
+                  <BookOpen className="w-4 h-4 ml-2 opacity-70" />
+                </Button>
+              </>
+            )}
 
             <Button
               variant="destructive"
@@ -74,19 +80,37 @@ export function ManagerPage() {
         </div>
       </header>
 
-      <div className="flex flex-col gap-8">
-        <div className="flex items-center justify-between px-2">
-          <h2 className="text-xl font-bold text-foreground">Colaboradores do Sistema</h2>
-          <div className="flex items-center gap-4">
-            <ManagerFormDialog role="USER" />
-            <ManagerFormDialog role="ADMIN" />
+      {isAdmin ? (
+        <div className="flex flex-col gap-8">
+          <div className="flex items-center justify-between px-2">
+            <h2 className="text-xl font-bold text-foreground">Colaboradores do Sistema</h2>
+            <div className="flex items-center gap-4">
+              <ManagerFormDialog role="USER" />
+              <ManagerFormDialog role="ADMIN" />
+            </div>
+          </div>
+
+          <div className="bg-card rounded-[2.5rem] shadow-neumorph-pressed p-1 border border-white/10">
+            <ManagerTableComponent />
           </div>
         </div>
-
-        <div className="bg-card rounded-[2.5rem] shadow-neumorph-pressed p-1 border border-white/10">
-          <ManagerTableComponent />
-        </div>
-      </div>
+      ) : (
+        <section className="bg-card rounded-[2.5rem] shadow-neumorph p-8 sm:p-10 border border-white/20">
+          <div className="flex flex-col gap-4">
+            <h2 className="text-xl font-black text-foreground">Sessão ativa</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="rounded-2xl border border-white/10 bg-black/5 p-4 dark:bg-white/5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Nome</span>
+                <p className="mt-1 text-sm font-bold text-foreground">{user?.profile?.username || user?.email}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/5 p-4 dark:bg-white/5">
+                <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cargo</span>
+                <p className="mt-1 text-sm font-bold text-foreground">{user?.profile?.position?.name || "Não informado"}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

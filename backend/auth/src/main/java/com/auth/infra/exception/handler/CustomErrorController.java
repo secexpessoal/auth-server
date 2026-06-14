@@ -45,6 +45,8 @@ public class CustomErrorController implements ErrorController {
 
         String displayMessage = switch (httpStatus) {
             case BAD_REQUEST -> "A requisição enviada é inválida ou malformada";
+            case UNAUTHORIZED -> "Acesso não autorizado ou sessão expirada.";
+            case FORBIDDEN -> "Você não tem permissão para acessar este recurso.";
             case NOT_FOUND -> "O recurso solicitado não foi encontrado";
             default -> "Ocorreu um erro ao processar sua solicitação";
         };

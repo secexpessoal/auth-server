@@ -2,7 +2,7 @@ import { Button } from "@lib/components/sh-button/button.component";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@lib/components/sh-input-group/input-group.component";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@lib/components/sh-form/form.component";
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { useAuthStore } from "@lib/store/auth.store";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -17,7 +17,7 @@ import { ThemeToggle } from "@lib/components/sh-theme-toggle/theme-toggle.compon
 
 export function ResetPasswordPage() {
   const navigate = useNavigate();
-  const { isAuthenticated, passwordResetRequired, profileSetupRequired, user, completePasswordReset, clearAuth } = useAuthStore();
+  const { isAuthenticated, passwordResetRequired, profileSetupRequired, user, completePasswordReset } = useAuthStore();
   const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -39,9 +39,14 @@ export function ResetPasswordPage() {
         return;
       }
 
-      clearAuth();
-      toast.success("Senha atualizada com sucesso! Faça login com sua nova senha.");
-      void navigate({ to: "/login" });
+      toast.success("Senha atualizada com sucesso!");
+
+      if (redirectUri) {
+        window.location.replace(redirectUri);
+        return;
+      }
+
+      void navigate({ to: "/dashboard" });
     },
     onError: (error) => {
       if (toastValidationFieldErrors(error, {
@@ -50,7 +55,7 @@ export function ResetPasswordPage() {
         return;
       }
 
-      toast.error(getErrorMessage(error, "Erro ao atualizar senha. Tente novamente."));
+      toastApiError(error, "Erro ao atualizar senha. Tente novamente.");
     },
   });
 
@@ -67,9 +72,16 @@ export function ResetPasswordPage() {
     mutation.mutate(values);
   };
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" search={redirectUri ? { redirectUri } : undefined} />;
   if (!passwordResetRequired && profileSetupRequired) return <Navigate to="/profile-setup" search={redirectUri ? { redirectUri } : undefined} />;
-  if (!passwordResetRequired) return <Navigate to="/" />;
+  if (!passwordResetRequired) {
+    if (redirectUri) {
+      window.location.replace(redirectUri);
+      return null;
+    }
+
+    return <Navigate to="/dashboard" />;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6 selection:bg-primary/20 relative overflow-hidden">

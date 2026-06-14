@@ -1,8 +1,7 @@
 import axios from "axios";
 import type { InternalAxiosRequestConfig, AxiosError } from "axios";
 import { useAuthStore } from "@lib/store/auth.store";
-import toast from "react-hot-toast";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import type { DataObjectError, UserResponseDto, UserSessionResponseDto } from "@lib/data/auth/molecule/auth.types";
 
 export const axiosClient = axios.create({
@@ -106,7 +105,7 @@ axiosClient.interceptors.response.use(
 
       try {
         const response = await axios.post<{ session: UserSessionResponseDto; user: UserResponseDto }>(
-          "/v1/user/refresh",
+          "/v2/user/refresh",
           {},
           { withCredentials: true },
         );
@@ -130,7 +129,7 @@ axiosClient.interceptors.response.use(
     }
 
     if (status === 403) {
-      toast.error(getErrorMessage(error, "Você não tem permissão para realizar esta ação."));
+      toastApiError(error, "Você não tem permissão para realizar esta ação.");
     }
 
     if (status && status >= 400 && status !== 401 && status !== 403) {

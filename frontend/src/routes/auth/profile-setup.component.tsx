@@ -19,11 +19,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@lib/c
 import { getProfile } from "@lib/data/auth/services/auth.service";
 import { type CompleteUserProfileFormData, completeUserProfileSchema, type UpdateUserProfileRequestDto } from "@lib/data/manager/molecule/user.schema";
 import { getActivePositions } from "@lib/data/manager/services/position.service";
-import { changeUserPosition } from "@lib/data/manager/services/user-position.service";
 import { updateUserProfile } from "@lib/data/manager/services/user.service";
 import { queryClient } from "@lib/infra/query/query.util";
 import { useAuthStore } from "@lib/store/auth.store";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { cn } from "@lib/utils/cn/cn.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "@tanstack/react-router";
@@ -71,7 +70,7 @@ const getProfileFormValues = (profileUser: ReturnType<typeof useAuthStore.getSta
 
 export function ProfileSetupPage() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, passwordResetRequired, profileSetupRequired, completeProfileSetup, clearAuth } = useAuthStore();
+  const { user, isAuthenticated, passwordResetRequired, profileSetupRequired, completeProfileSetup } = useAuthStore();
   const redirectUri = new URLSearchParams(window.location.search).get("redirectUri") || undefined;
   const fromPasswordReset = new URLSearchParams(window.location.search).get("fromPasswordReset") === "true";
   const [hybridMode, setHybridMode] = useState<"specific" | "consecutive">(
@@ -155,15 +154,6 @@ export function ProfileSetupPage() {
 
       await updateUserProfile(hydratedUser.id, payload);
 
-      if (hydratedUser.profile?.position?.id !== selectedPosition.id) {
-        await changeUserPosition(hydratedUser.id, {
-          positionId: selectedPosition.id,
-          eventType: "ASSIGNMENT",
-          isTemporary: false,
-          reason: "Atribuição inicial realizada no setup de perfil",
-        });
-      }
-
       return getProfile();
     },
     onSuccess: async (updatedUser) => {
@@ -187,8 +177,7 @@ export function ProfileSetupPage() {
         return;
       }
 
-      clearAuth();
-      void navigate({ to: "/login" });
+      void navigate({ to: "/dashboard" });
     },
     onError: (error) => {
       if (toastValidationFieldErrors(error, {
@@ -203,7 +192,7 @@ export function ProfileSetupPage() {
         return;
       }
 
-      toast.error(getErrorMessage(error, "Erro ao configurar perfil. Revise os dados e tente novamente."));
+      toastApiError(error, "Erro ao configurar perfil. Revise os dados e tente novamente.");
     },
   });
 
@@ -226,9 +215,16 @@ export function ProfileSetupPage() {
     });
   };
 
-  if (!isAuthenticated) return <Navigate to="/login" />;
+  if (!isAuthenticated) return <Navigate to="/login" search={redirectUri ? { redirectUri } : undefined} />;
   if (passwordResetRequired) return <Navigate to="/reset-password" search={redirectUri ? { redirectUri } : undefined} />;
-  if (!profileSetupRequired) return <Navigate to="/" />;
+  if (!profileSetupRequired) {
+    if (redirectUri) {
+      window.location.replace(redirectUri);
+      return null;
+    }
+
+    return <Navigate to="/dashboard" />;
+  }
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
