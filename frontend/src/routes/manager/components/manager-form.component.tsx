@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Field, FieldContent } from "@lib/components/sh-field/field.component";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@lib/components/sh-select/select.component";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getErrorMessage, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
+import { toastApiError, toastValidationFieldErrors } from "@lib/utils/api-error/api-error.util";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, Loader2, ShieldPlus, UserPlus } from "lucide-react";
 import { useState } from "react";
@@ -66,7 +66,7 @@ export function ManagerFormDialog({ role }: Props) {
         return;
       }
 
-      toast.error(getErrorMessage(error, `Erro ao cadastrar ${isAdmin ? "administrador" : "usuário"}. Tente novamente.`));
+      toastApiError(error, `Erro ao cadastrar ${isAdmin ? "administrador" : "usuário"}. Tente novamente.`);
     },
   });
 

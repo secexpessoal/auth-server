@@ -116,6 +116,55 @@ describe("API Error Mapper Utility", () => {
     expect(message).toBe("Erro de validação nos campos informados");
   });
 
+  it("Should extract the first backend message from concatenated JSON error payloads", () => {
+    const firstResponse: DataObjectError = {
+      message: "Você não tem permissão para acessar este recurso.",
+      code: "FORBIDDEN",
+      timestamp: new Date().toISOString(),
+    };
+    const secondResponse: DataObjectError = {
+      message: "Ocorreu um erro na camada do Servidor Web.",
+      code: "SERVER_HTTP_ERROR",
+      timestamp: new Date().toISOString(),
+    };
+
+    const axiosError = new AxiosError(
+      "Request failed with status code 403",
+      "403",
+      { headers: new AxiosHeaders() } as unknown as InternalAxiosRequestConfig,
+      {},
+      {
+        status: 403,
+        statusText: "Forbidden",
+        data: `${JSON.stringify(firstResponse)}${JSON.stringify(secondResponse)}`,
+        headers: {},
+        config: { headers: new AxiosHeaders() } as unknown as InternalAxiosRequestConfig,
+      },
+    );
+
+    const message = getErrorMessage(axiosError);
+    expect(message).toBe("Você não tem permissão para acessar este recurso.");
+  });
+
+  it("Should not leak Axios status text when a response has no backend message", () => {
+    const axiosError = new AxiosError(
+      "Request failed with status code 403",
+      "403",
+      { headers: new AxiosHeaders() } as unknown as InternalAxiosRequestConfig,
+      {},
+      {
+        status: 403,
+        statusText: "Forbidden",
+        data: {},
+        headers: {},
+        config: { headers: new AxiosHeaders() } as unknown as InternalAxiosRequestConfig,
+      },
+    );
+
+    const message = getErrorMessage(axiosError, "Erro tratado pela UI");
+    expect(message).toBe("Erro tratado pela UI");
+  });
+
   it("Should return fallback string when the error is a normal exception", () => {
     const error = new Error("Random JS Error");
 

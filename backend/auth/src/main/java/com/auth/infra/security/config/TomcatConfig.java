@@ -16,6 +16,7 @@ import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.server.servlet.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 
 import java.io.IOException;
 import java.util.Date;
@@ -47,7 +48,7 @@ public class TomcatConfig implements WebServerFactoryCustomizer<ConfigurableServ
         @Override
         protected void report(Request request, Response response, Throwable throwable) {
             int statusCode = response.getStatus();
-            if (statusCode < 400 || response.isCommitted()) {
+            if (statusCode < 400 || response.isCommitted() || response.getContentWritten() > 0) {
                 return;
             }
 
@@ -73,17 +74,23 @@ public class TomcatConfig implements WebServerFactoryCustomizer<ConfigurableServ
                     return;
                 }
 
+                HttpStatus httpStatus = HttpStatus.resolve(statusCode);
+                String code = httpStatus != null ? httpStatus.name() : "HTTP_ERROR";
+                String reasonPhrase = httpStatus != null ? httpStatus.getReasonPhrase() : "HTTP Error";
+
                 String displayMessage = switch(statusCode) {
                      case 400 -> "A requisição enviada possui formato ou caracteres inválidos.";
+                     case 401 -> "Acesso não autorizado ou sessão expirada.";
+                     case 403 -> "Você não tem permissão para acessar este recurso.";
                      case 404 -> "O recurso solicitado não foi encontrado.";
-                     default -> "Ocorreu um erro na camada do Servidor Web.";
+                     default -> "A requisição não pôde ser processada.";
                 };
 
                 DataObjectError error = DataObjectError.builder()
                         .timestamp(new Date())
                         .status(statusCode)
-                        .error(org.springframework.http.HttpStatus.valueOf(statusCode).getReasonPhrase())
-                        .code("SERVER_HTTP_ERROR")
+                        .error(reasonPhrase)
+                        .code(code)
                         .message(displayMessage)
                         .path(uri)
                         .traceId(traceId)

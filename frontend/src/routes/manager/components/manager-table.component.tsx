@@ -4,7 +4,7 @@ import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@l
 import { Pagination, PaginationContent, PaginationItem, PaginationNext, PaginationPrevious } from "@lib/components/sh-pagination/pagination.component";
 import { Spinner } from "@lib/components/sh-spinner/spinner.component";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@lib/components/sh-table/table.component";
-import { getErrorMessage } from "@lib/utils/api-error/api-error.util";
+import { toastApiError } from "@lib/utils/api-error/api-error.util";
 import { useDebounce } from "@lib/hooks/use-debounce.hook";
 import { queryClient } from "@lib/infra/query/query.util";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -84,7 +84,7 @@ export function ManagerTableComponent() {
       toast.success("Senha resetada com sucesso!");
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Erro ao resetar senha do usuário."));
+      toastApiError(error, "Erro ao resetar senha do usuário.");
     },
   });
 
@@ -95,7 +95,7 @@ export function ManagerTableComponent() {
       setSendEmailDialogOpen(false);
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Erro ao enviar e-mail de recuperação."));
+      toastApiError(error, "Erro ao enviar e-mail de recuperação.");
     },
   });
 
@@ -106,7 +106,7 @@ export function ManagerTableComponent() {
       void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Erro ao desativar usuário."));
+      toastApiError(error, "Erro ao desativar usuário.");
     },
   });
 
@@ -117,7 +117,7 @@ export function ManagerTableComponent() {
       void queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Erro ao ativar usuário."));
+      toastApiError(error, "Erro ao ativar usuário.");
     },
   });
 
@@ -129,7 +129,7 @@ export function ManagerTableComponent() {
       setDetailsModalOpen(false);
     },
     onError: (error) => {
-      toast.error(getErrorMessage(error, "Erro ao atualizar perfil."));
+      toastApiError(error, "Erro ao atualizar perfil.");
     },
   });
 

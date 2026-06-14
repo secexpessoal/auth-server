@@ -32,7 +32,7 @@ class SecurityHandlerTest {
     @BeforeEach
     void setUp() {
         accessDeniedHandler = new CustomAccessDeniedHandler(objectMapper);
-        authenticationEntryPoint = new CustomAuthenticationEntryPoint();
+        authenticationEntryPoint = new CustomAuthenticationEntryPoint(objectMapper);
     }
 
     @Test

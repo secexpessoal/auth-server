@@ -7,9 +7,13 @@
  */
 package com.auth.infra.security.handler;
 
+import com.auth.infra.exception.DataObjectError;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
@@ -17,10 +21,15 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Date;
+
+import static com.auth.infra.config.MdcConfig.REQUEST_ID_KEY;
 
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     public void commence(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull AuthenticationException authenticationException) throws IOException {
@@ -41,12 +50,32 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                 || "XMLHttpRequest".equals(xRequestedWith);
 
         if (prefersJson) {
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Acesso não autorizado ou sessão expirada.");
+            writeErrorResponse(request, response);
             return;
         }
 
         // 3. Fallback para navegação direta via browser: Redirect (302)
         response.sendRedirect("/login");
+    }
+
+    private void writeErrorResponse(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpStatus status = HttpStatus.UNAUTHORIZED;
+
+        DataObjectError error = DataObjectError.builder()
+                .timestamp(new Date())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .code(status.name())
+                .message("Acesso não autorizado ou sessão expirada.")
+                .path(request.getRequestURI())
+                .traceId(MDC.get(REQUEST_ID_KEY))
+                .build();
+
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setCharacterEncoding("UTF-8");
+        response.getWriter().write(objectMapper.writeValueAsString(error));
+        response.flushBuffer();
     }
 }
 

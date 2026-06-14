@@ -66,7 +66,11 @@ public class HttpExceptionHandler {
     @ExceptionHandler(AppException.class)
     public ResponseEntity<@NonNull DataObjectError> handleAppException(AppException appException) {
         log.warn("Exceção de negócio: {} - {}", appException.getErrorCode(), appException.getMessage());
-        return buildErrorResponse(appException.getMessage(), appException.getErrorCode().getHttpStatus());
+        return buildErrorResponse(
+                appException.getMessage(),
+                appException.getErrorCode().getHttpStatus(),
+                appException.getErrorCode().name(),
+                null);
     }
 
     /**
