@@ -12,7 +12,8 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children }: AppProviderProps) {
-  const { initializeAuth, isInitializing } = useAuthStore();
+  const initializeAuth = useAuthStore((state) => state.initializeAuth);
+  const isInitializing = useAuthStore((state) => state.isInitializing);
 
   useEffect(() => {
     initializeAuth();
