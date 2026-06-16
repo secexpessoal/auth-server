@@ -107,6 +107,7 @@ export const protectedLayout = createRoute({
   getParentRoute: () => rootRoute,
   beforeLoad: ({ location }) => {
     const { isAuthenticated, isAdmin, passwordResetRequired, profileSetupRequired } = useAuthStore.getState();
+    console.log("[protectedLayout.beforeLoad]", { path: location.pathname, isAuthenticated, profileSetupRequired, passwordResetRequired, isAdmin });
     const redirectUri = getRedirectUriFromHref(location.href);
     const flowSearch: AuthFlowSearch | undefined = redirectUri ? { redirectUri } : undefined;
 
@@ -134,6 +135,7 @@ export const protectedLayout = createRoute({
     }
 
     if (profileSetupRequired && !isProfileSetupPage) {
+      console.log("[protectedLayout.beforeLoad] redirecting to /profile-setup");
       throw redirect({ to: "/profile-setup", search: flowSearch });
     }
 

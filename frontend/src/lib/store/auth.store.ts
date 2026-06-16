@@ -101,6 +101,7 @@ export const useAuthStore = create<AuthState>()(
         },
 
         setAuth: (session, user) => {
+          console.log("[setAuth] profileSetupRequired:", session.profileSetupRequired);
           set({
             token: session.accessToken,
             user,
@@ -109,6 +110,7 @@ export const useAuthStore = create<AuthState>()(
             profileSetupRequired: false,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
+          console.log("[setAuth] state after set:", get().profileSetupRequired);
 
           if (refreshInterval) {
             window.clearInterval(refreshInterval);
