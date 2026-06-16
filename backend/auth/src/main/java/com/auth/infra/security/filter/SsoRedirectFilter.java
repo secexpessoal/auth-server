@@ -49,8 +49,9 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
         }
 
         // Caso 1: Redirecionamento SSO pendente (Prioridade máxima)
+        // Mas não redireciona se estiver em /profile-setup ou /reset-password (fluxo de auth obrigatório)
         Optional<String> ssoRedirect = findSsoRedirectCookie(request);
-        if (ssoRedirect.isPresent()) {
+        if (ssoRedirect.isPresent() && !requestPath.startsWith("/profile-setup") && !requestPath.startsWith("/reset-password")) {
             performRedirect(response, ssoRedirect.get(), cookieService.buildSsoRedirectLogoutCookie());
             return;
         }
