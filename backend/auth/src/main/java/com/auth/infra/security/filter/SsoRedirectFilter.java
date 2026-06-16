@@ -73,8 +73,16 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
             try {
                 List<String> roles = jwtGeneratorService.extractRoles(accessToken.get());
                 String redirectTarget = determineRedirectTarget(request, roles);
-                
-                // EVITA LOOP: Só redireciona se o destino for diferente do caminho atual
+
+                if (requestPath.equals("/login")) {
+                    String externalRedirectUri = request.getParameter("redirectUri");
+                    StringBuilder target = new StringBuilder("/");
+                    if (externalRedirectUri != null && !externalRedirectUri.isBlank()) {
+                        target.append("?redirectUri=").append(externalRedirectUri);
+                    }
+                    redirectTarget = target.toString();
+                }
+
                 if (!redirectTarget.equals(requestPath)) {
                     response.setStatus(HttpServletResponse.SC_FOUND);
                     response.setHeader(HttpHeaders.LOCATION, redirectTarget);
@@ -82,7 +90,6 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
                 }
             } catch (Exception exception) {
                 log.warn("Erro ao processar redirecionamento automático: {}", exception.getMessage());
-                // Se der erro (ex: token antigo sem roles), deixa passar para o SPA resolver
             }
         }
 
@@ -97,34 +104,26 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
 
     private String determineRedirectTarget(HttpServletRequest request, List<String> roles) {
         String externalRedirectUri = request.getParameter("redirectUri");
-        if (externalRedirectUri != null && !externalRedirectUri.isBlank()) {
-            return redirectService.validateRedirectUri(externalRedirectUri);
-        }
-
         String internalPath = request.getParameter("redirect");
         boolean isAdmin = roles != null && roles.contains("ROLE_ADMIN");
 
-        // Se o usuário é ADMIN e quer ir pro dashboard (ou não especificou nada), mandamos pra lá.
         if (isAdmin) {
             return (internalPath != null && !internalPath.isBlank()) ? internalPath : "/dashboard";
         }
 
-        // Se não é admin ou não sabemos (roles null), e ele pediu algo que NÃO seja dashboard, respeitamos.
         if (internalPath != null && !internalPath.isBlank() && !internalPath.contains("dashboard")) {
             return internalPath;
         }
 
-        // Caso contrário, mandamos para a raiz (onde o SPA decidirá o que fazer)
         return "/";
     }
 
     private boolean isFrontendNavigation(String path) {
-        // Intercepta raiz, dashboard e outras rotas que carregariam o index.html
-        return path.equals("/") || path.equals("/dashboard") || path.equals("/login") || path.startsWith("/reset-password");
+        return path.equals("/") || path.equals("/dashboard") || path.equals("/login") || path.startsWith("/reset-password") || path.startsWith("/profile-setup");
     }
 
     private boolean isProtectedRoute(String path) {
-        return path.equals("/dashboard") || path.startsWith("/reset-password");
+        return path.equals("/dashboard") || path.startsWith("/reset-password") || path.startsWith("/profile-setup");
     }
 
     private Optional<String> findCookie(HttpServletRequest request, String name) {
