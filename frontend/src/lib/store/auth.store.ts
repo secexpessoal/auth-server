@@ -72,6 +72,7 @@ export const useAuthStore = create<AuthState>()(
         isInitializing: true,
 
         initializeAuth: async () => {
+          console.log("[initializeAuth] called, isAuthenticated:", get().isAuthenticated, "profileSetupRequired:", get().profileSetupRequired);
           // Se já estamos autenticados via persistência, só removemos o loading
           if (get().isAuthenticated) {
             set({ isInitializing: false });
@@ -112,7 +113,8 @@ export const useAuthStore = create<AuthState>()(
         },
 
         setAuth: (session, user) => {
-          console.log("[setAuth] profileSetupRequired:", session.profileSetupRequired);
+          console.log("[setAuth] input profileSetupRequired:", session.profileSetupRequired);
+          console.log("[setAuth] sessionStorage before:", JSON.parse(sessionStorage.getItem("auth-storage") || "{}")?.state?.profileSetupRequired);
           set({
             token: session.accessToken,
             user,
@@ -121,7 +123,8 @@ export const useAuthStore = create<AuthState>()(
             profileSetupRequired: session.profileSetupRequired,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
-          console.log("[setAuth] state after set:", get().profileSetupRequired);
+          console.log("[setAuth] get() after set:", get().profileSetupRequired);
+          console.log("[setAuth] sessionStorage after:", JSON.parse(sessionStorage.getItem("auth-storage") || "{}")?.state?.profileSetupRequired);
 
           if (refreshInterval) {
             window.clearInterval(refreshInterval);
@@ -167,6 +170,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: state.isAuthenticated,
           isAdmin: state.isAdmin,
           passwordResetRequired: state.passwordResetRequired,
+          profileSetupRequired: state.profileSetupRequired,
         }),
         onRehydrateStorage: () => (state) => {
           // Se sobrevivermos a um F5 e formos autenticados, precisamos registrar novamente o intervalo de atualização do token.
