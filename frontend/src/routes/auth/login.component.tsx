@@ -29,8 +29,10 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      console.log("[login.onSuccess] data:", data.session.profileSetupRequired, data.session.passwordResetRequired);
+      console.log("[login.onSuccess] profileSetupRequired:", data.session.profileSetupRequired, "passwordResetRequired:", data.session.passwordResetRequired);
+      console.log("[login.onSuccess] data.redirectUri:", data.redirectUri, "urlRedirectUri:", redirectUri);
       const targetRedirectUri = data.redirectUri || redirectUri;
+      console.log("[login.onSuccess] targetRedirectUri:", targetRedirectUri);
 
       if (data.session.passwordResetRequired || data.session.profileSetupRequired) {
         setAuth(data.session, data.user);

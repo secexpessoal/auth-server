@@ -84,6 +84,8 @@ public class SsoRedirectFilter extends OncePerRequestFilter {
                     redirectTarget = target.toString();
                 }
 
+                log.info("[SsoRedirectFilter] path={}, redirectTarget={}, hasAccessToken={}", requestPath, redirectTarget, hasAccessToken);
+
                 if (!redirectTarget.equals(requestPath)) {
                     response.setStatus(HttpServletResponse.SC_FOUND);
                     response.setHeader(HttpHeaders.LOCATION, redirectTarget);
