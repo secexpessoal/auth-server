@@ -150,10 +150,12 @@ export const useAuthStore = create<AuthState>()(
       {
         name: "auth-storage",
         storage: createJSONStorage(() => sessionStorage),
-        merge: (persistedState, currentState) => ({
-          ...currentState,
-          ...(persistedState as Partial<AuthState>),
-          profileSetupRequired: false,
+        partialize: (state) => ({
+          token: state.token,
+          user: state.user,
+          isAuthenticated: state.isAuthenticated,
+          isAdmin: state.isAdmin,
+          passwordResetRequired: state.passwordResetRequired,
         }),
         onRehydrateStorage: () => (state) => {
           // Se sobrevivermos a um F5 e formos autenticados, precisamos registrar novamente o intervalo de atualização do token.
