@@ -20,6 +20,17 @@ type AuthState = {
 
 let refreshInterval: number | undefined;
 
+const isProfileSetupMissing = (user: UserResponseDto | null) => {
+  const profile = user?.profile;
+
+  return (
+    !profile ||
+    !profile.username?.trim() ||
+    !profile.registration?.trim() ||
+    !profile.position
+  );
+};
+
 const proactiveRefresh = async () => {
   try {
     const response = await axios.post<{
@@ -64,7 +75,7 @@ export const useAuthStore = create<AuthState>()(
           console.log("[initializeAuth] called, isAuthenticated:", get().isAuthenticated, "profileSetupRequired:", get().profileSetupRequired);
           // Se já estamos autenticados via persistência, só removemos o loading
           if (get().isAuthenticated) {
-            set({ isInitializing: false, profileSetupRequired: false });
+            set({ isInitializing: false });
             return;
           }
 
@@ -78,7 +89,7 @@ export const useAuthStore = create<AuthState>()(
               isAdmin: user.roles.includes("ROLE_ADMIN"),
               isInitializing: false,
               passwordResetRequired: false, // Perfil V2 não traz essa flag diretamente no objeto user, mas a sessão reconstruída assume false por padrão
-              profileSetupRequired: false,
+              profileSetupRequired: isProfileSetupMissing(user),
             });
           } catch (_error) {
             // Se falhou (401), tentamos o refresh silencioso
@@ -109,7 +120,7 @@ export const useAuthStore = create<AuthState>()(
             user,
             isAuthenticated: true,
             passwordResetRequired: session.passwordResetRequired,
-            profileSetupRequired: false,
+            profileSetupRequired: session.profileSetupRequired,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
           console.log("[setAuth] get() after set:", get().profileSetupRequired);

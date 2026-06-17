@@ -102,12 +102,20 @@ export function ResetPasswordPage() {
                 <KeyRound className="w-10 h-10 text-primary" />
               </div>
 
+              {profileSetupRequired && (
+                <div className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+                  Etapa 1 de 2
+                </div>
+              )}
+
               <h1 className="text-3xl font-black text-foreground tracking-tight mb-3">Nova Credencial</h1>
 
               <p className="text-muted-foreground font-medium">
                 Olá, <span className="font-bold text-foreground">{user?.profile?.username || "Colaborador"}</span>.
                 <br />
-                Por segurança, defina sua nova senha corporativa.
+                {profileSetupRequired
+                  ? "Por segurança, defina sua nova senha antes de completar seu perfil corporativo."
+                  : "Por segurança, defina sua nova senha corporativa."}
               </p>
             </div>
 
@@ -185,7 +193,9 @@ export function ResetPasswordPage() {
 
                   {form.formState.isSubmitting || mutation.isPending
                     ? "Processando..."
-                    : "Confirmar e Sair"}
+                    : profileSetupRequired
+                      ? "Confirmar e Continuar"
+                      : "Confirmar e Sair"}
                 </Button>
               </form>
             </Form>
