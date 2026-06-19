@@ -9,6 +9,7 @@ package com.auth.infra.exception.handler;
 
 import com.auth.infra.exception.DataObjectError;
 import com.auth.infra.exception.base.AppException;
+import com.auth.infra.util.RequestUtil;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -103,12 +104,14 @@ public class HttpExceptionHandler {
         return buildValidationErrorResponse(errors);
     }
 
-    /**
-     * Trata falhas de autenticação (Usuário/Senha incorretos).
-     */
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<@NonNull DataObjectError> handleBadCredentials(BadCredentialsException exception) {
-        log.info("Tentativa de login com credenciais inválidas.");
+        HttpServletRequest request = RequestUtil.getCurrentRequest().orElse(null);
+        String attemptedEmail = request != null && request.getAttribute("attempted_email") != null
+                ? (String) request.getAttribute("attempted_email")
+                : "unknown";
+        log.warn("Tentativa de login com credenciais inválidas para o usuário {} via IP {} na rota {}.",
+                attemptedEmail, RequestUtil.getClientIP(request), request != null ? request.getRequestURI() : "unknown");
         return buildErrorResponse("Usuário ou senha inválidos", HttpStatus.UNAUTHORIZED);
     }
 
@@ -117,7 +120,9 @@ public class HttpExceptionHandler {
      */
     @ExceptionHandler(UsernameNotFoundException.class)
     public ResponseEntity<@NonNull DataObjectError> handleUsernameNotFound(UsernameNotFoundException exception) {
-        log.info("Usuário não encontrado: {}", exception.getMessage());
+        HttpServletRequest request = RequestUtil.getCurrentRequest().orElse(null);
+        log.warn("Usuário não encontrado: {} (IP: {}, rota: {})",
+                exception.getMessage(), RequestUtil.getClientIP(request), request != null ? request.getRequestURI() : "unknown");
         return buildErrorResponse(exception.getMessage(), HttpStatus.UNAUTHORIZED);
     }
 
@@ -126,7 +131,9 @@ public class HttpExceptionHandler {
      */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<@NonNull DataObjectError> handleAuthenticationException(AuthenticationException exception) {
-        log.error("Falha de autenticação: {}", exception.getMessage());
+        HttpServletRequest request = RequestUtil.getCurrentRequest().orElse(null);
+        log.warn("Falha de autenticação via IP {} na rota {}: {}",
+                RequestUtil.getClientIP(request), request != null ? request.getRequestURI() : "unknown", exception.getMessage());
         return buildErrorResponse("Acesso não autorizado ou sessão expirada.", HttpStatus.UNAUTHORIZED);
     }
 
@@ -153,7 +160,15 @@ public class HttpExceptionHandler {
      */
     @ExceptionHandler(MissingRequestCookieException.class)
     public ResponseEntity<@NonNull DataObjectError> handleMissingCookie(MissingRequestCookieException exception) {
-        log.warn("Cookie obrigatório ausente: {}", exception.getCookieName());
+        HttpServletRequest request = RequestUtil.getCurrentRequest().orElse(null);
+        String clientIp = RequestUtil.getClientIP(request);
+        String requestUri = request != null ? request.getRequestURI() : "unknown";
+        
+        if ("refresh_token".equals(exception.getCookieName())) {
+            log.info("Cookie obrigatório ausente: refresh_token via IP {} na rota {}.", clientIp, requestUri);
+        } else {
+            log.warn("Cookie obrigatório ausente: {} via IP {} na rota {}.", exception.getCookieName(), clientIp, requestUri);
+        }
         return buildErrorResponse("Sessão inválida ou cookie de autenticação ausente. Por favor, faça login novamente.", HttpStatus.BAD_REQUEST);
     }
 

@@ -9,6 +9,9 @@ package com.auth.infra.util;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.experimental.UtilityClass;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import java.util.Optional;
 
 @UtilityClass
 public class RequestUtil {
@@ -19,7 +22,19 @@ public class RequestUtil {
      * já processou o X-Forwarded-For e o remoteAddr já contém o IP real.
      */
     public static String getClientIP(HttpServletRequest request) {
-        return request.getRemoteAddr();
+        return request != null ? request.getRemoteAddr() : "unknown";
+    }
+
+    /**
+     * Obtém o HttpServletRequest atual do contexto do Spring de forma segura.
+     */
+    public static Optional<HttpServletRequest> getCurrentRequest() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            return Optional.ofNullable(attributes).map(ServletRequestAttributes::getRequest);
+        } catch (Exception ignored) {
+            return Optional.empty();
+        }
     }
 }
 

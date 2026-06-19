@@ -53,6 +53,7 @@ public class    AuthController {
             @RequestHeader(value = HttpHeaders.USER_AGENT, required = false) String userAgent,
             jakarta.servlet.http.HttpServletRequest request) {
 
+        request.setAttribute("attempted_email", loginRequest.email());
         AuthMetadata metadata = new AuthMetadata(userAgent, RequestUtil.getClientIP(request), origin, referer);
         AuthenticationResult result = userService.login(loginRequest, metadata);
 
