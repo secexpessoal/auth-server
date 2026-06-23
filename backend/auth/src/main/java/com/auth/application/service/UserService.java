@@ -52,6 +52,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -217,22 +218,37 @@ public class UserService {
 
     private Page<@NonNull UserAuth> listUsersCore(int page, int limit, String email, String userName, String positionName) {
         Pageable pageable = PageRequest.of(page, limit);
+        
+        boolean isGlobalSearch = email != null && !email.isBlank() 
+                && email.equals(userName) 
+                && email.equals(positionName);
+
         List<UUID> matchingUserIds = null;
 
         if (isProfileFilterPresent(userName, positionName)) {
-            matchingUserIds = findUserIdsByProfileFilters(userName, positionName);
-            if (matchingUserIds.isEmpty()) {
+            matchingUserIds = findUserIdsByProfileFilters(userName, positionName, isGlobalSearch);
+            if (!isGlobalSearch && matchingUserIds.isEmpty()) {
                 return Page.empty(pageable);
             }
         }
 
         Query query = new Query();
+        List<Criteria> criteriaList = new ArrayList<>();
+
         if (email != null && !email.isBlank()) {
-            query.addCriteria(Criteria.where("email").regex(Pattern.quote(email), "i"));
+            criteriaList.add(Criteria.where("email").regex(Pattern.quote(email), "i"));
         }
 
-        if (matchingUserIds != null) {
-            query.addCriteria(Criteria.where("_id").in(matchingUserIds));
+        if (matchingUserIds != null && !matchingUserIds.isEmpty()) {
+            criteriaList.add(Criteria.where("_id").in(matchingUserIds));
+        }
+
+        if (isGlobalSearch && criteriaList.size() > 1) {
+            query.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+        }
+        
+        if (!isGlobalSearch || criteriaList.size() <= 1) {
+            criteriaList.forEach(query::addCriteria);
         }
 
         long totalCount = mongoTemplate.count(Query.of(query), UserAuth.class);
@@ -246,11 +262,12 @@ public class UserService {
         return (userName != null && !userName.isBlank()) || (positionName != null && !positionName.isBlank());
     }
 
-    private List<UUID> findUserIdsByProfileFilters(String userName, String positionName) {
+    private List<UUID> findUserIdsByProfileFilters(String userName, String positionName, boolean isGlobalSearch) {
         Query dataQuery = new Query();
+        List<Criteria> criteriaList = new ArrayList<>();
 
         if (userName != null && !userName.isBlank()) {
-            dataQuery.addCriteria(Criteria.where("name").regex(Pattern.quote(userName), "i"));
+            criteriaList.add(Criteria.where("name").regex(Pattern.quote(userName), "i"));
         }
 
         if (positionName != null && !positionName.isBlank()) {
@@ -260,11 +277,21 @@ public class UserService {
                     .map(Position::getId)
                     .toList();
 
-            if (matchingPositionIds.isEmpty()) {
+            if (!matchingPositionIds.isEmpty()) {
+                criteriaList.add(Criteria.where("current_position.position_id").in(matchingPositionIds));
+            }
+            
+            if (matchingPositionIds.isEmpty() && !isGlobalSearch) {
                 return List.of();
             }
+        }
 
-            dataQuery.addCriteria(Criteria.where("current_position.position_id").in(matchingPositionIds));
+        if (isGlobalSearch && criteriaList.size() > 1) {
+            dataQuery.addCriteria(new Criteria().orOperator(criteriaList.toArray(new Criteria[0])));
+        }
+        
+        if (!isGlobalSearch || criteriaList.size() <= 1) {
+            criteriaList.forEach(dataQuery::addCriteria);
         }
 
         return mongoTemplate.find(dataQuery, UserData.class).stream().map(UserData::getUserId).toList();
