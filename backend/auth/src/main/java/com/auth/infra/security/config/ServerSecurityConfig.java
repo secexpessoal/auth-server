@@ -84,7 +84,9 @@ public class ServerSecurityConfig {
                             .requestMatchers("/v1/password/change", "/v*/user/profile/**", "/v1/password/first-change").authenticated()
 
                             // NOTE: Swagger
-                            .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                            .requestMatchers(
+                                    "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml")
+                            .hasRole(Role.ADMIN.name())
 
                             // NOTE: Roteamento SPA: permitir todas as solicitações GET que não sejam endpoints de API (assets, html, rotas SPA)
                             .requestMatchers(HttpMethod.GET, "/**").permitAll()
