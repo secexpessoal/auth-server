@@ -19,6 +19,7 @@ type AuthState = {
 };
 
 let refreshInterval: number | undefined;
+let initializationPromise: Promise<void> | undefined;
 
 const isProfileSetupMissing = (user: UserResponseDto | null) => {
   const profile = user?.profile;
@@ -46,15 +47,30 @@ const proactiveRefresh = async () => {
     if (response.data.session && response.data.user) {
       useAuthStore.getState().setAuth(response.data.session, response.data.user);
     }
-  } catch (_error) {
-    console.error("Proactive refresh failed", _error);
+  } catch {
     useAuthStore.getState().clearAuth();
   }
 };
 
-const fetchProfile = async () => {
+const startProactiveRefresh = () => {
+  if (refreshInterval) {
+    window.clearInterval(refreshInterval);
+  }
+
+  refreshInterval = window.setInterval(proactiveRefresh, 9 * 60 * 1000);
+};
+
+const stopProactiveRefresh = () => {
+  if (refreshInterval) {
+    window.clearInterval(refreshInterval);
+    refreshInterval = undefined;
+  }
+};
+
+const fetchProfile = async (token?: string | null) => {
   const response = await axios.get<UserResponseDto>("/v2/user/profile", {
     withCredentials: true,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
   });
   return response.data;
 };
@@ -72,49 +88,57 @@ export const useAuthStore = create<AuthState>()(
         isInitializing: true,
 
         initializeAuth: async () => {
-          console.log("[initializeAuth] called, isAuthenticated:", get().isAuthenticated, "profileSetupRequired:", get().profileSetupRequired);
-          // Se já estamos autenticados via persistência, só removemos o loading
-          if (get().isAuthenticated) {
-            set({ isInitializing: false });
-            return;
-          }
+          if (initializationPromise) return initializationPromise;
 
-          try {
-            // Se não estamos autenticados na memória, tentamos buscar o perfil (usa o cookie access_token)
-            const user = await fetchProfile();
-            // Se funcionou, significa que o cookie é válido! Reconstruímos a sessão parcial
-            set({
-              user,
-              isAuthenticated: true,
-              isAdmin: user.roles.includes("ROLE_ADMIN"),
-              isInitializing: false,
-              passwordResetRequired: false, // Perfil V2 não traz essa flag diretamente no objeto user, mas a sessão reconstruída assume false por padrão
-              profileSetupRequired: isProfileSetupMissing(user),
-            });
-          } catch (_error) {
-            // Se falhou (401), tentamos o refresh silencioso
-            try {
-              const refreshResponse = await axios.post<{
-                session: UserSessionResponseDto;
-                user: UserResponseDto;
-              }>("/v2/user/refresh", {}, { withCredentials: true });
-              
-              get().setAuth(refreshResponse.data.session, refreshResponse.data.user);
-            } catch (_refreshError) {
-              // Somente logamos se não for 401 (que é o esperado para quem não está logado)
-              if (axios.isAxiosError(_refreshError) && _refreshError.response?.status !== 401) {
-                console.warn("Falha ao tentar renovar sessão:", _refreshError.message);
-              }
-              get().clearAuth();
-            } finally {
+          initializationPromise = (async () => {
+            const { isAuthenticated, token } = get();
+
+            // Se não há sessão persistida, não há nada a inicializar.
+            if (!isAuthenticated && !token) {
               set({ isInitializing: false });
+              return;
             }
-          }
+
+            try {
+              const user = await fetchProfile(token);
+              set({
+                user,
+                isAuthenticated: true,
+                isAdmin: user.roles.includes("ROLE_ADMIN"),
+                isInitializing: false,
+                passwordResetRequired: false,
+                profileSetupRequired: isProfileSetupMissing(user),
+              });
+              startProactiveRefresh();
+            } catch {
+              // O /profile falhou (access token expirado ou inválido).
+              // Só tenta o refresh se havia uma sessão autenticada persistida.
+              if (!isAuthenticated) {
+                get().clearAuth();
+                return;
+              }
+
+              try {
+                const refreshResponse = await axios.post<{
+                  session: UserSessionResponseDto;
+                  user: UserResponseDto;
+                }>("/v2/user/refresh", {}, { withCredentials: true });
+
+                get().setAuth(refreshResponse.data.session, refreshResponse.data.user);
+              } catch {
+                get().clearAuth();
+              } finally {
+                set({ isInitializing: false });
+              }
+            }
+          })().finally(() => {
+            initializationPromise = undefined;
+          });
+
+          return initializationPromise;
         },
 
         setAuth: (session, user) => {
-          console.log("[setAuth] input profileSetupRequired:", session.profileSetupRequired);
-          console.log("[setAuth] sessionStorage before:", JSON.parse(sessionStorage.getItem("auth-storage") || "{}")?.state?.profileSetupRequired);
           set({
             token: session.accessToken,
             user,
@@ -123,14 +147,7 @@ export const useAuthStore = create<AuthState>()(
             profileSetupRequired: session.profileSetupRequired,
             isAdmin: user.roles.includes("ROLE_ADMIN"),
           });
-          console.log("[setAuth] get() after set:", get().profileSetupRequired);
-          console.log("[setAuth] sessionStorage after:", JSON.parse(sessionStorage.getItem("auth-storage") || "{}")?.state?.profileSetupRequired);
-
-          if (refreshInterval) {
-            window.clearInterval(refreshInterval);
-          }
-
-          refreshInterval = window.setInterval(proactiveRefresh, 9 * 60 * 1000);
+          startProactiveRefresh();
         },
 
         completePasswordReset: () => {
@@ -146,10 +163,7 @@ export const useAuthStore = create<AuthState>()(
         },
 
         clearAuth: () => {
-          if (refreshInterval) {
-            window.clearInterval(refreshInterval);
-            refreshInterval = undefined;
-          }
+          stopProactiveRefresh();
           set({
             user: null,
             token: null,
@@ -175,11 +189,7 @@ export const useAuthStore = create<AuthState>()(
         onRehydrateStorage: () => (state) => {
           // Se sobrevivermos a um F5 e formos autenticados, precisamos registrar novamente o intervalo de atualização do token.
           if (state?.isAuthenticated) {
-            if (refreshInterval) {
-              window.clearInterval(refreshInterval);
-            }
-
-            refreshInterval = window.setInterval(proactiveRefresh, 9 * 60 * 1000);
+            startProactiveRefresh();
           }
         },
       },

@@ -88,7 +88,11 @@ public class AuthController {
     // NOTE: Rota publica
     @PostMapping("/refresh")
     @Operation(summary = "Renova o token de acesso", description = "Lê o Refresh Token do cookie HttpOnly e retorna um novo Access Token.")
-    public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = true) String refreshTokenCookie) {
+    public ResponseEntity<@NonNull AuthenticationResponseDto> refresh(@CookieValue(value = "refresh_token", required = false) String refreshTokenCookie) {
+        if (refreshTokenCookie == null || refreshTokenCookie.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         RefreshTokenRequestDto refreshRequest = new RefreshTokenRequestDto(refreshTokenCookie);
         AuthenticationResult result = refreshTokenService.refreshToken(refreshRequest);
 

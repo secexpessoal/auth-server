@@ -9,6 +9,7 @@ package com.auth.infra.security.filter;
 
 import com.auth.domain.model.UserAuth;
 import com.auth.infra.security.service.JwtGeneratorService;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,15 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
         final String email;
-
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        final String jwtToken = extractToken(request);
+        if (jwtToken == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        final String jwtToken = authHeader.substring(7);
 
         try {
             email = jwtGeneratorService.extractEmail(jwtToken);
@@ -74,5 +72,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private String extractToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
+            if ("access_token".equals(cookie.getName()) && cookie.getValue() != null && !cookie.getValue().isBlank()) {
+                return cookie.getValue();
+            }
+        }
+
+        return null;
     }
 }
