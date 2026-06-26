@@ -29,14 +29,10 @@ export function LoginPage() {
   const loginMutation = useMutation({
     mutationFn: loginAttempt,
     onSuccess: (data) => {
-      console.log("[login.onSuccess] profileSetupRequired:", data.session.profileSetupRequired, "passwordResetRequired:", data.session.passwordResetRequired);
-      console.log("[login.onSuccess] data.redirectUri:", data.redirectUri, "urlRedirectUri:", redirectUri);
       const targetRedirectUri = data.redirectUri || redirectUri;
-      console.log("[login.onSuccess] targetRedirectUri:", targetRedirectUri);
 
       if (data.session.passwordResetRequired || data.session.profileSetupRequired) {
         setAuth(data.session, data.user);
-        console.log("[login.onSuccess] after setAuth, store:", useAuthStore.getState().profileSetupRequired);
 
         if (data.session.passwordResetRequired) {
           toast.error("Você deve alterar sua senha antes de continuar.");
